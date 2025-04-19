@@ -1,8 +1,9 @@
-'use client';
-
 import { useState } from "react";
 import styled from "styled-components";
 import { Button } from "../Button";
+import itemGenerator, { ItemType } from "@/engine/ItemGenerators/itemGenerator";
+import { InterfaceItemGenerator } from "@/engine/ItemGenerators/Interfaces/ItemGenerator";
+import ItemCard from "../ItemCard";
 
 const DropDownContainer = styled.div`
   position: relative;
@@ -26,35 +27,60 @@ const DropDownMenu = styled.div<{ $isOpen: boolean }>`
   transition: opacity 0.3s ease, transform 0.3s ease;
 `;
 
-const buttons = [
-	"Drop Weapon", "Drop Armor", "Drop Potion",
-	"Drop Orb", "Drop BRICS", "Drop Special Item"
+const buttons: { label: string, type: ItemType }[] = [
+	{ label: "Drop Weapon", type: "weapon" },
+	{ label: "Drop Armor", type: "armor" },
+	{ label: "Drop Potion", type: "potion" },
+	{ label: "Drop Orb", type: "orb" },
+	{ label: "Drop BRICS", type: "brics" },
+	{ label: "Drop Special Item", type: "special_item" },
 ];
 
-export default function DropDownButton() {
+interface DropDownButtonProps {
+	level: number;
+}
+
+
+export default function DropDownButton({ level }: DropDownButtonProps) {
 	const [isOpen, setIsOpen] = useState(false);
+	const [dropResult, setDropResult] = useState<InterfaceItemGenerator | null>();
+
+	const handleButtonClick = (type: ItemType) => {
+		const levelInput = document.getElementById("playerLevel") as HTMLInputElement;
+		const playerLevel = levelInput ? parseInt(levelInput.value, 10) : 1;
+	
+		const result = itemGenerator.generateItem(type, playerLevel);
+		setDropResult(result);
+	};
 
 	return (
-		<DropDownContainer>
-			<Button
-				onClick={() => setIsOpen(!isOpen)}
-				$backgroundColor="#3b82f6"
-				$textColor="#fff"
-			>
-				Selecionar Drop
-			</Button>
+		<>
+			<DropDownContainer>
+				<Button
+					onClick={() => setIsOpen(!isOpen)}
+					$backgroundColor="#3b82f6"
+					$textColor="#fff"
+				>
+					Selecionar Drop
+				</Button>
 
-			<DropDownMenu $isOpen={isOpen}>
-				{buttons.map((button, index) => (
-					<Button
-						key={index}
-						$backgroundColor="#3b82f6"
-						$textColor="#fff"
-					>
-						{button}
-					</Button>
-				))}
-			</DropDownMenu>
-		</DropDownContainer>
+				<DropDownMenu $isOpen={isOpen}>
+					{buttons.map((button, index) => (
+						<Button
+							key={index}
+							onClick={() => handleButtonClick(button.type)}
+							$backgroundColor="#3b82f6"
+							$textColor="#fff"
+						>
+							{button.label}
+						</Button>
+					))}
+				</DropDownMenu>
+			</DropDownContainer>
+
+			<div id="itens_dropped" className="drops">
+				{dropResult ? <ItemCard title={dropResult.type} description={dropResult.type} value={dropResult.value} /> : null}
+			</div>
+		</>
 	);
 }
