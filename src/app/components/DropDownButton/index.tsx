@@ -1,9 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { Button } from "../Button";
-import itemGenerator, { ItemType } from "@/engine/ItemGenerators/itemGenerator";
-import { InterfaceItemGenerator } from "@/engine/ItemGenerators/Interfaces/ItemGenerator";
-import ItemCard from "../ItemCard";
+import { ItemType } from "@/engine/ItemGenerators/itemGenerator";
 
 const DropDownContainer = styled.div`
   position: relative;
@@ -37,21 +35,11 @@ const buttons: { label: string, type: ItemType }[] = [
 ];
 
 interface DropDownButtonProps {
-	level: number;
+	onSelectItemType: (type: ItemType) => void;
 }
 
-
-export default function DropDownButton({ level }: DropDownButtonProps) {
+export default function DropDownButton({ onSelectItemType  }: DropDownButtonProps) {
 	const [isOpen, setIsOpen] = useState(false);
-	const [dropResult, setDropResult] = useState<InterfaceItemGenerator | null>();
-
-	const handleButtonClick = (type: ItemType) => {
-		const levelInput = document.getElementById("playerLevel") as HTMLInputElement;
-		const playerLevel = levelInput ? parseInt(levelInput.value, 10) : 1;
-	
-		const result = itemGenerator.generateItem(type, playerLevel);
-		setDropResult(result);
-	};
 
 	return (
 		<>
@@ -68,7 +56,10 @@ export default function DropDownButton({ level }: DropDownButtonProps) {
 					{buttons.map((button, index) => (
 						<Button
 							key={index}
-							onClick={() => handleButtonClick(button.type)}
+							onMouseDown={(e) => {
+								e.preventDefault(); // evita fechar o menu
+								onSelectItemType(button.type);
+							}}
 							$backgroundColor="#3b82f6"
 							$textColor="#fff"
 						>
@@ -77,10 +68,6 @@ export default function DropDownButton({ level }: DropDownButtonProps) {
 					))}
 				</DropDownMenu>
 			</DropDownContainer>
-
-			<div id="itens_dropped" className="drops">
-				{dropResult ? <ItemCard title={dropResult.type} description={dropResult.type} value={dropResult.value} /> : null}
-			</div>
 		</>
 	);
 }

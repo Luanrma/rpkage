@@ -24,6 +24,7 @@ export default function ItemCard({ title, description, value }: ItemCardProps) {
         <Card>
             <h3>{title}</h3>
             <p>{description}</p>
+            <hr/>
             <strong>{value}</strong>
         </Card>
     );
