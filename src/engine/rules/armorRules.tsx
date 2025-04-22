@@ -1,4 +1,7 @@
-export const armorRules: Record<string, () => string[]> = {
+import { translateMap } from './translateMap';
+export type ArmorStatKey = keyof typeof translateMap.armor;
+
+export const armorRules: Record<string, () => ArmorStatKey[]> = {
     opt_1: () => [
         "physical_defense",
         "magic_defense",
