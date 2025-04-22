@@ -1,14 +1,17 @@
 import { leveling } from '../leveling';
-import { InterfaceItemGenerator, SelectedOpt, WeaponItemTranslateMap } from './Interfaces/ItemGenerator';
+import { InterfaceItemGenerator, SelectedOpt } from './Interfaces/ItemGenerator';
 import { weaponRules } from '../rules/weaponRules';
 import { itemsInfo } from '../rules/itemsInfo';
 import { translateMap } from '../rules/translateMap';
 
+type WeaponStatKey = keyof typeof translateMap.weapon;
+type WeaponTranslationStatKey = keyof typeof translateMap.weaponTranslations;
+
 export const weaponGenerator = (playerLevel: number): InterfaceItemGenerator => {
-    const rarity = getRandomRarity()
-    const optsCount = itemsInfo.rarity_table[rarity]
-    const selectedOpts: SelectedOpt[] = []
-    const model = translateWeapon(getRandomWeaponType())
+    const rarity = getRandomRarity();
+    const optsCount = itemsInfo.rarity_table[rarity];
+    const selectedOpts: SelectedOpt[] = [];
+    const model = translateWeaponModel(getRandomWeaponType());
 
     for (let i = 1; i <= optsCount; i++) {
         const optKey = `opt_${i}`;
@@ -17,7 +20,8 @@ export const weaponGenerator = (playerLevel: number): InterfaceItemGenerator => 
             continue;
         }
 
-        const availableOpts = weaponRules[optKey]().filter(opt => !selectedOpts.some(sel => sel.description === opt));
+        const availableOpts = (weaponRules[optKey]() as WeaponStatKey[])
+            .filter(opt => !selectedOpts.some(sel => sel.description === translateWeapon(opt)));
 
         if (availableOpts.length === 0) {
             continue;
@@ -27,7 +31,11 @@ export const weaponGenerator = (playerLevel: number): InterfaceItemGenerator => 
         const statusItem = ` + ${leveling(playerLevel)}`;
         const diceBonus = randomOpt.includes("plus_dice") ? rollDice() : "";
 
-        selectedOpts.push({ description: translateMap.weapon[randomOpt], status: statusItem, diceBonus: diceBonus });
+        selectedOpts.push({
+            description: translateWeapon(randomOpt),
+            status: statusItem,
+            diceBonus: diceBonus
+        });
     }
 
     return {
@@ -35,8 +43,8 @@ export const weaponGenerator = (playerLevel: number): InterfaceItemGenerator => 
         model: model,
         rarity,
         options: selectedOpts
-    }
-}
+    };
+};
 
 const getRandomRarity = (): string => {
     const roll = Math.floor(Math.random() * 100) + 1;
@@ -49,22 +57,27 @@ const getRandomRarity = (): string => {
         case roll <= 100: return "legendary";
         default: return "common";
     }
-}
+};
 
-const getRandomOption = (arr: string[]): string => {
+const getRandomOption = (arr: WeaponStatKey[]): WeaponStatKey => {
     return arr[Math.floor(Math.random() * arr.length)];
-}
+};
 
-const getRandomWeaponType = (): string => {
+const getRandomWeaponType = (): WeaponTranslationStatKey => {
     const randomValue = Math.floor(Math.random() * 16) + 1;
-    return Object.keys(itemsInfo.weapon_types).find(k => itemsInfo.weapon_types[k] === randomValue);
-}
+    return Object.keys(itemsInfo.weapon_types)
+        .find(k => itemsInfo.weapon_types[k] === randomValue) as WeaponTranslationStatKey;
+  };
 
 const rollDice = (): string => {
     const diceOptions = ["D4", "D6", "D10", "D12"];
     return diceOptions[Math.floor(Math.random() * diceOptions.length)];
-}
+};
 
-const translateWeapon = (key: string): string => {
+const translateWeapon = (key: WeaponStatKey): string => {
+    return translateMap.weapon[key] || "Desconhecido";
+};
+
+const translateWeaponModel = (key: WeaponTranslationStatKey): string => {
     return translateMap.weaponTranslations[key] || "Desconhecido";
-}
+};
