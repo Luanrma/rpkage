@@ -60,6 +60,5 @@ export default function ItemCard({ type, rarity, model, options }: InterfaceItem
 }
 
 const showDiceBonusIfExists = function(diceBonus?: string): string {
-    console.log("diceBonus: ", diceBonus)
     return diceBonus ? ` + ${diceBonus}` : ""
 }

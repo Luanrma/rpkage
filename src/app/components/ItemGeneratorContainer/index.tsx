@@ -25,7 +25,6 @@ export default function ItemGeneratorContainer({ children }: { children: React.R
 
   const handleSelectItemType = (type: ItemType) => {
     const result = itemGenerator.generateItem(type, level);
-    console.log("Item gerado:", result);
     setLastDroppedItem(result);
   };
 

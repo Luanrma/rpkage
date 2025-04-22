@@ -34,8 +34,6 @@ export const armorGenerator = (playerLevel: number): InterfaceItemGenerator => {
             status: statusItem,
             diceBonus: diceBonus
         });
-
-        console.log(selectedOpts);
     }
 
     return {
