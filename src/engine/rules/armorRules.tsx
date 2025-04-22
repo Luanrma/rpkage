@@ -1,4 +1,5 @@
 import { translateMap } from './translateMap';
+
 export type ArmorStatKey = keyof typeof translateMap.armor;
 
 export const armorRules: Record<string, () => ArmorStatKey[]> = {

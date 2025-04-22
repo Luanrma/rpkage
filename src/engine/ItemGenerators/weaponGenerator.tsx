@@ -20,8 +20,7 @@ export const weaponGenerator = (playerLevel: number): InterfaceItemGenerator => 
             continue;
         }
 
-        const availableOpts = (weaponRules[optKey]() as WeaponStatKey[])
-            .filter(opt => !selectedOpts.some(sel => sel.description === translateWeapon(opt)));
+        const availableOpts = getRandomOptAndRemove(optKey, selectedOpts)
 
         if (availableOpts.length === 0) {
             continue;
@@ -62,6 +61,14 @@ const getRandomRarity = (): string => {
 const getRandomOption = (arr: WeaponStatKey[]): WeaponStatKey => {
     return arr[Math.floor(Math.random() * arr.length)];
 };
+
+const getRandomOptAndRemove = (optKey: string, selectedOpts: SelectedOpt[]): WeaponStatKey[] => {
+    const availableOpts = weaponRules[optKey]() as WeaponStatKey[]
+
+    return availableOpts.filter(
+        (opt) => !selectedOpts.some(sel => sel.description === translateWeapon(opt))
+    )
+}
 
 const getRandomWeaponType = (): WeaponTranslationStatKey => {
     const randomValue = Math.floor(Math.random() * 16) + 1;
