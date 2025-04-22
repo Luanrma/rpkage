@@ -93,4 +93,4 @@ export const translateMap = {
     special_item: {
         special_item: "Item Especial"
     }
-} as const;
+};
