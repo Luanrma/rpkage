@@ -1,18 +1,19 @@
-import bricsGenerator from "./bricsGenerator";
+import { armorGenerator } from "./armorGenerator";
+import { bricsGenerator } from "./bricsGenerator";
 import { InterfaceItemGenerator } from "./Interfaces/ItemGenerator";
+import { weaponGenerator } from "./weaponGenerator";
 
-// Define os tipos possíveis pra evitar erro de digitação
 export type ItemType = "armor" | "weapon" | "orb" | "potion" | "special_item" | "brics";
 
 export default {
     generateItem: function (type: ItemType, playerLevel: number): InterfaceItemGenerator | null {
         const generators: Record<ItemType, () => any> = {
-            armor: () => null,
-            weapon: () => null,
+            armor: () => armorGenerator(playerLevel),
+            weapon: () => weaponGenerator(playerLevel),
             orb: () => null,
             potion: () => null,
             special_item: () => null,
-            brics: () => bricsGenerator.generateItem(playerLevel),
+            brics: () => bricsGenerator(playerLevel),
         };
 
         const generator = generators[type];

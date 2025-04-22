@@ -1,6 +1,6 @@
 import { generateRandomNumberWithMinAndMaxRange } from "@/app/utils/utils"; 
 
-export const armorAndWeaponsStatusGeneratorByLevel = (level: number): number => {
+export const leveling = (level: number): number => {
     let value = generateRandomNumberWithMinAndMaxRange(2, 10);
 
     if (value > 5 && Math.random() > 0.5) value = Math.floor(Math.random() * 5) + 1;

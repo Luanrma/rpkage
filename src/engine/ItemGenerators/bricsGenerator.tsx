@@ -1,19 +1,18 @@
-import { armorAndWeaponsStatusGeneratorByLevel } from "../leveling"; 
-import { InterfaceItemGenerator } from "./Interfaces/ItemGenerator";
+import { leveling } from "../leveling"; 
+import { InterfaceItemGenerator, SelectedOpt } from "./Interfaces/ItemGenerator";
 
-export default {
-    generateItem: function (playerLevel: number): InterfaceItemGenerator {       
-        return {
-            type: "brics",
-            rarity: "common",
-            value: this.getBricsByLevel(playerLevel),
-            options: []
-        };
-    },
-
-    getBricsByLevel: function (playerLevel: number): string {
-        const brics = armorAndWeaponsStatusGeneratorByLevel(playerLevel) * 2;
-        return brics.toString()
+export const bricsGenerator = (playerLevel: number): InterfaceItemGenerator => {  
+    const selectedOpts: SelectedOpt[] = []     
+    return {
+        type: "brics",
+        rarity: "common",
+        value: getBricsByLevel(playerLevel),
+        options: selectedOpts
     }
+}
 
-};
+
+const getBricsByLevel = (playerLevel: number): string => {
+    const brics = leveling(playerLevel) * 2;
+    return brics.toString()
+}

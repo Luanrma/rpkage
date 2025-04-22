@@ -40,9 +40,10 @@ export default function ItemGeneratorContainer({ children }: { children: React.R
         <div>
           <h3>Último item dropado:</h3>
           <ItemCard 
-            title={`${lastDroppedItem?.type.toLocaleUpperCase() || "WIP"}`}
-            description={lastDroppedItem?.type || ""} 
-            value={`X ${lastDroppedItem?.value || ""}`}
+            type={lastDroppedItem.type}
+            rarity={lastDroppedItem.rarity} 
+            model={lastDroppedItem.model}
+            options={lastDroppedItem.options}
           />
         </div>
       )}
