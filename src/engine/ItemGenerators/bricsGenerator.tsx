@@ -6,7 +6,7 @@ export const bricsGenerator = (playerLevel: number): InterfaceItemGenerator => {
     return {
         type: "brics",
         rarity: "common",
-        value: getBricsByLevel(playerLevel),
+        model: getBricsByLevel(playerLevel),
         options: selectedOpts
     }
 }
