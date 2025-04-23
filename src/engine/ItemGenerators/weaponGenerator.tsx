@@ -4,8 +4,6 @@ import { weaponRules } from '../rules/weaponRules';
 import { itemsInfo } from '../rules/itemsInfo';
 import { translateMap } from '../rules/translateMap';
 
-type WeaponStatKey = keyof typeof translateMap.weapon;
-type WeaponTranslationStatKey = keyof typeof translateMap.weaponTranslations;
 
 export const weaponGenerator = (playerLevel: number): InterfaceItemGenerator => {
     const rarity = getRandomRarity();
@@ -58,22 +56,24 @@ const getRandomRarity = (): string => {
     }
 };
 
-const getRandomOption = (arr: WeaponStatKey[]): WeaponStatKey => {
+const getRandomOption = (arr: string[]): string => {
     return arr[Math.floor(Math.random() * arr.length)];
 };
 
-const getRandomOptAndRemove = (optKey: string, selectedOpts: SelectedOpt[]): WeaponStatKey[] => {
-    const availableOpts = weaponRules[optKey]() as WeaponStatKey[]
+const getRandomOptAndRemove = (optKey: string, selectedOpts: SelectedOpt[]): string[] => {
+    const availableOpts = weaponRules[optKey]() as string[]
 
     return availableOpts.filter(
         (opt) => !selectedOpts.some(sel => sel.description === translateWeapon(opt))
     )
 }
 
-const getRandomWeaponType = (): WeaponTranslationStatKey => {
+const getRandomWeaponType = (): string => {
     const randomValue = Math.floor(Math.random() * 16) + 1;
-    return Object.keys(itemsInfo.weapon_types)
-        .find(k => itemsInfo.weapon_types[k] === randomValue) as WeaponTranslationStatKey;
+    const value = Object.keys(itemsInfo.weapon_types)
+        .find(k => itemsInfo.weapon_types[k] === randomValue)
+
+    return value as string
   };
 
 const rollDice = (): string => {
@@ -81,10 +81,10 @@ const rollDice = (): string => {
     return diceOptions[Math.floor(Math.random() * diceOptions.length)];
 };
 
-const translateWeapon = (key: WeaponStatKey): string => {
+const translateWeapon = (key: string): string => {
     return translateMap.weapon[key] || "Desconhecido";
 };
 
-const translateWeaponModel = (key: WeaponTranslationStatKey): string => {
+const translateWeaponModel = (key: string): string => {
     return translateMap.weaponTranslations[key] || "Desconhecido";
 };

@@ -5,6 +5,7 @@ import { itemsInfo } from '../rules/itemsInfo'
 import { translateMap } from '../rules/translateMap'
 
 type ArmorOptKey = keyof ArmorRulesOptKeys;
+type ArmorOptValue = ArmorRulesOptKeys[ArmorOptKey][number];
 
 export const armorGenerator = (playerLevel: number): InterfaceItemGenerator => {
     const rarity = getRandomRarity()
@@ -30,7 +31,7 @@ export const armorGenerator = (playerLevel: number): InterfaceItemGenerator => {
         const diceBonus = randomOpt.includes("plus_dice") ? ` + ${rollDice()}` : ""
 
         selectedOpts.push({
-            description: tentandoQualquerCoisa(randomOpt),
+            description: translateArmor(randomOpt),
             status: statusItem,
             diceBonus: diceBonus
         })
@@ -71,7 +72,7 @@ const getRandomArmorPart = (): string => {
 const getRandomOptAndRemove = (optKey: ArmorOptKey, selectedOpts: SelectedOpt[]): (keyof typeof translateMap.armor)[] => {
     const availableOpts = armorRules[optKey]
     return availableOpts.filter((opt) =>
-        !selectedOpts.some(sel => sel.description === tentandoQualquerCoisa(opt as keyof typeof translateMap.armor))
+        !selectedOpts.some(sel => sel.description === translateArmor(opt as keyof typeof translateMap.armor))
     ) as (keyof typeof translateMap.armor)[]
 }
 
@@ -80,6 +81,6 @@ const rollDice = (): string => {
     return diceOptions[Math.floor(Math.random() * diceOptions.length)]
 }
 
-const tentandoQualquerCoisa = (key: keyof typeof translateMap.armor): string => {
+const translateArmor = (key: keyof typeof translateMap.armor): string => {
     return translateMap.armor[key] || "Desconhecido"
 }

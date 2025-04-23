@@ -1,4 +1,13 @@
-export const translateMap = {
+export interface TranslateMap {
+    weapon: Record<string, string>;
+    armor: Record<string, string>;
+    weaponTranslations: Record<string, string>;
+    orb: Record<string, string>;
+    potion: Record<string, string>;
+    special_item: Record<string, string>;
+}
+
+export const translateMap: TranslateMap = {
     weapon: {
         physical_attack: "Ataque Físico",
         magic_attack: "Ataque Mágico",
