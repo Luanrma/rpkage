@@ -1,18 +1,11 @@
-export interface ArmorRulesOptKeys {
-    opt_1: string[],
-    opt_2: string[],
-    opt_3: string[],
-    opt_4: string[],
-}
-
-export const armorRules: ArmorRulesOptKeys = {
-    opt_1: [
+export const armorRules: Record<string, () => string[]> = {
+    opt_1 : () => [
         "physical_defense",
         "magic_defense",
         "additional_hp",
         "additional_mp",
     ],
-    opt_2: [
+    opt_2 : () => [
         "hp_regeneration_per_hit_taken",
         "mp_regeneration_per_hit_taken",
         "elemental_resistance_fire",
@@ -21,7 +14,7 @@ export const armorRules: ArmorRulesOptKeys = {
         "elemental_resistance_ice",
         "brics_amount",
     ],
-    opt_3: [
+    opt_3 : () => [
         "hp_regeneration_on_battle_start",
         "chance_block_critical",
         "elemental_resistance_light",
@@ -29,7 +22,7 @@ export const armorRules: ArmorRulesOptKeys = {
         "elemental_resistance_lightning",
         "auto_heal_on_enemy_defeat",
     ],
-    opt_4: [
+    opt_4 : () => [
         "damage_reflect_on_hit",
         "general_elemental_resistance",
         "defense_buff_adjacent_allies",

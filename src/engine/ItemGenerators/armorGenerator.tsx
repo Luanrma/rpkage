@@ -1,22 +1,20 @@
 import { leveling } from '../leveling'
 import { InterfaceItemGenerator, SelectedOpt } from './Interfaces/ItemGenerator.jsx'
-import { armorRules, ArmorRulesOptKeys } from '../rules/armorRules'
+import { armorRules } from '../rules/armorRules'
 import { itemsInfo } from '../rules/itemsInfo'
 import { translateMap } from '../rules/translateMap'
-
-type ArmorOptKey = keyof ArmorRulesOptKeys;
-type ArmorOptValue = ArmorRulesOptKeys[ArmorOptKey][number];
+import randomRarityGenerator from '../utils/randomRarityGenerator'
 
 export const armorGenerator = (playerLevel: number): InterfaceItemGenerator => {
-    const rarity = getRandomRarity()
+    const rarity = randomRarityGenerator.getRandomRarity()
     const optsCount = itemsInfo.rarity_table[rarity]
     const selectedOpts: SelectedOpt[] = []
     const model = getRandomArmorPart()
 
     for (let i = 1; i <= optsCount; i++) {
-        const optKey = `opt_${i}` as ArmorOptKey
+        const optKey = `opt_${i}`
 
-        if (!armorRules[optKey]) {
+        if (typeof armorRules[optKey] !== "function") {
             continue;
         }
 
@@ -28,12 +26,11 @@ export const armorGenerator = (playerLevel: number): InterfaceItemGenerator => {
 
         const randomOpt = getRandomOption(availableOpts)
         const statusItem = ` + ${leveling(playerLevel)}`
-        const diceBonus = randomOpt.includes("plus_dice") ? ` + ${rollDice()}` : ""
 
         selectedOpts.push({
             description: translateArmor(randomOpt),
             status: statusItem,
-            diceBonus: diceBonus
+            diceBonus: ""
         })
     }
 
@@ -45,20 +42,7 @@ export const armorGenerator = (playerLevel: number): InterfaceItemGenerator => {
     }
 }
 
-const getRandomRarity = (): string => {
-    const roll = Math.floor(Math.random() * 100) + 1;
-
-    switch (true) {
-        case roll <= 35: return "common"
-        case roll <= 60: return "uncommon"
-        case roll <= 80: return "rare"
-        case roll <= 93: return "epic"
-        case roll <= 100: return "legendary"
-        default: return "common"
-    }
-}
-
-const getRandomOption = (arr: (keyof typeof translateMap.armor)[]): keyof typeof translateMap.armor => {
+const getRandomOption = (arr: string[]): string => {
     return arr[Math.floor(Math.random() * arr.length)]
 }
 
@@ -69,18 +53,14 @@ const getRandomArmorPart = (): string => {
     )!
 }
 
-const getRandomOptAndRemove = (optKey: ArmorOptKey, selectedOpts: SelectedOpt[]): (keyof typeof translateMap.armor)[] => {
-    const availableOpts = armorRules[optKey]
+const getRandomOptAndRemove = (optKey: string, selectedOpts: SelectedOpt[]): string[] => {
+    const availableOpts = armorRules[optKey]() as string[]
+
     return availableOpts.filter((opt) =>
-        !selectedOpts.some(sel => sel.description === translateArmor(opt as keyof typeof translateMap.armor))
-    ) as (keyof typeof translateMap.armor)[]
+        !selectedOpts.some( sel => 
+            sel.description === translateArmor(opt)))
 }
 
-const rollDice = (): string => {
-    const diceOptions = ["D4", "D6", "D10", "D12"]
-    return diceOptions[Math.floor(Math.random() * diceOptions.length)]
-}
-
-const translateArmor = (key: keyof typeof translateMap.armor): string => {
+const translateArmor = (key: string): string => {
     return translateMap.armor[key] || "Desconhecido"
 }

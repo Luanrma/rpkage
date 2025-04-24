@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Button } from "../Button";
 import { InterfaceItemGenerator } from "@/engine/ItemGenerators/Interfaces/ItemGenerator";
 import ItemCard from "../ItemCard";
-import itemGenerator, { ItemType } from "@/engine/ItemGenerators/itemGenerator";
+import itemGenerator, { ItemType } from "@/engine/ItemGenerators/itemGeneratorFactory";
 
 const ItemGeneratorContainerStyle = styled.div`
   max-width: 800px;

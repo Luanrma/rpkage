@@ -1,4 +1,4 @@
-import { generateRandomNumberWithMinAndMaxRange } from "@/app/utils/utils"; 
+import { generateRandomNumberWithMinAndMaxRange } from "@/engine/utils/utils"; 
 
 export const leveling = (level: number): number => {
     let value = generateRandomNumberWithMinAndMaxRange(2, 10);

@@ -3,10 +3,10 @@ import { InterfaceItemGenerator, SelectedOpt } from './Interfaces/ItemGenerator'
 import { weaponRules } from '../rules/weaponRules';
 import { itemsInfo } from '../rules/itemsInfo';
 import { translateMap } from '../rules/translateMap';
-
+import randomRarityGenerator from '../utils/randomRarityGenerator';
 
 export const weaponGenerator = (playerLevel: number): InterfaceItemGenerator => {
-    const rarity = getRandomRarity();
+    const rarity = randomRarityGenerator.getRandomRarity()
     const optsCount = itemsInfo.rarity_table[rarity];
     const selectedOpts: SelectedOpt[] = [];
     const model = translateWeaponModel(getRandomWeaponType());
@@ -40,51 +40,38 @@ export const weaponGenerator = (playerLevel: number): InterfaceItemGenerator => 
         model: model,
         rarity,
         options: selectedOpts
-    };
-};
-
-const getRandomRarity = (): string => {
-    const roll = Math.floor(Math.random() * 100) + 1;
-
-    switch (true) {
-        case roll <= 35: return "common";
-        case roll <= 60: return "uncommon";
-        case roll <= 80: return "rare";
-        case roll <= 93: return "epic";
-        case roll <= 100: return "legendary";
-        default: return "common";
     }
-};
+}
 
-const getRandomOption = (arr: string[]): string => {
-    return arr[Math.floor(Math.random() * arr.length)];
-};
+const getRandomOption = (availableOpts: string[]): string => {
+    return availableOpts[Math.floor(Math.random() * availableOpts.length)];
+}
 
 const getRandomOptAndRemove = (optKey: string, selectedOpts: SelectedOpt[]): string[] => {
     const availableOpts = weaponRules[optKey]() as string[]
 
-    return availableOpts.filter(
-        (opt) => !selectedOpts.some(sel => sel.description === translateWeapon(opt))
-    )
+    return availableOpts.filter(opt => 
+        !selectedOpts.some(selectedOpt => 
+            selectedOpt.description === opt))
 }
 
 const getRandomWeaponType = (): string => {
-    const randomValue = Math.floor(Math.random() * 16) + 1;
-    const value = Object.keys(itemsInfo.weapon_types)
-        .find(k => itemsInfo.weapon_types[k] === randomValue)
+    const randomValue = Math.floor(Math.random() * 16) + 1
+    const weapon_types = Object.keys(itemsInfo.weapon_types)
+    const value = weapon_types.find(key => itemsInfo.weapon_types[key] === randomValue)
 
     return value as string
-  };
+}
 
 const rollDice = (): string => {
     const diceOptions = ["D4", "D6", "D10", "D12"];
     return diceOptions[Math.floor(Math.random() * diceOptions.length)];
-};
+}
 
 const translateWeapon = (key: string): string => {
     return translateMap.weapon[key] || "Desconhecido";
-};
+}
 
 const translateWeaponModel = (key: string): string => {
     return translateMap.weaponTranslations[key] || "Desconhecido";
-};
+} 

@@ -81,12 +81,12 @@ export const translateMap: TranslateMap = {
     },
 
     orb: {
-        black_orb: "Orb Negra",
-        green_orb: "Orb Verde",
-        blue_orb: "Orb Azul",
-        red_orb: "Orb Vermelha",
-        special_orb: "Orb Especial",
-        summon_orb: "Orb de Invocação",
+        black_orb: "ORB Negra",
+        green_orb: "ORB Verde",
+        blue_orb: "ORB Azul",
+        red_orb: "ORB Vermelha",
+        special_orb: "ORB Especial",
+        summon_orb: "ORB de Invocação",
     },
 
     potion: {

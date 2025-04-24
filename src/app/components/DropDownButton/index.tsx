@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { Button } from "../Button";
-import { ItemType } from "@/engine/ItemGenerators/itemGenerator";
+import { ItemType } from "@/engine/ItemGenerators/itemGeneratorFactory";
 
 const DropDownContainer = styled.div`
   position: relative;
