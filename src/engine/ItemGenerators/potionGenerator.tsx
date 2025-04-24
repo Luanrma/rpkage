@@ -17,8 +17,8 @@ export const potionGenerator = (playerLevel: number): InterfaceItemGenerator => 
     return {
         type: "potion",
         rarity: potionDrop.rarity,
-        model: translatePotion(potionDrop.name),
-        options: [{ description: potionDrop.name, status: potionDrop.value, diceBonus: "" }]
+        model: "potion",
+        options: [{ description: translatePotion(potionDrop.name), status: potionDrop.value, diceBonus: "" }]
     };
 }
 
