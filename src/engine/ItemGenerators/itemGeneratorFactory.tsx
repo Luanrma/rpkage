@@ -9,8 +9,8 @@ import { specialItemGenerator } from "./specialItemGenerator";
 export type ItemType = "armor" | "weapon" | "orb" | "potion" | "special_item" | "brics";
 
 export default {
-    generateItem: function (type: ItemType, playerLevel: number): InterfaceItemGenerator | null {
-        const generators: Record<ItemType, () => InterfaceItemGenerator | null> = {
+    generateItem: function (type: ItemType, playerLevel: number): InterfaceItemGenerator {
+        const generators: Record<ItemType, () => InterfaceItemGenerator> = {
             armor: () => armorGenerator(playerLevel),
             weapon: () => weaponGenerator(playerLevel),
             orb: () => orbGenerator(),
@@ -19,12 +19,6 @@ export default {
             brics: () => bricsGenerator(playerLevel),
         };
 
-        const generator = generators[type];
-        if (!generator) {
-            alert(`Error! Item type: ${type} unknown`);
-            return null;
-        }
-
-        return generator();
+        return generators[type]();
     }
 }

@@ -7,45 +7,67 @@ import { useState } from "react";
 import { Button } from "../Button";
 import { InterfaceItemGenerator } from "@/engine/ItemGenerators/Interfaces/ItemGenerator";
 import ItemCard from "../ItemCard";
-import itemGenerator, { ItemType } from "@/engine/ItemGenerators/itemGeneratorFactory";
+import itemGeneratorFactory, { ItemType } from "@/engine/ItemGenerators/itemGeneratorFactory";
+import { itemGeneratorRandom } from "@/engine/ItemGenerators/itemGeneratorRandom";
 
 const ItemGeneratorContainerStyle = styled.div`
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   text-align: center;
 
   h1 {
-    margin-bottom: 20px;
+    margin-bottom: 1rem;
+  }
+
+  .items-drop {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
   }
 `;
 
 export default function ItemGeneratorContainer({ children }: { children: React.ReactNode }) {
-  const [level, setLevel] = useState(1);
-  const [lastDroppedItem, setLastDroppedItem] = useState<InterfaceItemGenerator | null>(null);
-
+  const [playerLevel, setPlayerLevel] = useState(1);
+  const [droppedItems, setDroppedItems] = useState<InterfaceItemGenerator[]>([]);
+  const [itemCount, setItemCount] = useState(1);
+  
   const handleSelectItemType = (type: ItemType) => {
-    const result = itemGenerator.generateItem(type, level);
-    setLastDroppedItem(result);
+    const result = itemGeneratorFactory.generateItem(type, playerLevel);
+    setDroppedItems((prevItems) => [...prevItems, result]);
   };
+
+  const handleGenerateRandomItems = () => {
+    const newItems: InterfaceItemGenerator[] = [];
+
+    for (let i = 0; i < itemCount; i++) {
+      const generated = itemGeneratorRandom(playerLevel);
+      newItems.push(generated);
+    }
+
+    setDroppedItems((prev) => [...prev, ...newItems]);
+  };
+
+  const handleResetItems = () => setDroppedItems([])
 
   return (
     <ItemGeneratorContainerStyle>
       <h1>Item Generator RPG</h1>
-      <PlayerInfo onLevelChange={setLevel} />
+      <PlayerInfo onLevelChange={setPlayerLevel} onItemCountChange={setItemCount} />
       <DropDownButton onSelectItemType={handleSelectItemType}/>
-      <Button $backgroundColor="#1ee603" $textColor="#000"> Gerar Itens </Button>
-      <Button $backgroundColor="#ebc418" $textColor="#000"> Resetar Itens </Button>
-      {lastDroppedItem && (
-        <div>
-          <h3>Último item dropado:</h3>
-          <ItemCard 
-            type={lastDroppedItem.type}
-            rarity={lastDroppedItem.rarity} 
-            model={lastDroppedItem.model}
-            options={lastDroppedItem.options}
+      <Button $backgroundColor="#1ee603" $textColor="#000" onClick={handleGenerateRandomItems}> Gerar Itens </Button>
+      <Button $backgroundColor="#ebc418" $textColor="#000" onClick={handleResetItems}> Resetar Itens </Button>
+      <div className="items-drop">
+        {droppedItems.map((item, index) => (
+          <ItemCard
+              key={index}
+              type={item.type}
+              rarity={item.rarity}
+              model={item.model}
+              options={item.options}
           />
-        </div>
-      )}
+        ))}
+      </div>
       {children}
     </ItemGeneratorContainerStyle>
   );

@@ -17,4 +17,9 @@ export const Button = styled.button<ButtonProps>`
   font-size: 18px;
   cursor: pointer;
   transition: 0.3s;
+
+  @media (max-width: 480px) {
+    padding: 0.8rem 1.2rem;
+    font-size: 1rem;
+  }
 `;

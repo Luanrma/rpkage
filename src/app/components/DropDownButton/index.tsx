@@ -38,7 +38,7 @@ interface DropDownButtonProps {
 	onSelectItemType: (type: ItemType) => void;
 }
 
-export default function DropDownButton({ onSelectItemType  }: DropDownButtonProps) {
+export default function DropDownButton({ onSelectItemType }: DropDownButtonProps) {
 	const [isOpen, setIsOpen] = useState(false);
 
 	return (
@@ -57,7 +57,7 @@ export default function DropDownButton({ onSelectItemType  }: DropDownButtonProp
 						<Button
 							key={index}
 							onMouseDown={(e) => {
-								e.preventDefault(); // evita fechar o menu
+								e.preventDefault();
 								onSelectItemType(button.type);
 							}}
 							$backgroundColor="#3b82f6"

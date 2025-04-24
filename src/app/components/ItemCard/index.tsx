@@ -4,14 +4,28 @@ import { InterfaceItemGenerator } from '@/engine/ItemGenerators/Interfaces/ItemG
 import styled from 'styled-components';
 
 const Card = styled.div`
-    background-color: #262626;
-    border: 1px solid #444;
-    border-radius: 10px;
-    padding: 16px;
-    margin: 12px 0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    background: #1e1e1e;
+    border: 1px solid rgb(97, 97, 97);
+    border-radius: 12px;
+    padding: 1.2rem;
+    width: 25rem;
     text-align: left;
+    box-shadow: 0 0 10px rgba(0,0,0,0.6);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+
+    ul {
+        padding-left: 1rem;
+        margin: 0.5rem 0 0;
+        list-style-type: disc;
+    }
+
+    ul li {
+        margin-bottom: 0.4rem;
+    }
 
     .rarity-common {
         color: #a0a0a0;
@@ -40,6 +54,11 @@ const Card = styled.div`
         margin-top: -8px;
         margin-bottom: 8px;
         letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 480px) {
+        width: 100%;
+        padding: 1rem;
     }
 `;
 
