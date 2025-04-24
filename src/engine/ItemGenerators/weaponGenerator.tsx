@@ -1,32 +1,33 @@
-import { leveling } from '../leveling';
-import { InterfaceItemGenerator, SelectedOpt } from './Interfaces/ItemGenerator';
-import { weaponRules } from '../rules/weaponRules';
-import { itemsInfo } from '../rules/itemsInfo';
-import { translateMap } from '../rules/translateMap';
-import randomRarityGenerator from '../utils/randomRarityGenerator';
+import { leveling } from '../leveling'
+import { InterfaceItemGenerator, SelectedOpt } from './Interfaces/ItemGenerator'
+import { weaponRules } from '../rules/weaponRules'
+import { itemsInfo } from '../rules/itemsInfo'
+import { translateMap } from '../rules/translateMap'
+import randomRarityGenerator from '../utils/randomRarityGenerator'
+import { generateRandomNumberWithMinAndMaxRange } from '../utils/utils'
 
 export const weaponGenerator = (playerLevel: number): InterfaceItemGenerator => {
     const rarity = randomRarityGenerator.getRandomRarity()
-    const optsCount = itemsInfo.rarity_table[rarity];
-    const selectedOpts: SelectedOpt[] = [];
-    const model = translateWeaponModel(getRandomWeaponType());
+    const optsCount = itemsInfo.rarity_table[rarity]
+    const selectedOpts: SelectedOpt[] = []
+    const weaponType = getRandomWeaponType()
 
     for (let i = 1; i <= optsCount; i++) {
-        const optKey = `opt_${i}`;
+        const optKey = `opt_${i}`
 
         if (typeof weaponRules[optKey] !== "function") {
-            continue;
+            continue
         }
 
         const availableOpts = getRandomOptAndRemove(optKey, selectedOpts)
 
         if (availableOpts.length === 0) {
-            continue;
+            continue
         }
 
-        const randomOpt = getRandomOption(availableOpts);
-        const statusItem = ` + ${leveling(playerLevel)}`;
-        const diceBonus = randomOpt.includes("plus_dice") ? rollDice() : "";
+        const randomOpt = getRandomOption(availableOpts)
+        const statusItem = statusSelectedOptionCalculator(randomOpt, weaponType, playerLevel)
+        const diceBonus = randomOpt.includes("plus_dice") ? rollDice() : ""
 
         selectedOpts.push({
             description: translateWeapon(randomOpt),
@@ -37,10 +38,57 @@ export const weaponGenerator = (playerLevel: number): InterfaceItemGenerator => 
 
     return {
         type: "weapon",
-        model: model,
+        model: translateWeaponModel(weaponType),
         rarity,
         options: selectedOpts
     }
+}
+
+const statusSelectedOptionCalculator = (randomOpt: string, weaponType: string, playerLevel: number): string => {
+    switch (true) {
+        case randomOpt.includes("chance_"): {
+            const roll = generateRandomNumberWithMinAndMaxRange(1, 100);
+        
+            if (roll <= 40) return " + 5%";  // 1–40   → 40%
+            if (roll <= 70) return " + 10%"; // 41–70  → 30%
+            if (roll <= 90) return " + 15%"; // 71–90  → 20%
+            return " + 20%";                 // 91–100 → 10%
+        }
+
+        case randomOpt.includes("regeneration_per_turn"): {
+            const dmgStatus = Math.floor(playerLevel / 5)
+            return ` + ${ dmgStatus === 0 ? 1 : dmgStatus }`
+        }
+
+        case randomOpt.includes("_steal_"): {
+            const dmgStatus = Math.floor(playerLevel / 4)
+            return ` + ${ dmgStatus === 0 ? 1 : dmgStatus }`
+        }
+
+        case randomOpt.includes("_per_battle"): {
+            return ` + 10%`
+        }
+
+        case randomOpt.includes("brics_"): {
+            return ` + 15%`
+        }
+
+        default: { 
+            if (weaponType.includes('one_hand')) {
+                return ` + ${Math.round(leveling(playerLevel) / 2)}`
+            }
+            return ` + ${leveling(playerLevel)}`
+        }
+    }
+}
+
+const rollDice = (): string => {
+    const roll = generateRandomNumberWithMinAndMaxRange(1, 100);
+        
+        if (roll <= 40) return " + D4";  // 1–40   → 40%
+        if (roll <= 70) return " + D6"; // 41–70  → 30%
+        if (roll <= 90) return " + D10"; // 71–90  → 20%
+        return " + D12";                 // 91–100 → 10%
 }
 
 const getRandomOption = (availableOpts: string[]): string => {
@@ -61,11 +109,6 @@ const getRandomWeaponType = (): string => {
     const value = weapon_types.find(key => itemsInfo.weapon_types[key] === randomValue)
 
     return value as string
-}
-
-const rollDice = (): string => {
-    const diceOptions = ["D4", "D6", "D10", "D12"];
-    return diceOptions[Math.floor(Math.random() * diceOptions.length)];
 }
 
 const translateWeapon = (key: string): string => {

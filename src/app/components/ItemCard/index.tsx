@@ -71,13 +71,9 @@ export default function ItemCard({ type, rarity, model, options }: InterfaceItem
             <hr/>
             <ul>
                 {options.map(opt => 
-                    <li key={count++}>{`${opt.description} ${opt.status} ${showDiceBonusIfExists(opt.diceBonus)}`}</li>
+                    <li key={count++}>{`${opt.description} ${opt.status} ${opt.diceBonus ?? ""}`}</li>
                 )}
             </ul>
         </Card>
     );
-}
-
-const showDiceBonusIfExists = function(diceBonus?: string): string {
-    return diceBonus ? ` + ${diceBonus}` : ""
 }

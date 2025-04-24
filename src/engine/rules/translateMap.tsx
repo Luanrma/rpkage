@@ -11,8 +11,8 @@ export const translateMap: TranslateMap = {
     weapon: {
         physical_attack: "Ataque Físico",
         magic_attack: "Ataque Mágico",
-        physical_attack_plus_dice: "Ataque Físico + Dado",
-        magic_attack_plus_dice: "Ataque Mágico + Dado",
+        physical_attack_plus_dice: "Ataque Físico",
+        magic_attack_plus_dice: "Ataque Mágico",
         mp_regeneration_per_turn: "Regeneração de MP por Turno",
         hp_regeneration_per_turn: "Regeneração de HP por Turno",
         life_steal_hp: "Roubo de Vida",
@@ -95,7 +95,7 @@ export const translateMap: TranslateMap = {
         lunchbox: "Marmita",     
         heal_potion: "Potion de Resuscitação",  
         full_mp_potion: "Potion de MP Completo",
-        full_hp_potion: "Potion de Hp Completo",
+        full_hp_potion: "Potion de HP Completo",
         special_potion: "Potion Especial",
     },
 
