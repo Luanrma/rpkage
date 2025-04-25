@@ -25,7 +25,7 @@ export const translateMap: TranslateMap = {
         elemental_damage_ice: "Dano Elemental Gelo",
         chance_slow_enemy_on_hit: "Chance de Desacelerar Inimigos",
         bonus_damage_vs_boss_or_higher: "Dano Adicional contra BOSS",
-        critical_hit_chance: "Chance de Crítico",
+        chance_critical_hit: "Chance de Crítico",
         skill_point_bonus: "Bônus de Ponto de Habilidade",
         elemental_damage_light: "Dano Elemental Luz",
         elemental_damage_dark: "Dano Elemental Escuridão",

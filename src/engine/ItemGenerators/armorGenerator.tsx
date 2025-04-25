@@ -1,9 +1,10 @@
-import { leveling } from '../leveling'
+import { levelingResolver } from '../levelingResolver'
 import { InterfaceItemGenerator, SelectedOpt } from './Interfaces/ItemGenerator.jsx'
 import { armorRules } from '../rules/armorRules'
 import { itemsInfo } from '../rules/itemsInfo'
 import { translateMap } from '../rules/translateMap'
 import randomRarityGenerator from '../utils/randomRarityGenerator'
+import { generateRandomNumberWithMinAndMaxRange } from '../utils/utils'
 
 export const armorGenerator = (playerLevel: number): InterfaceItemGenerator => {
     const rarity = randomRarityGenerator.getRandomRarity()
@@ -25,7 +26,7 @@ export const armorGenerator = (playerLevel: number): InterfaceItemGenerator => {
         }
 
         const randomOpt = getRandomOption(availableOpts)
-        const statusItem = ` + ${leveling(playerLevel)}`
+        const statusItem = statusSelectedOptionCalculator(randomOpt, playerLevel)
 
         selectedOpts.push({
             description: translateArmor(randomOpt),
@@ -40,6 +41,19 @@ export const armorGenerator = (playerLevel: number): InterfaceItemGenerator => {
         model: model,
         options: selectedOpts
     }
+}
+
+const statusSelectedOptionCalculator = (randomOpt: string, playerLevel: number): string => {
+    switch (true) {
+            case randomOpt.includes("chance_"): {
+                const roll = generateRandomNumberWithMinAndMaxRange(1, 100);
+                if (roll <= 60) return " + 5%";
+                return " + 10%";                 
+            }
+            default: { 
+                return ` + ${levelingResolver(playerLevel)}`
+            }
+        }
 }
 
 const getRandomOption = (arr: string[]): string => {

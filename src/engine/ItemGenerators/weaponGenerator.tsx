@@ -1,4 +1,4 @@
-import { leveling } from '../leveling'
+import { levelingResolver } from '../levelingResolver'
 import { InterfaceItemGenerator, SelectedOpt } from './Interfaces/ItemGenerator'
 import { weaponRules } from '../rules/weaponRules'
 import { itemsInfo } from '../rules/itemsInfo'
@@ -49,10 +49,8 @@ const statusSelectedOptionCalculator = (randomOpt: string, weaponType: string, p
         case randomOpt.includes("chance_"): {
             const roll = generateRandomNumberWithMinAndMaxRange(1, 100);
         
-            if (roll <= 40) return " + 5%";  // 1–40   → 40%
-            if (roll <= 70) return " + 10%"; // 41–70  → 30%
-            if (roll <= 90) return " + 15%"; // 71–90  → 20%
-            return " + 20%";                 // 91–100 → 10%
+            if (roll <= 60) return " + 5%";
+            return " + 10%";                 
         }
 
         case randomOpt.includes("regeneration_per_turn"): {
@@ -75,9 +73,9 @@ const statusSelectedOptionCalculator = (randomOpt: string, weaponType: string, p
 
         default: { 
             if (weaponType.includes('one_hand')) {
-                return ` + ${Math.round(leveling(playerLevel) / 2)}`
+                return ` + ${Math.round(levelingResolver(playerLevel) / 2)}`
             }
-            return ` + ${leveling(playerLevel)}`
+            return ` + ${levelingResolver(playerLevel)}`
         }
     }
 }

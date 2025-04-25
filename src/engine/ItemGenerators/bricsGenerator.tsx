@@ -1,4 +1,4 @@
-import { leveling } from "../leveling"; 
+import { levelingResolver } from "../levelingResolver"; 
 import { InterfaceItemGenerator, SelectedOpt } from "./Interfaces/ItemGenerator";
 
 export const bricsGenerator = (playerLevel: number): InterfaceItemGenerator => {  
@@ -13,6 +13,6 @@ export const bricsGenerator = (playerLevel: number): InterfaceItemGenerator => {
 
 
 const getBricsByLevel = (playerLevel: number): string => {
-    const brics = leveling(playerLevel) * 2;
+    const brics = levelingResolver(playerLevel);
     return brics.toString()
 }

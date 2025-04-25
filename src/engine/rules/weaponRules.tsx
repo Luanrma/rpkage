@@ -20,7 +20,7 @@ export const weaponRules: Record<string, () => string[]> = {
     opt_3: () => [
         "chance_slow_enemy_on_hit",
         "bonus_damage_vs_boss_or_higher",
-        "critical_hit_chance",
+        "chance_critical_hit",
         "skill_point_bonus",
         "elemental_damage_light",
         "elemental_damage_dark",

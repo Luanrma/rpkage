@@ -18,7 +18,7 @@ export const itemGeneratorRandom = (playerLevel: number): InterfaceItemGenerator
 }
 
 const itemDrops = [
-    { range: [1, 18],   type: 'brics' },
+    { range: [1, 20],   type: 'brics' },
     { range: [21, 40],  type: 'potion' },
     { range: [41, 57],  type: 'armor' },
     { range: [58, 73],  type: 'weapon' },
