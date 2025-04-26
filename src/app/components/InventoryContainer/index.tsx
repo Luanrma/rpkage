@@ -11,17 +11,15 @@ const Container = styled.div`
     align-items: center;
     justify-content: center;
 
-    .damage-container {
-    }
 `;
 
-export default function DamageCalculatorContainer() {
+export default function InventoryContainer() {
   return (
     <Container>
-        <div className="damage-container">
-            <h2>Damage Calculator em construção 🛠️</h2>
-            <p>Aqui você poderá calcular o dano causado por armas, habilidades e buffs.</p>
-            <p>(Em breve... ⚔️🔥)</p>
+        <div>
+            <h2>Inventory em construção 🛠️</h2>
+            <p>Aqui você poderá organizar suas tralhas.</p>
+            <p>(Em breve... 🎒)</p>
         </div>
     </Container>
   );
