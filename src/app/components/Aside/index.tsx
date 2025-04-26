@@ -68,6 +68,8 @@ export default function Aside({ changeSection }: AsideProps) {
     const handleMenuItemClick = (value: string) => changeSection(value)
 
     const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+        e.preventDefault();
+        
         const aside = asideRef.current;
         if (!aside) return;
       
