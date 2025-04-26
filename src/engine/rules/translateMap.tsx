@@ -1,10 +1,11 @@
 export interface TranslateMap {
-    weapon: Record<string, string>;
-    armor: Record<string, string>;
-    weaponTranslations: Record<string, string>;
-    orb: Record<string, string>;
-    potion: Record<string, string>;
-    special_item: Record<string, string>;
+    weapon: Record<string, string>
+    armor: Record<string, string>
+    weaponTranslations: Record<string, string>
+    orb: Record<string, string>
+    potion: Record<string, string>
+    special_item: Record<string, string>
+    skills: Record<string, string>
 }
 
 export const translateMap: TranslateMap = {
@@ -26,7 +27,7 @@ export const translateMap: TranslateMap = {
         chance_slow_enemy_on_hit: "Chance de Desacelerar Inimigos",
         bonus_damage_vs_boss_or_higher: "Dano Adicional contra BOSS",
         chance_critical_hit: "Chance de Crítico",
-        skill_point_bonus: "Bônus de Ponto de Perícia",
+        skill_point_bonus: "Bônus de Perícia",
         elemental_damage_light: "Dano Elemental Luz",
         elemental_damage_dark: "Dano Elemental Escuridão",
         elemental_damage_lightning: "Dano Elemental Raio",
@@ -94,7 +95,7 @@ export const translateMap: TranslateMap = {
         hp_potion: "Potion HP",    
         mp_potion: "Potion MP",    
         lunchbox: "Marmita",     
-        heal_potion: "Potion de Resuscitação",  
+        heal_potion: "Potion de Cura",  
         full_mp_potion: "Potion de MP Completo",
         full_hp_potion: "Potion de HP Completo",
         special_potion: "Potion Especial",
@@ -102,5 +103,16 @@ export const translateMap: TranslateMap = {
 
     special_item: {
         special_item: "Item Especial"
-    }
+    },
+
+    skills: {
+        Perception: "Percepção",
+        Athletics: "Atletismo",
+        Intimidation: "Intimidação",
+        Persuasion: "Persuasão",
+        Stealth: "Furtividade",
+        Medicine: "Medicina",
+        Knowledge: "Conhecimento",
+        History: "História",
+    },
 };

@@ -71,6 +71,13 @@ const statusSelectedOptionCalculator = (randomOpt: string, weaponType: string, p
             return ` + 15%`
         }
 
+        case randomOpt.includes("skill_"): {
+            const roll = generateRandomNumberWithMinAndMaxRange(1, 8);
+            const skillBonus = Object.keys(itemsInfo.skill_types)
+                .find((key: string) => itemsInfo.skill_types[key] === roll) as string
+            return ` + 1 ${translateWeaponSkillBonus(skillBonus)}`
+        }
+
         default: { 
             if (weaponType.includes('one_hand')) {
                 return ` + ${Math.round(levelingResolver(playerLevel) / 2)}`
@@ -109,10 +116,6 @@ const getRandomWeaponType = (): string => {
     return value as string
 }
 
-const translateWeapon = (key: string): string => {
-    return translateMap.weapon[key] || "Desconhecido";
-}
-
-const translateWeaponModel = (key: string): string => {
-    return translateMap.weaponTranslations[key] || "Desconhecido";
-} 
+const translateWeapon = (key: string): string => translateMap.weapon[key] || "Desconhecido"
+const translateWeaponModel = (key: string): string => translateMap.weaponTranslations[key] || "Desconhecido"
+const translateWeaponSkillBonus = (key: string): string => translateMap.skills[key] || "Desconhecido"
