@@ -26,7 +26,7 @@ export const translateMap: TranslateMap = {
         chance_slow_enemy_on_hit: "Chance de Desacelerar Inimigos",
         bonus_damage_vs_boss_or_higher: "Dano Adicional contra BOSS",
         chance_critical_hit: "Chance de Crítico",
-        skill_point_bonus: "Bônus de Ponto de Habilidade",
+        skill_point_bonus: "Bônus de Ponto de Perícia",
         elemental_damage_light: "Dano Elemental Luz",
         elemental_damage_dark: "Dano Elemental Escuridão",
         elemental_damage_lightning: "Dano Elemental Raio",
@@ -58,7 +58,8 @@ export const translateMap: TranslateMap = {
         general_elemental_resistance: "Resistência Elemental Geral",
         defense_buff_adjacent_allies: "Buff de Defesa aos Aliados Adjacentes",
         revive_roll_bonus: "Bônus na Rolagem de Reviver",
-        elemental_damage_reflect_on_hit: "Reflexão de Dano Elemental ao Ser Atacado"
+        elemental_damage_reflect_on_hit: "Reflexão de Dano Elemental ao Ser Atacado",
+        skill_point_bonus: "Bônus de Ponto de Perícia"
     },
 
     weaponTranslations: {
