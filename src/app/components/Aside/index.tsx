@@ -11,12 +11,12 @@ const AsideContainer = styled.div<{ $collapsed: boolean }>`
   align-items: center;
   background-color: rgb(49, 49, 49);
   padding: 1rem;
-  width: ${({ $collapsed }) => ($collapsed ? "70px" : "250px")};
+  width: ${({ $collapsed }) => ($collapsed ? "3.5rem" : "15rem")};
   height: auto;
   border-radius: 10px;
   transition: width 0.3s ease;
   color: white;
-  z-index: 1000;
+  z-index: 1;
   cursor: grab;
 `;
 
@@ -29,7 +29,7 @@ const MenuItem = styled.li`
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 0;
+  padding: 1rem 0 1rem 0;
   cursor: pointer;
   color: rgb(117, 117, 117);
 
@@ -44,10 +44,6 @@ const MenuItem = styled.li`
 `;
 
 const ToggleButton = styled.button<{ $collapsed: boolean }>`
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
   align-self: ${({ $collapsed }) => ($collapsed ? "center" : "flex-end")};
   margin-bottom: 1rem;
   transition: transform 0.3s ease;
@@ -69,7 +65,7 @@ export default function Aside({ changeSection }: AsideProps) {
 
     const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
         e.preventDefault();
-        
+
         const aside = asideRef.current;
         if (!aside) return;
       
