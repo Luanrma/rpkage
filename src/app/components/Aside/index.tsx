@@ -1,18 +1,23 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import styled from "styled-components";
 import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight } from "lucide-react";
 
 const AsideContainer = styled.div<{ $collapsed: boolean }>`
+  position: absolute;
+  top: 0.4rem;
+  left: 0.4rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: rgb(49, 49, 49);
   padding: 1rem;
   width: ${({ $collapsed }) => ($collapsed ? "70px" : "250px")};
-  height: 10%;
+  height: auto;
   border-radius: 10px;
   transition: width 0.3s ease;
   color: white;
+  z-index: 1000;
+  cursor: grab;
 `;
 
 const MenuList = styled.ul`
@@ -26,10 +31,10 @@ const MenuItem = styled.li`
   gap: 1rem;
   padding: 1rem 0;
   cursor: pointer;
-  color:rgb(117, 117, 117);
+  color: rgb(117, 117, 117);
 
   &:hover {
-    color:rgb(255, 255, 255);
+    color: rgb(255, 255, 255);
     transform: translateX(5px);
   }
 
@@ -56,15 +61,51 @@ interface AsideProps {
     changeSection: (value: string) => void;
 }
 
-export default function ({ changeSection }: AsideProps) {
-    const [collapsed, setCollapsed] = useState(false);
+export default function Aside({ changeSection }: AsideProps) {
+    const [collapsed, setCollapsed] = useState(true)
+    const asideRef = useRef<HTMLDivElement>(null)
 
-    const handleMenuItemClick = (value: string) => {
-        changeSection(value);
-    };
+    const handleMenuItemClick = (value: string) => changeSection(value)
+
+    const handleDrag = (e: React.MouseEvent) => {
+        const aside = asideRef.current
+        if (!aside) return
+
+        const shiftX = e.clientX - aside.getBoundingClientRect().left
+        const shiftY = e.clientY - aside.getBoundingClientRect().top
+
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            let newLeft = moveEvent.clientX - shiftX
+            let newTop = moveEvent.clientY - shiftY
+
+            const asideWidth = aside.offsetWidth
+            const asideHeight = aside.offsetHeight
+
+            // Limitar o movimento horizontalmente
+            if (newLeft < 0) newLeft = 0
+            if (newLeft + asideWidth > window.innerWidth) newLeft = window.innerWidth - asideWidth
+
+            // Limitar o movimento verticalmente
+            if (newTop < 0) newTop = 0
+            if (newTop + asideHeight > window.innerHeight) newTop = window.innerHeight - asideHeight
+
+            aside.style.left = `${newLeft}px`
+            aside.style.top = `${newTop}px`
+        }
+
+        document.addEventListener('mousemove', onMouseMove)
+
+        document.addEventListener('mouseup', () => {
+            document.removeEventListener('mousemove', onMouseMove)
+        }, { once: true })
+    }
 
     return (
-        <AsideContainer $collapsed={collapsed}>
+        <AsideContainer
+            ref={asideRef}
+            $collapsed={collapsed}
+            onMouseDown={handleDrag}
+        >
             <ToggleButton onClick={() => setCollapsed(!collapsed)} $collapsed={collapsed}>
                 {collapsed ? <SquareArrowOutUpRight /> : <SquareArrowOutDownLeft />}
             </ToggleButton>
@@ -81,4 +122,4 @@ export default function ({ changeSection }: AsideProps) {
             </MenuList>
         </AsideContainer>
     );
-};
+}
