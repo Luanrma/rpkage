@@ -2,20 +2,20 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RPKAGE",
-  description: "RPG Project",
+	title: "RPKAGE",
+	description: "RPG Project",
 };
 
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode;
+	children: React.ReactNode;
 }>) {
-  return (
-    <html lang="pt-br">
-      <body>
-        {children}
-      </body>
-    </html>
-  );
+	return (
+		<html lang="pt-br">
+			<body>
+				{children}
+			</body>
+		</html>
+	);
 }

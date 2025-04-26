@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
-import { Activity , Swords, SquareArrowOutDownLeft , SquareArrowOutUpRight  } from "lucide-react";
+import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight } from "lucide-react";
 
 const AsideContainer = styled.div<{ $collapsed: boolean }>`
   display: flex;
@@ -57,28 +57,28 @@ interface AsideProps {
 }
 
 export default function ({ changeSection }: AsideProps) {
-  const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
 
-  const handleMenuItemClick = (value: string) => {
+    const handleMenuItemClick = (value: string) => {
         changeSection(value);
-  };
+    };
 
-  return (
-    <AsideContainer $collapsed={collapsed}>
-      <ToggleButton onClick={() => setCollapsed(!collapsed)} $collapsed={collapsed}>
-        {collapsed ? <SquareArrowOutUpRight  /> : <SquareArrowOutDownLeft  />}
-      </ToggleButton>
+    return (
+        <AsideContainer $collapsed={collapsed}>
+            <ToggleButton onClick={() => setCollapsed(!collapsed)} $collapsed={collapsed}>
+                {collapsed ? <SquareArrowOutUpRight /> : <SquareArrowOutDownLeft />}
+            </ToggleButton>
 
-      <MenuList>
-        <MenuItem onClick={() => handleMenuItemClick("Item Generator")}>
-          <Swords />
-          {!collapsed && "Item Generator"}
-        </MenuItem>
-        <MenuItem onClick={() => handleMenuItemClick("Damage Calculator")}>
-          <Activity  />
-          {!collapsed && "Damage Calculator"}
-        </MenuItem>
-      </MenuList>
-    </AsideContainer>
-  );
+            <MenuList>
+                <MenuItem onClick={() => handleMenuItemClick("Item Generator")}>
+                    <Swords />
+                    {!collapsed && "Item Generator"}
+                </MenuItem>
+                <MenuItem onClick={() => handleMenuItemClick("Damage Calculator")}>
+                    <Activity />
+                    {!collapsed && "Damage Calculator"}
+                </MenuItem>
+            </MenuList>
+        </AsideContainer>
+    );
 };

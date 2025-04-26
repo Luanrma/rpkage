@@ -1,73 +1,60 @@
-import { useState } from "react";
-import styled from "styled-components";
-import { Button } from "../Button";
-import { ItemType } from "@/engine/ItemGenerators/itemGeneratorFactory";
+import { useState } from "react"
+import styled from "styled-components"
+import { Button } from "../Button"
+import { ItemType } from "@/engine/ItemGenerators/itemGeneratorFactory"
 
 const DropDownContainer = styled.div`
-  position: relative;
-  display: inline-block;
-  margin-bottom: 20px;
-`;
+	position: relative;
+	display: inline-block;
+`
 
 const DropDownMenu = styled.div<{ $isOpen: boolean }>`
-  position: absolute;
-  top: 110%;
-  left: 0;
-  background-color: #353535;
-  border-radius: 8px;
-  min-width: 220px;
-  box-shadow: 0 4px 12px #2563eb;
-  z-index: 1;
-  padding: 10px 0;
-  display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
-  opacity: ${({ $isOpen }) => ($isOpen ? 1 : 0)};
-  transform: ${({ $isOpen }) => ($isOpen ? 'translateY(0)' : 'translateY(-10px)')};
-  transition: opacity 0.3s ease, transform 0.3s ease;
-`;
+	position: absolute;
+	background-color: #353535;
+	border-radius: 8px;
+	width: 100%;
+	box-shadow: 0 4px 12px #2563eb;
+	display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
+`
 
 const buttons: { label: string, type: ItemType }[] = [
-	{ label: "Drop Weapon", type: "weapon" },
-	{ label: "Drop Armor", type: "armor" },
-	{ label: "Drop Potion", type: "potion" },
-	{ label: "Drop Orb", type: "orb" },
-	{ label: "Drop BRICS", type: "brics" },
-	{ label: "Drop Special Item", type: "special_item" },
-];
+	{ label: "Weapon",       type: "weapon" },
+	{ label: "Armor",        type: "armor" },
+	{ label: "Potion",       type: "potion" },
+	{ label: "Orb",          type: "orb" },
+	{ label: "Brics",        type: "brics" },
+	{ label: "Special Item", type: "special_item" },
+]
 
 interface DropDownButtonProps {
-	onSelectItemType: (type: ItemType) => void;
+	onSelectItemType: (type: ItemType) => void
 }
 
 export default function DropDownButton({ onSelectItemType }: DropDownButtonProps) {
-	const [isOpen, setIsOpen] = useState(false);
+	const [isOpen, setIsOpen] = useState(false)
 
 	return (
-		<>
-			<DropDownContainer>
-				<Button
-					onClick={() => setIsOpen(!isOpen)}
-					$backgroundColor="#3b82f6"
-					$textColor="#fff"
-				>
-					Selecionar Drop
-				</Button>
+		<DropDownContainer>
+			<Button
+				onClick={() => setIsOpen(!isOpen)}
+				$backgroundColor="#3b82f6"
+				$textColor="#fff"
+			>
+				Selecionar
+			</Button>
 
-				<DropDownMenu $isOpen={isOpen}>
-					{buttons.map((button, index) => (
-						<Button
-							key={index}
-							onMouseDown={(e) => {
-								e.preventDefault();
-								onSelectItemType(button.type);
-							}}
-							$backgroundColor="#3b82f6"
-							$textColor="#fff"
-						>
-							{button.label}
-						</Button>
-					))}
-				</DropDownMenu>
-			</DropDownContainer>
-		</>
-	);
+			<DropDownMenu $isOpen={isOpen}>
+				{buttons.map((button, index) => (
+					<Button
+						key={index}
+						onMouseDown={() => { onSelectItemType(button.type) }}
+						$backgroundColor="#3b82f6"
+						$textColor="#fff"
+					>
+						{button.label}
+					</Button>
+				))}
+			</DropDownMenu>
+		</DropDownContainer>
+	)
 }

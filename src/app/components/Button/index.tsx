@@ -7,19 +7,14 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 export const Button = styled.button<ButtonProps>`
-  width: 200px;
-  padding: 14px 26px;
-  margin: 5px;
+  width: 6.5rem;
+  padding: 1rem 1rem;
+  margin: 0.3rem;
   background: ${props => props.$backgroundColor ?? '#3b82f6'};
   border: none;
   border-radius: 8px;
   color: ${props => props.$textColor ?? '#fff'};
-  font-size: 18px;
+  font-size: 1rem;
   cursor: pointer;
   transition: 0.3s;
-
-  @media (max-width: 480px) {
-    padding: 0.8rem 1.2rem;
-    font-size: 1rem;
-  }
 `;

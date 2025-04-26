@@ -11,22 +11,24 @@ import itemGeneratorFactory, { ItemType } from "@/engine/ItemGenerators/itemGene
 import { itemGeneratorRandom } from "@/engine/ItemGenerators/itemGeneratorRandom";
 
 const ItemGeneratorContainerStyle = styled.div`
-    display: flex;
-    margin: 0 auto;
-    flex-direction: column;
-    align-items: center;
+	display: flex;
+	margin: 0 auto;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
 
-  h1 {
-    margin-bottom: 1rem;
-  }
+	.buttons-style {
+		margin: 1rem 1rem 1rem 1rem;
+		display:flex;
+	}
 
-  .items-drop {
-    margin-top: 1rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-  }
+	.items-drop {
+		margin-top: 1rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+		justify-content: center;
+	}
 `;
 
 export default function ItemGeneratorContainer() {
@@ -53,26 +55,25 @@ export default function ItemGeneratorContainer() {
 	const handleResetItems = () => setDroppedItems([])
 
 	return (
-		<>
-			<ItemGeneratorContainerStyle>
-				<h1>Item Generator RPG</h1>
-				<PlayerInfo onLevelChange={setPlayerLevel} onItemCountChange={setItemCount} />
+		<ItemGeneratorContainerStyle>
+			<PlayerInfo onLevelChange={setPlayerLevel} onItemCountChange={setItemCount} />
+			<div className="buttons-style">
 				<DropDownButton onSelectItemType={handleSelectItemType} />
-				<Button $backgroundColor="#1ee603" $textColor="#000" onClick={handleGenerateRandomItems}> Gerar Itens </Button>
-				<Button $backgroundColor="#ebc418" $textColor="#000" onClick={handleResetItems}> Resetar Itens </Button>
-				<div className="items-drop">
-					{droppedItems.map((item, index) => (
-						<ItemCard
-							key={index}
-							type={item.type}
-							rarity={item.rarity}
-							model={item.model}
-							options={item.options}
-						/>
-					))}
-				</div>
-			</ItemGeneratorContainerStyle>
-			<div id="itens_dropped" className="drops"></div>
-		</>
+				<Button $backgroundColor="#1ee603" $textColor="#000" onClick={handleGenerateRandomItems}> Gerar </Button>
+				<Button $backgroundColor="#ebc418" $textColor="#000" onClick={handleResetItems}> Resetar </Button>			
+			</div>
+
+			<div className="items-drop">
+				{droppedItems.map((item, index) => (
+					<ItemCard 
+						key={index}
+						type={item.type}
+						rarity={item.rarity}
+						model={item.model}
+						options={item.options}
+					/>
+				))}
+			</div>
+		</ItemGeneratorContainerStyle>
 	);
 }
