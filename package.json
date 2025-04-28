@@ -3,8 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+<<<<<<< Updated upstream
     "dev": "next dev --turbopack",
     "build": "prisma generate && prisma migrate dev && prisma db seed && next build",
+=======
+    "dev": "next dev --turbopack && prisma db seed",
+    "build": "prisma generate && next build",
+>>>>>>> Stashed changes
     "start": "next start",
     "lint": "next lint"
   },
