@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate && prisma migrate dev && prisma db seed && next build",
     "start": "next start",
     "lint": "next lint"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "dependencies": {
     "lucide-react": "^0.503.0",

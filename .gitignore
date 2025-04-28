@@ -40,3 +40,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+drawSQL-pgsql-export-2025-04-28.sql
