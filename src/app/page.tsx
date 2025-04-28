@@ -6,6 +6,7 @@ import DamageCalculatorContainer from '@/app/components/DamageCalculatorContaine
 import InventoryContainer from './components/InventoryContainer';
 import styled from "styled-components";
 import { useState } from 'react';
+import Users from './components/Users';
 
 const HomePageStyle = styled.div`
 	display: flex;
@@ -25,6 +26,7 @@ export default function HomePage() {
 			{ section === "Item Generator"    && <ItemGeneratorContainer /> }
 			{ section === "Damage Calculator" && <DamageCalculatorContainer /> }
 			{ section === "Inventory" && <InventoryContainer /> }
+			{ section === "Users" && <Users /> }
 		</HomePageStyle>
 	);
 }
