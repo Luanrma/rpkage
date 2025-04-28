@@ -1,6 +1,6 @@
-import { useState, useRef, RefObject } from "react";
+import { useState, useRef } from "react";
 import styled from "styled-components";
-import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight, Backpack } from "lucide-react";
+import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight, Backpack, User } from "lucide-react";
 import dragAndDrop from "@/app/utils/dragAndDrop";
 
 const AsideContainer = styled.div<{ $collapsed: boolean }>`
@@ -87,6 +87,10 @@ export default function Aside({ changeSection }: AsideProps) {
 				<MenuItem onClick={() => handleMenuItemClick("Inventory")}>
 					<Backpack />
 					{!collapsed && "Inventory"}
+				</MenuItem>
+				<MenuItem onClick={() => handleMenuItemClick("Users")}>
+					<User />
+					{!collapsed && "Users"}
 				</MenuItem>
 			</MenuList>
 		</AsideContainer>
