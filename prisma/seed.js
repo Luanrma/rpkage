@@ -44,6 +44,14 @@ async function main() {
                 type: 'MASTER',
                 active: true,
             },
+            {
+                name: 'Luan Teste 6',
+                email: 'luan5@example.com',
+                password: 'senha123',
+                avatar: null,
+                type: 'MASTER',
+                active: true,
+            },
         ],
     });
 
