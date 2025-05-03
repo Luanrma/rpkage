@@ -3,8 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "npm run docker:up && next dev --turbopack",
     "build": "prisma generate && prisma migrate deploy && next build",
+    "docker:up": "docker compose up -d",
+    "db:reset": "sh ./scripts/reset-db.sh",
+    "dev:reset": "npm run db:reset && next dev",
     "start": "next start",
     "lint": "next lint",
     "migrate:dev": "prisma migrate dev",
@@ -12,19 +15,23 @@
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
-    "@prisma/client": "^6.6.0",
+    "@prisma/client": "^6.7.0",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.503.0",
     "next": "15.3.1",
+    "next-auth": "^4.24.11",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "styled-components": "^6.1.17"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "prisma": "^6.6.0",
+    "prisma": "^6.7.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
