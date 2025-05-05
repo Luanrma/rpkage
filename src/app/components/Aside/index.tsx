@@ -1,7 +1,12 @@
+'use client'
+
+import Link from 'next/link';
 import { useState, useRef } from "react";
 import styled from "styled-components";
 import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight, Backpack, User } from "lucide-react";
 import dragAndDrop from "@/app/utils/dragAndDrop";
+import { Router } from 'next/router';
+import LogoutButton from '../LogoutButton';
 
 const AsideContainer = styled.div<{ $collapsed: boolean }>`
   position: absolute;
@@ -54,15 +59,9 @@ const ToggleButton = styled.button<{ $collapsed: boolean }>`
   }
 `;
 
-interface AsideProps {
-	changeSection: (value: string) => void;
-}
-
-export default function Aside({ changeSection }: AsideProps) {
+export default function Aside() {
 	const [collapsed, setCollapsed] = useState(true)
 	const asideRef = useRef<HTMLDivElement>(null)
-
-	const handleMenuItemClick = (value: string) => changeSection(value)
 
 	return (
 		<AsideContainer
@@ -76,23 +75,23 @@ export default function Aside({ changeSection }: AsideProps) {
 			</ToggleButton>
 
 			<MenuList>
-				<MenuItem onClick={() => handleMenuItemClick("Item Generator")}>
-					<Swords />
-					{!collapsed && "Item Generator"}
+				<MenuItem>
+					<Link href="/item-generator"><Swords />{!collapsed && "Item Generator"}</Link>
 				</MenuItem>
-				<MenuItem onClick={() => handleMenuItemClick("Damage Calculator")}>
-					<Activity />
-					{!collapsed && "Damage Calculator"}
+				<MenuItem >
+					<Link href="/damage-calculator"><Activity />{!collapsed && "Damage Calculator"}</Link>					
 				</MenuItem>
-				<MenuItem onClick={() => handleMenuItemClick("Inventory")}>
-					<Backpack />
-					{!collapsed && "Inventory"}
+				<MenuItem >
+					<Link href="/inventory"><Backpack />{!collapsed && "Inventory"}</Link>
 				</MenuItem>
-				<MenuItem onClick={() => handleMenuItemClick("Users")}>
-					<User />
-					{!collapsed && "Users"}
+				<MenuItem>
+					<Link href="/user"><User />{!collapsed && "User"}</Link>					
+				</MenuItem>
+				<MenuItem>
+					<LogoutButton/>{!collapsed && "Logout"}
 				</MenuItem>
 			</MenuList>
+
 		</AsideContainer>
 	);
 }

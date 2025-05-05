@@ -1,12 +1,12 @@
 'use client'
 
 import styled from "styled-components";
-import PlayerInfo from "../PlayerInfo";
-import DropDownButton from "../DropDownButton";
+import PlayerInfo from "@/app/components/PlayerInfo";
+import DropDownButton from "@/app/components/DropDownButton";
 import { useState } from "react";
-import { Button } from "../Button";
+import { Button } from "@/app/components/Button";
 import { InterfaceItemGenerator } from "@/engine/ItemGenerators/Interfaces/ItemGenerator";
-import ItemCard from "../ItemCard";
+import ItemCard from "@/app/components/ItemCard";
 import itemGeneratorFactory, { ItemType } from "@/engine/ItemGenerators/itemGeneratorFactory";
 import { itemGeneratorRandom } from "@/engine/ItemGenerators/itemGeneratorRandom";
 
