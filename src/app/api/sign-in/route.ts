@@ -17,9 +17,18 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Credenciais inválidas' }, { status: 401 })
     }
 
-    const token = signToken({ id: user.id.toString, email: user.email })
+    const token = signToken({
+        id: user.id.toString(),
+        email: user.email,
+        type: user.type,
+    })
 
-    const response = NextResponse.json({ message: 'Login realizado com sucesso' })
+    const response = NextResponse.json({
+        message: 'Login realizado com sucesso',
+        id: user.id.toString(),
+        name: user.name,
+        type: user.type,
+    })
     
     response.cookies.set({
         name: 'token',

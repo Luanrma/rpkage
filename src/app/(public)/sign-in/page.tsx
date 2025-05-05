@@ -17,10 +17,21 @@ export default function SignInPage() {
       headers: { 'Content-Type': 'application/json' },
     })
 
-    if (res.ok) {
+    if (!res.ok) {
+      alert('Email ou senha inválidos')
+      return
+    }
+
+    const data = await res.json()
+    const { name, type } = data
+
+    // 🔒 Não salva em localStorage (por segurança)
+
+    // Redireciona baseado no tipo
+    if (type === 'MASTER' || type === 'ADMIN') {
       router.push('/item-generator')
     } else {
-      alert('Email ou senha inválidos')
+      router.push('/')
     }
   }
 

@@ -7,14 +7,22 @@ if (!JWT_SECRET) {
   throw new Error('JWT_SECRET não está definido no .env')
 }
 
-export function signToken(payload: object, expiresIn: number | StringValue = '7d'): string {
+type TokenPayload = {
+  id: string
+  email: string
+  type: string
+}
+
+export function signToken(payload: TokenPayload, expiresIn: number | StringValue = '7d'): string {
+  console.log("JWT_SECRET:", JWT_SECRET)
   const options: SignOptions = { expiresIn }
   return jwt.sign(payload, JWT_SECRET, options)
 }
 
-export function verifyToken(token: string) {
+export function verifyToken(token: string): TokenPayload | null {
+  console.log("JWT_SECRET:", JWT_SECRET)
   try {
-    return jwt.verify(token, JWT_SECRET)
+    return jwt.verify(token, JWT_SECRET) as TokenPayload
   } catch {
     return null
   }
