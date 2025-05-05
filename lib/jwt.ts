@@ -8,7 +8,6 @@ if (!JWT_SECRET) {
 }
 
 export function signToken(payload: object, expiresIn: number | StringValue = '7d'): string {
-  console.log("AQUIIII: ", payload)
   const options: SignOptions = { expiresIn }
   return jwt.sign(payload, JWT_SECRET, options)
 }
