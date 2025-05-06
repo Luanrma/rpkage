@@ -31,7 +31,7 @@ export default function SignInPage() {
 		if (type === 'MASTER' || type === 'ADMIN') {
 			router.push('/home')
 		} else {
-			router.push('/')
+			router.push('/home')
 		}
 	}
 

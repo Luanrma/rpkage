@@ -3,7 +3,7 @@ import { MiddlewareConfig, NextRequest, NextResponse } from 'next/server'
 const publicRoutes = [
 	{ path: '/sign-in', whenAuthenticated: 'redirect' },
 	{ path: '/register', whenAuthenticated: 'redirect' },
-	{ path: '/', whenAuthenticated: 'next' },
+	{ path: '/home', whenAuthenticated: 'next' },
 ] as const
 
 const protectedRoutes = [
@@ -26,7 +26,7 @@ export function middleware(request: NextRequest) {
 	}
 
 	if (isAuthenticatedTryingToAccessPublic(path, token)) {
-		return redirectTo(request, '/')
+		return redirectTo(request, '/home')
 	}
 
 	if (isAccessingRestrictedRoute(path)) {
