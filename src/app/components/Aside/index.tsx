@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link';
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import styled from "styled-components";
 import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight, Backpack, User } from "lucide-react";
 import dragAndDrop from "@/app/utils/dragAndDrop";
@@ -62,19 +62,6 @@ export default function Aside() {
 	const [collapsed, setCollapsed] = useState(true)
 	const asideRef = useRef<HTMLDivElement>(null)
 
-	const [user, setUser] = useState<{ name: string, type: string } | null>(null)
-
-	useEffect(() => {
-		const fetchUser = async () => {
-			const res = await fetch('/api/me')
-			if (res.ok) {
-				const data = await res.json()
-				setUser(data)
-			}
-		}
-		fetchUser()
-	}, [])
-
 	return (
 		<AsideContainer
 			ref={asideRef}
@@ -85,14 +72,6 @@ export default function Aside() {
 			<ToggleButton onClick={() => setCollapsed(!collapsed)} $collapsed={collapsed}>
 				{collapsed ? <SquareArrowOutUpRight /> : <SquareArrowOutDownLeft />}
 			</ToggleButton>
-			<header className="p-4 bg-gray-800 text-white">
-				{user ? (
-					<p>Bem-vindo, {user.name} ({user.type})</p>
-				) : (
-					<p>Carregando usuário...</p>
-				)}
-				</header>
-
 
 			<MenuList>
 				<MenuItem>

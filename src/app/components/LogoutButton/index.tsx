@@ -25,35 +25,35 @@ const LogoutButton = styled.button`
 `;
 
 export default function Logout() {
-  const [isClient, setIsClient] = useState(false);
-  const router = useRouter();
+	const [isClient, setIsClient] = useState(false);
+	const router = useRouter();
 
-  useEffect(() => {
-    // Este efeito só é executado no lado do cliente
-    setIsClient(true);
-  }, []);
+	useEffect(() => {
+		// Este efeito só é executado no lado do cliente
+		setIsClient(true);
+	}, []);
 
-  const handleLogout = async () => {
-    // Fazer uma requisição para o backend para remover o cookie
-    const response = await fetch('/api/logout', {
-      method: 'POST',
-    });
+	const handleLogout = async () => {
+		// Fazer uma requisição para o backend para remover o cookie
+		const response = await fetch('/api/logout', {
+			method: 'POST',
+		});
 
-    if (response.ok) {
-      // Redirecionar para a página de login após logout
-      router.push('/sign-in');
-    } else {
-      console.error('Erro ao realizar logout');
-    }
-  };
+		if (response.ok) {
+			// Redirecionar para a página de login após logout
+			router.push('/sign-in');
+		} else {
+			console.error('Erro ao realizar logout');
+		}
+	};
 
-  if (!isClient) {
-    return null; // Não renderiza nada até que seja no lado do cliente
-  }
+	if (!isClient) {
+		return null; // Não renderiza nada até que seja no lado do cliente
+	}
 
-  return (
-    <LogoutButton onClick={handleLogout}>
-      <LogOut />
-    </LogoutButton>
-  );
+	return (
+		<LogoutButton onClick={handleLogout}>
+			<LogOut />
+		</LogoutButton>
+	);
 }

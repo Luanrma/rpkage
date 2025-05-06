@@ -1,87 +1,103 @@
 import { MiddlewareConfig, NextRequest, NextResponse } from 'next/server'
 
 const publicRoutes = [
-  { path: '/sign-in', whenAuthenticated: 'redirect' },
-  { path: '/register', whenAuthenticated: 'redirect' },
-  { path: '/', whenAuthenticated: 'next' },
+	{ path: '/sign-in', whenAuthenticated: 'redirect' },
+	{ path: '/register', whenAuthenticated: 'redirect' },
+	{ path: '/', whenAuthenticated: 'next' },
 ] as const
 
 const protectedRoutes = [
-  { path: '/item-generator', allowedTypes: ['MASTER', 'ADMIN'] },
+	{ path: '/item-generator', allowedTypes: ['MASTER', 'ADMIN'] },
 ]
 
 const REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE = '/sign-in'
 const REDIRECT_WHEN_FORBIDDEN = '/unauthorized'
 
 export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname
-  const token = request.cookies.get('token')?.value
+	const path = request.nextUrl.pathname
+	const token = request.cookies.get('token')?.value ?? null
 
-  // Liberar rotas públicas
-  const publicRoute = publicRoutes.find(route => route.path === path)
-  // Verifica se a rota exige tipo de usuário
-  const restricted = protectedRoutes.find(route => route.path === path)
+	if (isAccessingPublicWithoutToken(path, token)) {
+		return NextResponse.next()
+	}
 
-  // 1. Caso o token esteja ausente, permite acesso a rotas públicas
-  if (!token && publicRoute) {
-    const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE
-    return NextResponse.redirect(redirectUrl)
-  }
+	if (isAccessingProtectedWithoutToken(path, token)) {
+		return redirectTo(request, REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE)
+	}
 
-  // 2. Bloqueia quem não tem token e tenta acessar rotas protegidas
-  if (!token && !publicRoute) {
-    const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE
-    return NextResponse.redirect(redirectUrl)
-  }
+	if (isAuthenticatedTryingToAccessPublic(path, token)) {
+		return redirectTo(request, '/')
+	}
 
-  // 3. Caso o usuário esteja logado e tente acessar uma rota pública, redireciona para a home
-  if (token && publicRoute?.whenAuthenticated === 'redirect') {
-    const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/'
-    return NextResponse.redirect(redirectUrl)
-  }
+	if (isAccessingRestrictedRoute(path)) {
+		const restricted = findRestrictedRoute(path)
+		const payload = decodeToken(token)
 
-  // 4. Caso o token esteja presente e a rota seja protegida, valida o tipo de usuário
-  if (token && restricted) {
-    try {
-      const payload = decodeToken(token)
+		if (!payload || !restricted?.allowedTypes.includes(payload.type)) {
+			return redirectTo(request, REDIRECT_WHEN_FORBIDDEN)
+		}
+	}
 
-      // Log do payload para depuração
-      console.log("Payload do token:", payload)
+	return NextResponse.next()
+}
 
-      if (payload && !restricted.allowedTypes.includes(payload.type)) {
-        const redirectUrl = request.nextUrl.clone()
-        redirectUrl.pathname = REDIRECT_WHEN_FORBIDDEN
-        return NextResponse.redirect(redirectUrl)
-      }
-    } catch (error) {
-      const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE
-      return NextResponse.redirect(redirectUrl)
-    }
-  }
+// === Rules ===
 
-  return NextResponse.next()
+function isAccessingPublicWithoutToken(path: string, token: string | null): boolean {
+	return !token && isPublicRoute(path)
+}
+
+function isAccessingProtectedWithoutToken(path: string, token: string | null): boolean {
+	return !token && !isPublicRoute(path)
+}
+
+function isAuthenticatedTryingToAccessPublic(path: string, token: string | null): boolean {
+	const route = findPublicRoute(path)
+	return !!token && route?.whenAuthenticated === 'redirect'
+}
+
+function isAccessingRestrictedRoute(path: string): boolean {
+	return protectedRoutes.some(route => route.path === path)
+}
+
+// === Helpers ===
+
+function isPublicRoute(path: string): boolean {
+	return publicRoutes.some(route => route.path === path)
+}
+
+function findPublicRoute(path: string) {
+	return publicRoutes.find(route => route.path === path)
+}
+
+function findRestrictedRoute(path: string) {
+	return protectedRoutes.find(route => route.path === path)
 }
 
 type TokenPayload = {
-  id: string
-  email: string
-  type: string
+	id: string
+	name: string
+	email: string
+	type: string
 }
 
-function decodeToken(token: string): TokenPayload | null {
-  try {
-    const payloadBase64 = token.split('.')[1]
-    const decodedPayload = JSON.parse(atob(payloadBase64))
-    return decodedPayload
-  } catch (err) {
-    return null
-  }
+function decodeToken(token: string | null): TokenPayload | null {
+	try {
+		if (!token) return null
+		const payloadBase64 = token.split('.')[1]
+		const decoded = Buffer.from(payloadBase64, 'base64').toString('utf-8')
+		return JSON.parse(decoded)
+	} catch {
+		return null
+	}
+}
+
+function redirectTo(request: NextRequest, path: string) {
+	const redirectUrl = request.nextUrl.clone()
+	redirectUrl.pathname = path
+	return NextResponse.redirect(redirectUrl)
 }
 
 export const config: MiddlewareConfig = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+	matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }
