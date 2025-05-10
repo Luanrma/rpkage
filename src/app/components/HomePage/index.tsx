@@ -57,7 +57,7 @@ export default function HomePage() {
 
 		loadCharacters()
 	}, [campaignUser?.userId])
-	console.log(campaignUser)
+
 	if (!campaignUser) return <p>Carregando...</p>
 
 	return (

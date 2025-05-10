@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight, Backpack, User, House, LogOut, Handshake } from "lucide-react";
 import LogoutButton from '../LogoutButton';
+import { useSession } from '@/app/contexts/SessionContext';
 
 const AsideContainer = styled.div<{ $collapsed: boolean }>`
   position: block;
@@ -58,23 +59,14 @@ const ToggleButton = styled.button<{ $collapsed: boolean }>`
 `;
 
 export default function Aside() {
-	const [collapsed, setCollapsed] = useState(true)
-  const [userData, setUserData] = useState([])
+	const [collapsed, setCollapsed] = useState(true);
+	const { campaignUser } = useSession();
 
-  useEffect(() => {
-      async function loadUser() {
-        const res = await fetch('/api/me')
-        if (res.ok) {
-          const data = await res.json()
-          setUserData(data)
-        }
-      }
-      loadUser()
-    }, [])
+	const isMaster = campaignUser?.role === 'MASTER';
+	const isPlayer = campaignUser?.role === 'PLAYER';
 
 	return (
 		<AsideContainer $collapsed={collapsed}>
-
 			<ToggleButton onClick={() => setCollapsed(!collapsed)} $collapsed={collapsed}>
 				{collapsed ? <SquareArrowOutUpRight /> : <SquareArrowOutDownLeft />}
 			</ToggleButton>
@@ -83,12 +75,19 @@ export default function Aside() {
 				<MenuItem>
 					<Link href="/home"><House />{!collapsed && "Home"}</Link>
 				</MenuItem>
-        <MenuItem>
-          <Link href='/'><Handshake />{!collapsed && "Campaing"}</Link>
-        </MenuItem>
-        <MenuItem>
-          <Link href="/item-generator"><Swords />{!collapsed && "Item Generator"}</Link>
-        </MenuItem>
+				{isMaster && (
+					<MenuItem>
+						<Link href="/user"><User />{!collapsed && "User"}</Link>
+					</MenuItem>
+				)}
+				<MenuItem>
+					<Link href="/"><Handshake />{!collapsed && "Campaing"}</Link>
+				</MenuItem>
+				{isMaster && (
+					<MenuItem>
+						<Link href="/item-generator"><Swords />{!collapsed && "Item Generator"}</Link>
+					</MenuItem>
+				)}
 				<MenuItem>
 					<Link href="/damage-calculator"><Activity />{!collapsed && "Damage Calculator"}</Link>
 				</MenuItem>
@@ -96,13 +95,9 @@ export default function Aside() {
 					<Link href="/inventory"><Backpack />{!collapsed && "Inventory"}</Link>
 				</MenuItem>
 				<MenuItem>
-					<Link href="/user"><User />{!collapsed && "User"}</Link>
-				</MenuItem>
-				<MenuItem>
-					<LogoutButton><LogOut/>{!collapsed && "Logout"}</LogoutButton>
+					<LogoutButton><LogOut />{!collapsed && "Logout"}</LogoutButton>
 				</MenuItem>
 			</MenuList>
-
 		</AsideContainer>
 	);
 }

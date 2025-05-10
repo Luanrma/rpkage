@@ -4,8 +4,8 @@ import { fixBigInt } from '@/utils/fixBigInt';
 import { verifyToken, signToken } from '../../../../../../lib/jwt' // ajuste o caminho se necessário
 
 export async function GET(req: NextRequest, context: { params: { id: string } }) {
-	const { id } = context.params;
-
+	const { id } = await context.params;
+	
 	if (!id) {
 		return NextResponse.json({ message: 'ID is required' }, { status: 400 });
 	}
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
 			where: { id: idBigInt },
 			include: { campaign: true, user: true },
 		});
-
+		
 		if (!campaignUser) {
 			return NextResponse.json({ message: 'campaignUser not found' }, { status: 404 });
 		}
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
 		});
 
 		const response = NextResponse.json(fixBigInt(campaignUser));
-
+		
 		// Define novo cookie com o token atualizado
 		response.cookies.set({
 			name: 'token',
