@@ -1,102 +1,101 @@
+// src/middleware.ts
+import { jwtDecode } from 'jwt-decode'
 import { MiddlewareConfig, NextRequest, NextResponse } from 'next/server'
 
-const publicRoutes = [
-	{ path: '/sign-in', whenAuthenticated: 'redirect' },
-	{ path: '/register', whenAuthenticated: 'redirect' },
-	{ path: '/home', whenAuthenticated: 'next' },
-] as const
+const PATH_SIGN_IN = '/sign-in'
+const PATH_SELECT_OR_CREATE_CAMPAIGN = '/'
+const REDIRECT_FORBIDDEN = '/unauthorized'
 
-const protectedRoutes = [
-	{ path: '/item-generator', allowedTypes: ['MASTER', 'ADMIN'] },
+const PUBLIC_ROUTES = [
+	{ path: PATH_SIGN_IN, whenAuthenticated: 'redirect' },
 ]
 
-const REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE = '/sign-in'
-const REDIRECT_WHEN_FORBIDDEN = '/unauthorized'
+const PROTECTED_ROUTES = [
+	{ path: '/item-generator', allowedTypes: ['MASTER', 'ADMIN'] },
+	{ path: '/user', allowedTypes: ['MASTER', 'ADMIN'] },
+]
 
 export function middleware(request: NextRequest) {
 	const path = request.nextUrl.pathname
 	const token = request.cookies.get('token')?.value ?? null
 
-	if (isAccessingPublicWithoutToken(path, token)) {
-		return NextResponse.next()
+	if (!token) {
+		return handleNoTokenAccess(path, request)
 	}
 
-	if (isAccessingProtectedWithoutToken(path, token)) {
-		return redirectTo(request, REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE)
+	const hasValidToken = decodeToken(token)
+	if (!hasValidToken) {
+		return redirectTo(request, PATH_SIGN_IN)
 	}
 
-	if (isAuthenticatedTryingToAccessPublic(path, token)) {
-		return redirectTo(request, '/home')
+	if (isAuthenticatedTryingToAccessPublic(path)) {
+		return redirectTo(request, PATH_SELECT_OR_CREATE_CAMPAIGN)
+	}
+
+	if (!hasCampaignUserId(hasValidToken) && path !== '/') {
+		return redirectTo(request, PATH_SELECT_OR_CREATE_CAMPAIGN)
 	}
 
 	if (isAccessingRestrictedRoute(path)) {
-		const restricted = findRestrictedRoute(path)
-		const payload = decodeToken(token)
-
-		if (!payload || !restricted?.allowedTypes.includes(payload.type)) {
-			return redirectTo(request, REDIRECT_WHEN_FORBIDDEN)
+		const route = findRestrictedRoute(path)
+		if (!route?.allowedTypes.includes(hasValidToken.type)) {
+			return redirectTo(request, REDIRECT_FORBIDDEN)
 		}
 	}
 
 	return NextResponse.next()
 }
 
-// === Rules ===
-
-function isAccessingPublicWithoutToken(path: string, token: string | null): boolean {
-	return !token && isPublicRoute(path)
-}
-
-function isAccessingProtectedWithoutToken(path: string, token: string | null): boolean {
-	return !token && !isPublicRoute(path)
-}
-
-function isAuthenticatedTryingToAccessPublic(path: string, token: string | null): boolean {
-	const route = findPublicRoute(path)
-	return !!token && route?.whenAuthenticated === 'redirect'
-}
-
-function isAccessingRestrictedRoute(path: string): boolean {
-	return protectedRoutes.some(route => route.path === path)
-}
-
 // === Helpers ===
-
-function isPublicRoute(path: string): boolean {
-	return publicRoutes.some(route => route.path === path)
-}
-
-function findPublicRoute(path: string) {
-	return publicRoutes.find(route => route.path === path)
-}
-
-function findRestrictedRoute(path: string) {
-	return protectedRoutes.find(route => route.path === path)
-}
-
 type TokenPayload = {
 	id: string
 	name: string
 	email: string
 	type: string
+	campaignUserId?: string
 }
 
-function decodeToken(token: string | null): TokenPayload | null {
+function handleNoTokenAccess(path: string, request: NextRequest): NextResponse {
+	return isPublicRoute(path)
+		? NextResponse.next()
+		: redirectTo(request, PATH_SIGN_IN)
+}
+
+function decodeToken(token: string): TokenPayload | null {
 	try {
-		if (!token) return null
-		const payloadBase64 = token.split('.')[1]
-		const decoded = Buffer.from(payloadBase64, 'base64').toString('utf-8')
-		return JSON.parse(decoded)
+		return jwtDecode<TokenPayload>(token)
 	} catch {
 		return null
 	}
 }
 
-function redirectTo(request: NextRequest, path: string) {
-	const redirectUrl = request.nextUrl.clone()
-	redirectUrl.pathname = path
-	return NextResponse.redirect(redirectUrl)
+function hasCampaignUserId(payload: TokenPayload): boolean {
+	return !!payload.campaignUserId
 }
+
+function isPublicRoute(path: string): boolean {
+	return PUBLIC_ROUTES.some(route => route.path === path)
+}
+
+function isAuthenticatedTryingToAccessPublic(path: string): boolean {
+	const route = PUBLIC_ROUTES.find(r => r.path === path)
+	return !!route && route.whenAuthenticated === 'redirect'
+}
+
+function isAccessingRestrictedRoute(path: string): boolean {
+	return PROTECTED_ROUTES.some(route => route.path === path)
+}
+
+function findRestrictedRoute(path: string) {
+	return PROTECTED_ROUTES.find(route => route.path === path)
+}
+
+function redirectTo(request: NextRequest, destination: string): NextResponse {
+	const url = request.nextUrl.clone()
+	url.pathname = destination
+	return NextResponse.redirect(url)
+}
+
 
 export const config: MiddlewareConfig = {
 	matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],

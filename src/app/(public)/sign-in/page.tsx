@@ -29,9 +29,9 @@ export default function SignInPage() {
 
 		// Redireciona baseado no tipo
 		if (type === 'MASTER' || type === 'ADMIN') {
-			router.push('/home')
+			router.push('/')
 		} else {
-			router.push('/home')
+			router.push('/')
 		}
 	}
 

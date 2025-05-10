@@ -2,29 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation'; // Importação correta para Next.js 13 com App Router
-import { LogOut } from 'lucide-react';
 import styled from 'styled-components';
 
-const LogoutButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  cursor: pointer;
-  color: rgb(117, 117, 117);
-  margin-top: auto;
+const ButtonLogout = styled.a`
+	cursor: pointer;
+`
 
-  &:hover {
-    color: rgb(255, 255, 255);
-    transform: translateX(5px);
-  }
-
-  svg {
-    flex-shrink: 0;
-  }
-`;
-
-export default function Logout() {
+export default function Logout({ children }: { children: React.ReactNode }) {
 	const [isClient, setIsClient] = useState(false);
 	const router = useRouter();
 
@@ -52,8 +36,6 @@ export default function Logout() {
 	}
 
 	return (
-		<LogoutButton onClick={handleLogout}>
-			<LogOut />
-		</LogoutButton>
+		<ButtonLogout onClick={handleLogout}>{ children }</ButtonLogout>
 	);
 }

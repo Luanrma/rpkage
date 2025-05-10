@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+*, *::before, *::after {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #0c0c0c;

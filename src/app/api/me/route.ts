@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { jwtDecode } from 'jwt-decode'
 
 type TokenPayload = {
 	id: string
@@ -10,9 +11,7 @@ type TokenPayload = {
 
 function decodeToken(token: string): TokenPayload | null {
 	try {
-		const payloadBase64 = token.split('.')[1]
-		const decoded = Buffer.from(payloadBase64, 'base64').toString('utf-8')
-		return JSON.parse(decoded)
+		return jwtDecode<TokenPayload>(token)
 	} catch {
 		return null
 	}
@@ -22,7 +21,6 @@ export async function GET() {
 	const sessionCookies = await cookies()
 	const token = sessionCookies.get('token')?.value
 	const user = token ? decodeToken(token) : null
-
 	if (!user) {
 		return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 	}

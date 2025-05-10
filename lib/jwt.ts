@@ -12,16 +12,15 @@ type TokenPayload = {
 	name: string
 	email: string
 	type: string
+	campaignUserId?: string
 }
 
 export function signToken(payload: TokenPayload, expiresIn: number | StringValue = '7d'): string {
-	console.log("JWT_SECRET:", JWT_SECRET)
 	const options: SignOptions = { expiresIn }
 	return jwt.sign(payload, JWT_SECRET, options)
 }
 
 export function verifyToken(token: string): TokenPayload | null {
-	console.log("JWT_SECRET:", JWT_SECRET)
 	try {
 		return jwt.verify(token, JWT_SECRET) as TokenPayload
 	} catch {
