@@ -18,20 +18,60 @@ export async function GET() {
 	return NextResponse.json(fixBigInt(characters));
 }
 
-// Criar um personagem novo
 export async function POST(req: Request) {
 	const body = await req.json();
-	const { name, userId, campaignId, sheet } = body;
+	console.log(body)
+	const { name, userId, campaignId, sheet, role } = body;
 
-	if (!name || !userId) {
-		return NextResponse.json({ error: 'Nome e userId são obrigatórios.' }, { status: 400 });
+	if (!name || !userId || !campaignId || !role) {
+		return NextResponse.json({ error: 'Nome, userId, campaignId e role são obrigatórios.' }, { status: 400 });
 	}
 
+	const userIdBigInt = BigInt(userId);
+	const campaignIdBigInt = BigInt(campaignId);
+
+	// Verifica se já existe personagem para o jogador nessa campanha
+	const existingCharacter = await prisma.character.findFirst({
+		where: {
+			userId: userIdBigInt,
+			campaignId: campaignIdBigInt,
+		},
+	});
+
+	if (existingCharacter) {
+		return NextResponse.json({ error: 'Você já possui um personagem nesta campanha.' }, { status: 400 });
+	}
+
+	if (role === 'PLAYER') {
+		// Transação: criar personagem e inventário
+		const created = await prisma.$transaction(async (tx) => {
+			const newCharacter = await tx.character.create({
+				data: {
+					name,
+					userId: userIdBigInt,
+					campaignId: campaignIdBigInt,
+					sheet,
+				},
+			});
+
+			await tx.inventory.create({
+				data: {
+					characterId: newCharacter.id,
+				},
+			});
+
+			return newCharacter;
+		});
+
+		return NextResponse.json(fixBigInt(created), { status: 201 });
+	}
+
+	// Se for MASTER, apenas cria o personagem
 	const newCharacter = await prisma.character.create({
 		data: {
 			name,
-			userId: BigInt(userId),
-			campaignId: campaignId ? BigInt(campaignId) : undefined,
+			userId: userIdBigInt,
+			campaignId: campaignIdBigInt,
 			sheet,
 		},
 	});

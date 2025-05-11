@@ -41,8 +41,9 @@ CREATE TABLE "CampaignUser" (
 CREATE TABLE "Character" (
     "id" BIGSERIAL NOT NULL,
     "userId" BIGINT NOT NULL,
-    "campaignId" BIGINT,
+    "campaignId" BIGINT NOT NULL,
     "name" TEXT NOT NULL,
+    "avatar" TEXT,
     "sheet" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -166,6 +167,9 @@ CREATE TABLE "LevelingRule" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "CampaignUser_userId_campaignId_key" ON "CampaignUser"("userId", "campaignId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Inventory_characterId_key" ON "Inventory"("characterId");
 
 -- CreateIndex
@@ -181,7 +185,7 @@ ALTER TABLE "CampaignUser" ADD CONSTRAINT "CampaignUser_campaignId_fkey" FOREIGN
 ALTER TABLE "Character" ADD CONSTRAINT "Character_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Character" ADD CONSTRAINT "Character_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES "Campaign"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Character" ADD CONSTRAINT "Character_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES "Campaign"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Inventory" ADD CONSTRAINT "Inventory_characterId_fkey" FOREIGN KEY ("characterId") REFERENCES "Character"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

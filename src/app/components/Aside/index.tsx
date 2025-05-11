@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight, Backpack, User, House, LogOut, Handshake } from "lucide-react";
+import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight, Backpack, User, House, LogOut, Handshake, SmilePlus } from "lucide-react";
 import LogoutButton from '../LogoutButton';
 import { useSession } from '@/app/contexts/SessionContext';
 
@@ -74,6 +74,9 @@ export default function Aside() {
 			<MenuList>
 				<MenuItem>
 					<Link href="/home"><House />{!collapsed && "Home"}</Link>
+				</MenuItem>
+				<MenuItem>
+					<Link href="/character"><SmilePlus />{!collapsed && "Character"}</Link>
 				</MenuItem>
 				{isMaster && (
 					<MenuItem>

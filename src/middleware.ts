@@ -11,8 +11,8 @@ const PUBLIC_ROUTES = [
 ]
 
 const PROTECTED_ROUTES = [
-	{ path: '/item-generator', allowedTypes: ['MASTER', 'ADMIN'] },
-	{ path: '/user', allowedTypes: ['MASTER', 'ADMIN'] },
+	{ path: '/item-generator', allowedTypes: ['USER', 'ADMIN'] },
+	{ path: '/user', allowedTypes: ['USER', 'ADMIN'] },
 ]
 
 export function middleware(request: NextRequest) {
@@ -95,7 +95,6 @@ function redirectTo(request: NextRequest, destination: string): NextResponse {
 	url.pathname = destination
 	return NextResponse.redirect(url)
 }
-
 
 export const config: MiddlewareConfig = {
 	matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],

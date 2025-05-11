@@ -1,0 +1,172 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { useRouter } from 'next/navigation';
+import { useSession } from '@/app/contexts/SessionContext';
+import KageSheetForm from '@/app/components/KageSheetForm';
+import { SheetModelKageForCharacter } from './sheetModel';
+
+const Container = styled.div`
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  color: #e0e0e0;
+`;
+
+const Title = styled.h2`
+  margin-bottom: 1rem;
+`;
+
+const Label = styled.label`
+  display: block;
+  margin-top: 1rem;
+  font-weight: bold;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #f1f1f1;
+`;
+
+const Button = styled.button`
+  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #6f42c1;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #5936a1;
+  }
+`;
+
+const ErrorMessage = styled.p`
+  color: #ff4d4d;
+  margin-top: 1rem;
+`;
+
+export default function CreateCharacterPage() {
+    const [sheet, setSheet] = useState<SheetModelKageForCharacter | undefined>(undefined);
+    const router = useRouter();
+    const { campaignUser } = useSession();
+    const [characterId, setCharacterId] = useState(null);
+    const [name, setName] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCharacter = async () => {
+            if (!campaignUser) return;
+
+            try {
+                const res = await fetch(`/api/characters/by-user-and-campaign/${campaignUser.userId}/${campaignUser.campaignId}`);
+                if (res.ok) {
+                    const data = await res.json();
+        
+                    setCharacterId(data.id);
+                    setName(data.name);
+                    setSheet(data.sheet);
+                    
+                }
+
+                if (!res.ok) {
+                    setCharacterId(null);
+                    setName('');
+                    setSheet(undefined);
+                }
+
+            } catch (err) {
+                console.error('Erro ao buscar personagem existente');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCharacter();
+    }, [campaignUser]);
+
+    const handleSubmit = async () => {
+        if (!campaignUser) return;
+
+        if (!name) {
+            setError('O nome do personagem é obrigatório.');
+            return;
+        }
+
+        const payload = {
+            name,
+            userId: campaignUser.userId,
+            campaignId: campaignUser.campaignId,
+            role: campaignUser.role,
+            sheet,
+        };
+
+        try {
+            if (characterId) {
+                const response = await fetch('/api/characters/uppdate-sheet-by-id', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({id: characterId, payload}),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setError(data.error || 'Erro ao editar personagem.');
+                    return;
+                }
+
+                alert('Ficha editada com sucesso!');
+                return
+            }
+            
+            const response = await fetch('/api/characters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.error || 'Erro ao salvar personagem.');
+                return;
+            }
+
+            alert('Ficha salva com sucesso!');
+            router.push('/character');
+        } catch (err) {
+            setError('Erro inesperado ao salvar personagem.');
+        }
+    };
+
+    if (loading) return <Container>Carregando ficha...</Container>;
+
+    return (
+        <Container>
+            <Title>{sheet ? 'Editar Personagem' : 'Criar Personagem'}</Title>
+
+            <Label htmlFor="name">Nome</Label>
+            <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Digite o nome do personagem"
+            />
+
+            <KageSheetForm sheet={sheet} onChange={setSheet} />
+            <Button onClick={handleSubmit}>Salvar Ficha</Button>
+            
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+        </Container>
+    );
+}
