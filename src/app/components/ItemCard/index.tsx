@@ -1,6 +1,7 @@
 'use client';
 
 import { InterfaceItemGenerator } from '@/engine/ItemGenerators/Interfaces/ItemGenerator';
+import { translateMap } from '@/engine/rules/translateMap';
 import styled from 'styled-components';
 
 const Card = styled.div`
@@ -71,9 +72,13 @@ export default function ItemCard({ type, rarity, model, options }: InterfaceItem
             <hr/>
             <ul>
                 {options.map(opt => 
-                    <li key={count++}>{`${opt.description} ${opt.status} ${opt.diceBonus ?? ""}`}</li>
+                    <li key={count++}>{`${translateArmor(opt.description as string)} ${opt.status} ${opt.diceBonus ?? ""}`}</li>
                 )}
             </ul>
         </Card>
     );
+}
+
+const translateArmor = (key: string): string => {
+    return translateMap.armor[key] || key
 }

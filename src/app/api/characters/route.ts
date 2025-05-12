@@ -20,7 +20,6 @@ export async function GET() {
 
 export async function POST(req: Request) {
 	const body = await req.json();
-	console.log(body)
 	const { name, userId, campaignId, sheet, role } = body;
 
 	if (!name || !userId || !campaignId || !role) {

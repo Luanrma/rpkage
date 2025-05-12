@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useSession } from '@/app/contexts/SessionContext';
 import KageSheetForm from '@/app/components/KageSheetForm';
 import { SheetModelKageForCharacter } from './sheetModel';
+import { Backpack } from 'lucide-react';
+import InventoryModal from '@/app/components/InventoryModal';
 
 const Container = styled.div`
   max-width: 800px;
@@ -14,6 +16,12 @@ const Container = styled.div`
   background-color: #1a1a1a;
   border-radius: 10px;
   color: #e0e0e0;
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const Title = styled.h2`
@@ -58,10 +66,11 @@ export default function CreateCharacterPage() {
     const [sheet, setSheet] = useState<SheetModelKageForCharacter | undefined>(undefined);
     const router = useRouter();
     const { campaignUser } = useSession();
-    const [characterId, setCharacterId] = useState(null);
+    const [characterId, setCharacterId] = useState<string | null>(null);
     const [name, setName] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
+    const [showInventory, setShowInventory] = useState(false);
 
     useEffect(() => {
         const fetchCharacter = async () => {
@@ -71,19 +80,14 @@ export default function CreateCharacterPage() {
                 const res = await fetch(`/api/characters/by-user-and-campaign/${campaignUser.userId}/${campaignUser.campaignId}`);
                 if (res.ok) {
                     const data = await res.json();
-        
                     setCharacterId(data.id);
                     setName(data.name);
                     setSheet(data.sheet);
-                    
-                }
-
-                if (!res.ok) {
+                } else {
                     setCharacterId(null);
                     setName('');
                     setSheet(undefined);
                 }
-
             } catch (err) {
                 console.error('Erro ao buscar personagem existente');
             } finally {
@@ -112,10 +116,10 @@ export default function CreateCharacterPage() {
 
         try {
             if (characterId) {
-                const response = await fetch('/api/characters/uppdate-sheet-by-id', {
+                const response = await fetch('/api/characters/update-sheet-by-id', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({id: characterId, payload}),
+                    body: JSON.stringify({ id: characterId, payload }),
                 });
 
                 const data = await response.json();
@@ -126,9 +130,9 @@ export default function CreateCharacterPage() {
                 }
 
                 alert('Ficha editada com sucesso!');
-                return
+                return;
             }
-            
+
             const response = await fetch('/api/characters', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -153,7 +157,16 @@ export default function CreateCharacterPage() {
 
     return (
         <Container>
-            <Title>{sheet ? 'Editar Personagem' : 'Criar Personagem'}</Title>
+            <TitleRow>
+                <Title>{sheet ? 'Editar Personagem' : 'Criar Personagem'}</Title>
+                {characterId && (
+                    <Backpack
+                        size={28}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setShowInventory(true)}
+                    />
+                )}
+            </TitleRow>
 
             <Label htmlFor="name">Nome</Label>
             <Input
@@ -165,8 +178,11 @@ export default function CreateCharacterPage() {
 
             <KageSheetForm sheet={sheet} onChange={setSheet} />
             <Button onClick={handleSubmit}>Salvar Ficha</Button>
-            
             {error && <ErrorMessage>{error}</ErrorMessage>}
+
+            {showInventory && characterId && (
+                <InventoryModal characterId={characterId} onClose={() => setShowInventory(false)} />
+            )}
         </Container>
     );
 }

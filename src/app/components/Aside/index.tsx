@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link';
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight, Backpack, User, House, LogOut, Handshake, SmilePlus } from "lucide-react";
 import LogoutButton from '../LogoutButton';
@@ -86,11 +86,11 @@ export default function Aside() {
 				<MenuItem>
 					<Link href="/"><Handshake />{!collapsed && "Campaing"}</Link>
 				</MenuItem>
-				{isMaster && (
+			
 					<MenuItem>
 						<Link href="/item-generator"><Swords />{!collapsed && "Item Generator"}</Link>
 					</MenuItem>
-				)}
+				
 				<MenuItem>
 					<Link href="/damage-calculator"><Activity />{!collapsed && "Damage Calculator"}</Link>
 				</MenuItem>
