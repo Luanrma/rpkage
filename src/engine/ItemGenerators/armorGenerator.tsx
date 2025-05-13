@@ -36,10 +36,11 @@ export const armorGenerator = (playerLevel: number): InterfaceItemGenerator => {
     }
 
     return {
+        name: model,
         type: "armor",
         rarity: rarity,
-        model: model,
-        options: selectedOpts
+        slot: model,
+        attributes: selectedOpts
     }
 }
 

@@ -52,6 +52,18 @@ CREATE TABLE "Character" (
 );
 
 -- CreateTable
+CREATE TABLE "Monetary" (
+    "id" BIGSERIAL NOT NULL,
+    "inventoryId" BIGINT NOT NULL,
+    "name" TEXT NOT NULL,
+    "amount" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Monetary_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Inventory" (
     "id" BIGSERIAL NOT NULL,
     "characterId" BIGINT NOT NULL,
@@ -66,7 +78,6 @@ CREATE TABLE "InventoryItem" (
     "id" BIGSERIAL NOT NULL,
     "inventoryId" BIGINT NOT NULL,
     "itemsId" BIGINT NOT NULL,
-    "quantity" BIGINT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -76,10 +87,11 @@ CREATE TABLE "InventoryItem" (
 -- CreateTable
 CREATE TABLE "Items" (
     "id" BIGSERIAL NOT NULL,
-    "campaingId" BIGINT NOT NULL,
+    "campaignId" BIGINT NOT NULL,
     "type" TEXT NOT NULL,
     "rarity" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "slot" TEXT NOT NULL,
     "attributes" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -90,11 +102,13 @@ CREATE TABLE "Items" (
 -- CreateTable
 CREATE TABLE "ItemTransactionHistory" (
     "id" BIGSERIAL NOT NULL,
+    "campaignId" BIGINT NOT NULL,
     "itemId" BIGINT NOT NULL,
     "inventoryId" BIGINT NOT NULL,
     "fromInventoryId" BIGINT,
     "toInventoryId" BIGINT,
     "transactionType" TEXT NOT NULL,
+    "amount" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -116,7 +130,7 @@ CREATE TABLE "EquippedItem" (
 -- CreateTable
 CREATE TABLE "Spells" (
     "id" BIGSERIAL NOT NULL,
-    "campaingId" BIGINT NOT NULL,
+    "campaignId" BIGINT NOT NULL,
     "name" TEXT NOT NULL,
     "type" TEXT NOT NULL,
     "description" TEXT,
@@ -170,6 +184,9 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "CampaignUser_userId_campaignId_key" ON "CampaignUser"("userId", "campaignId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Monetary_inventoryId_key" ON "Monetary"("inventoryId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Inventory_characterId_key" ON "Inventory"("characterId");
 
 -- CreateIndex
@@ -188,6 +205,9 @@ ALTER TABLE "Character" ADD CONSTRAINT "Character_userId_fkey" FOREIGN KEY ("use
 ALTER TABLE "Character" ADD CONSTRAINT "Character_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES "Campaign"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Monetary" ADD CONSTRAINT "Monetary_inventoryId_fkey" FOREIGN KEY ("inventoryId") REFERENCES "Inventory"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Inventory" ADD CONSTRAINT "Inventory_characterId_fkey" FOREIGN KEY ("characterId") REFERENCES "Character"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -197,7 +217,10 @@ ALTER TABLE "InventoryItem" ADD CONSTRAINT "InventoryItem_inventoryId_fkey" FORE
 ALTER TABLE "InventoryItem" ADD CONSTRAINT "InventoryItem_itemsId_fkey" FOREIGN KEY ("itemsId") REFERENCES "Items"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Items" ADD CONSTRAINT "Items_campaingId_fkey" FOREIGN KEY ("campaingId") REFERENCES "Campaign"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Items" ADD CONSTRAINT "Items_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES "Campaign"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ItemTransactionHistory" ADD CONSTRAINT "ItemTransactionHistory_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES "Campaign"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ItemTransactionHistory" ADD CONSTRAINT "ItemTransactionHistory_itemId_fkey" FOREIGN KEY ("itemId") REFERENCES "Items"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -212,7 +235,7 @@ ALTER TABLE "EquippedItem" ADD CONSTRAINT "EquippedItem_characterId_fkey" FOREIG
 ALTER TABLE "EquippedItem" ADD CONSTRAINT "EquippedItem_inventoryItemId_fkey" FOREIGN KEY ("inventoryItemId") REFERENCES "InventoryItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Spells" ADD CONSTRAINT "Spells_campaingId_fkey" FOREIGN KEY ("campaingId") REFERENCES "Campaign"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Spells" ADD CONSTRAINT "Spells_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES "Campaign"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "EquippedSpell" ADD CONSTRAINT "EquippedSpell_characterId_fkey" FOREIGN KEY ("characterId") REFERENCES "Character"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

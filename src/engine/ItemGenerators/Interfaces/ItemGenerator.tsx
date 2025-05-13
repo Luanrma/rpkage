@@ -5,8 +5,10 @@ export interface SelectedOpt {
 }
 
 export interface InterfaceItemGenerator {
+    id?: number,
+    name: string,
     type: string;
     rarity: string;
-    model: string;
-    options: SelectedOpt[];
+    slot: string;
+    attributes: SelectedOpt[];
 }

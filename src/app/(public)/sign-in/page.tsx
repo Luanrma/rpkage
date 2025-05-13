@@ -2,6 +2,22 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import styled from 'styled-components'
+
+const LoginContainer = styled.div`
+	@keyframes pulse-slow {
+		0%, 100% { opacity: 0.15; transform: scale(1); }
+		50% { opacity: 0.25; transform: scale(1.05); }
+	}
+
+	.animate-pulse-slow {
+		animation: pulse-slow 8s ease-in-out infinite;
+	}
+
+	button {
+		cursor:pointer;
+	}
+`
 
 export default function SignInPage() {
 	const [email, setEmail] = useState('')
@@ -23,23 +39,46 @@ export default function SignInPage() {
 		}
 
 		const data = await res.json()
-		const { name, type } = data
+		const { type } = data
 
-		// 🔒 Não salva em localStorage (por segurança)
-
-		// Redireciona baseado no tipo
-		if (type === 'MASTER' || type === 'ADMIN') {
-			router.push('/')
-		} else {
-			router.push('/')
-		}
+		router.push('/')
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-sm mx-auto mt-10">
-			<input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-			<input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} required />
-			<button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Entrar</button>
-		</form>
+		<LoginContainer>
+			<div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-black to-gray-800 animate-background flex items-center justify-center relative overflow-hidden">
+				{/* Fundo animado com movimento sutil */}
+				<div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-indigo-800 via-purple-900 to-black opacity-20 animate-pulse-slow blur-3xl z-0" />
+				
+				<form
+					onSubmit={handleSubmit}
+					className="z-10 bg-gray-900 p-8 rounded-xl shadow-xl flex flex-col gap-6 w-sm text-white"
+				>
+					<h2 className="text-2xl font-semibold text-center mb-2">Login</h2>
+					<input
+						type="email"
+						placeholder="Email"
+						value={email}
+						onChange={e => setEmail(e.target.value)}
+						required
+						className="p-3 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+					/>
+					<input
+						type="password"
+						placeholder="Senha"
+						value={password}
+						onChange={e => setPassword(e.target.value)}
+						required
+						className="p-3 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+					/>
+					<button
+						type="submit"
+						className="bg-indigo-600 hover:bg-indigo-700 transition-colors text-white font-semibold py-2 rounded"
+					>
+						Entrar
+					</button>
+				</form>
+			</div>
+		</LoginContainer>
 	)
 }

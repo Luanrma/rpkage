@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styled from 'styled-components'
 import { User } from '@prisma/client'
+import Logout from '../components/LogoutButton'
+import { LogOut } from 'lucide-react'
 
 const Container = styled.div`
   max-width: 700px;
@@ -169,7 +171,6 @@ export default function CampaignEntry() {
 					.then(setCampaignUser)
 
 				handleRefreshToken(newCampaignUserCreated.id)
-				router.push('/home')
 			}
 		}
 	}
@@ -180,7 +181,6 @@ export default function CampaignEntry() {
 
 		setCampaignUser(selectedCampaignUser)
 		handleRefreshToken(selectedCampaignUser.id)
-		router.push('/home')
 	}
 
 	const handleRefreshToken = async (selectedCampaignUserId: string) => {
@@ -191,10 +191,13 @@ export default function CampaignEntry() {
 				'Content-Type': 'application/json'
 			}
 		})
+		router.push('/home')
 	}
 
 	return (
 		<Container>
+			<Logout><LogOut/></Logout>
+			
 			<Title>🎲 Bem-vindo ao Gerenciador de Campanhas</Title>
 
 			{view === 'initial' && (

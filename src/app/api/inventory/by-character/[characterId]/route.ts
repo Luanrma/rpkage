@@ -14,7 +14,7 @@ const CampaignSchema = z.object({
 export async function GET(req: NextRequest, context: { params: { characterId: string } }) {
     // Aguardando os parâmetros assíncronos
     const { characterId } = await context.params;  // Aguarde o contexto para acessar os parâmetros
-
+	console.log(characterId)
     if (!characterId) {
         return NextResponse.json({ message: 'CharacterId is required' }, { status: 400 });
     }

@@ -34,6 +34,8 @@ model Campaign {
   items       Items[]
   spells      Spells[]
   levelingRules LevelingRule[]
+
+  ItemTransactionHistory ItemTransactionHistory[]
 }
 
 model CampaignUser {
@@ -67,6 +69,16 @@ model Character {
   battleHistory CharacterBattleHistory[]
 }
 
+model Monetary {
+  id          BigInt     @id @default(autoincrement())
+  inventoryId BigInt     @unique
+  name        String
+  amount      String     
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  inventory   Inventory  @relation(fields: [inventoryId], references: [id])
+}
+
 model Inventory {
   id          BigInt     @id @default(autoincrement())
   characterId BigInt     @unique
@@ -75,13 +87,13 @@ model Inventory {
   character   Character  @relation(fields: [characterId], references: [id])
   inventoryItems InventoryItem[]
   transactions ItemTransactionHistory[]
+  Monetary Monetary[]
 }
 
 model InventoryItem {
   id          BigInt    @id @default(autoincrement())
   inventoryId BigInt
   itemsId     BigInt
-  quantity    BigInt
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   inventory   Inventory @relation(fields: [inventoryId], references: [id])
@@ -91,27 +103,30 @@ model InventoryItem {
 
 model Items {
   id          BigInt    @id @default(autoincrement())
-  campaingId  BigInt
+  campaignId  BigInt
   type        String
   rarity      String
-  description String
+  name        String
+  slot        String
   attributes  Json
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  campaign    Campaign  @relation(fields: [campaingId], references: [id])
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
   inventoryItems InventoryItem[]
   transactionHistories ItemTransactionHistory[]
 }
 
 model ItemTransactionHistory {
   id              BigInt    @id @default(autoincrement())
+  campaignId      BigInt
   itemId          BigInt
   inventoryId     BigInt
   fromInventoryId BigInt?
-  toInventoryId   BigInt?
   transactionType String
+  amount          String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  campaign        Campaign  @relation(fields: [campaignId], references: [id])
   item            Items     @relation(fields: [itemId], references: [id])
   inventory       Inventory @relation(fields: [inventoryId], references: [id])
 }
@@ -129,14 +144,14 @@ model EquippedItem {
 
 model Spells {
   id              BigInt    @id @default(autoincrement())
-  campaingId      BigInt
+  campaignId      BigInt
   name            String
   type            String
   description     String?
   specifications  Json
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  campaign        Campaign  @relation(fields: [campaingId], references: [id])
+  campaign        Campaign  @relation(fields: [campaignId], references: [id])
   equippedSpells  EquippedSpell[]
 }
 

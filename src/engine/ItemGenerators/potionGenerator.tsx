@@ -13,12 +13,13 @@ interface Potion {
 export const potionGenerator = (playerLevel: number): InterfaceItemGenerator => {
     const roll = generateRandomNumberWithMinAndMaxRange(1, 100);
     const potionDrop = potionDrops(playerLevel).find(potion => roll >= potion.range[0] && roll <= potion.range[1]) as Potion;
-
+    const potionName = translatePotion(potionDrop.name)
     return {
+        name: potionName,
         type: "potion",
         rarity: potionDrop.rarity,
-        model: "potion",
-        options: [{ description: translatePotion(potionDrop.name), status: potionDrop.value, diceBonus: "" }]
+        slot: "potion",
+        attributes: [{ description: potionName, status: potionDrop.value, diceBonus: "" }]
     };
 }
 

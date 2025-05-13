@@ -20,6 +20,7 @@ const ItemGeneratorContainerStyle = styled.div`
 	.buttons-style {
 		margin: 1rem 1rem 1rem 1rem;
 		display:flex;
+		z-index: 10;
 	}
 
 	.items-drop {
@@ -67,10 +68,11 @@ export default function ItemGeneratorContainer() {
 				{droppedItems.map((item, index) => (
 					<ItemCard 
 						key={index}
+						name={item.name}
 						type={item.type}
 						rarity={item.rarity}
-						model={item.model}
-						options={item.options}
+						slot={item.slot}
+						attributes={item.attributes}
 					/>
 				))}
 			</div>

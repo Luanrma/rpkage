@@ -41,39 +41,25 @@ export async function POST(req: Request) {
 		return NextResponse.json({ error: 'Você já possui um personagem nesta campanha.' }, { status: 400 });
 	}
 
-	if (role === 'PLAYER') {
-		// Transação: criar personagem e inventário
-		const created = await prisma.$transaction(async (tx) => {
-			const newCharacter = await tx.character.create({
-				data: {
-					name,
-					userId: userIdBigInt,
-					campaignId: campaignIdBigInt,
-					sheet,
-				},
-			});
-
-			await tx.inventory.create({
-				data: {
-					characterId: newCharacter.id,
-				},
-			});
-
-			return newCharacter;
+	// Transação: criar personagem e inventário
+	const created = await prisma.$transaction(async (tx) => {
+		const newCharacter = await tx.character.create({
+			data: {
+				name,
+				userId: userIdBigInt,
+				campaignId: campaignIdBigInt,
+				sheet,
+			},
 		});
 
-		return NextResponse.json(fixBigInt(created), { status: 201 });
-	}
+		await tx.inventory.create({
+			data: {
+				characterId: newCharacter.id,
+			},
+		});
 
-	// Se for MASTER, apenas cria o personagem
-	const newCharacter = await prisma.character.create({
-		data: {
-			name,
-			userId: userIdBigInt,
-			campaignId: campaignIdBigInt,
-			sheet,
-		},
+		return newCharacter;
 	});
 
-	return NextResponse.json(fixBigInt(newCharacter), { status: 201 });
+	return NextResponse.json(fixBigInt(created), { status: 201 });
 }

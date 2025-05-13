@@ -10,18 +10,19 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { campaignId, type, rarity, description, attributes } = body;
+        const { campaignId, type, rarity, name, slot, attributes } = body;
 
-        if (!campaignId || !type || !rarity || !description || !attributes) {
+        if (!campaignId || !type || !rarity || !name || !attributes) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
         const newItem = await prisma.items.create({
             data: {
-                campaingId: campaignId, // Preciso corrigir o nome dessa coluna na base
+                campaignId,
                 type,
                 rarity,
-                description: description ?? "unknow item",
+                name,
+                slot: slot ?? "In your pocket",
                 attributes
             }
         });
@@ -37,19 +38,20 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
     try {
         const body = await request.json();
-        const { id, campaignId, type, rarity, description, attributes } = body;
-        console.log(body)
-        if (!id || !campaignId || !type || !rarity || !description || !attributes) {
+        const { id, campaignId, type, rarity, name, slot, attributes } = body;
+
+        if (!campaignId || !type || !rarity || !name || !attributes) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
         const newItem = await prisma.items.update({
             where: { id },
             data: {
-                campaingId: campaignId, // Preciso corrigir o nome dessa coluna na base
+                campaignId,
                 type,
                 rarity,
-                description: description ?? "unknow item",
+                name,
+                slot,
                 attributes
             }
         });

@@ -2,9 +2,10 @@ import { InterfaceItemGenerator } from "./Interfaces/ItemGenerator";
 
 export const specialItemGenerator = (): InterfaceItemGenerator => {
     return {
+        name: "Item Especial",
         type: "Item Especial",
         rarity: "uncommon",
-        model: "Item Especial",
-        options: []
+        slot: "Item Especial",
+        attributes: []
     };
 }

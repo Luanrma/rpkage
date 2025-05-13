@@ -48,10 +48,12 @@ export default function InventoryModalItemDetails({ item }: InventoryModalItemDe
     return (
         <ItemDetailContainer>
             <ItemCard
-                type={item.type} // Passando item.type como prop model
+                id={Number(item.id)}
+                name=""
+                type={item.type}
                 rarity={item.rarity}
-                model={item.attributes.definition.type} // O modelo também é o tipo do item
-                options={filteredOptions}  // Passando as opções dinâmicas filtradas para o ItemCard
+                slot={item.type}
+                attributes={filteredOptions}
             />
         </ItemDetailContainer>
     );

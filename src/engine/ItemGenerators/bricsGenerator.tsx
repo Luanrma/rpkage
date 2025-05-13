@@ -4,13 +4,13 @@ import { InterfaceItemGenerator, SelectedOpt } from "./Interfaces/ItemGenerator"
 export const bricsGenerator = (playerLevel: number): InterfaceItemGenerator => {  
     const selectedOpts: SelectedOpt[] = []     
     return {
+        name: "brics",
         type: "brics",
         rarity: "common",
-        model: getBricsByLevel(playerLevel),
-        options: selectedOpts
+        slot: getBricsByLevel(playerLevel),
+        attributes: selectedOpts
     }
 }
-
 
 const getBricsByLevel = (playerLevel: number): string => {
     const brics = levelingResolver(playerLevel);

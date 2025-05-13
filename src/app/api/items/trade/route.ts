@@ -1,0 +1,57 @@
+import { NextResponse } from 'next/server';
+import prisma from '../../../../../prisma/ConnectionPrisma';
+import { fixBigInt } from '@/utils/fixBigInt';
+import { createItemIfNecessaryAndLinkToInventory, SaveItemPayload } from '@/app/services/itemService/itemService';
+
+export async function GET() {
+    const items = await prisma.items.findMany();
+    return NextResponse.json(fixBigInt(items));
+}
+
+export async function POST(request: Request) {
+    try {
+        const body = await request.json();
+
+        const {
+            itemId,
+            characterId,
+            campaignId,
+            toInventoryId,
+            fromInventoryId,
+            name,
+            slot,
+            type,
+            rarity,
+            attributes,
+            transactionType,
+            itemValue
+        } = body;
+        
+        if (!characterId || !campaignId || !toInventoryId || !type || !rarity || !rarity || !slot || !attributes) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        const payload = {
+            itemId,
+            characterId: Number(characterId),
+            campaignId: Number(campaignId),
+            toInventoryId: Number(toInventoryId),
+            fromInventoryId: fromInventoryId ? Number(fromInventoryId) : null,
+            type,
+            rarity,
+            name,
+            slot,
+            attributes,
+            transactionType,
+            itemValue
+        } as SaveItemPayload
+       
+        const newItem = createItemIfNecessaryAndLinkToInventory(payload)
+
+        return NextResponse.json(fixBigInt(newItem), { status: 201 });
+
+    } catch (error) {
+        console.error('POST /api/items error:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

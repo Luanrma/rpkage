@@ -71,62 +71,79 @@ const ItemIcon = styled.span`
   font-size: 2rem;
 `;
 
-const ItemLabel = styled.p`
-  font-size: 12px;
-  color: #ddd;
-`;
+const MonetaryContainer = styled.div`
+	padding: .5rem .5rem 0 0;
+	display: flex;
+    align-items: center;
+    justify-content: flex-end;
+	gap: 0.5rem;
+
+	span {
+		font-size: 1.1rem;
+	}
+`
 
 export default function InventoryModal({ characterId, onClose }: { characterId: string; onClose: () => void }) {
-    const [items, setItems] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedItem, setSelectedItem] = useState<any | null>(null);
+	const [items, setItems] = useState<any[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [selectedItem, setSelectedItem] = useState<any | null>(null);
 
-    useEffect(() => {
-        const fetchInventory = async () => {
-            try {
-                const res = await fetch(`/api/inventory/by-character/${characterId}`);
-                const data = await res.json();
-                // Acessa diretamente o array de items dentro de inventoryItems
-                const inventoryItems = data[0]?.inventoryItems || [];
-                setItems(inventoryItems); // Atualiza o estado com os itens do inventário
-            } catch (error) {
-                console.error('Erro ao buscar inventário:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
+	useEffect(() => {
+		const fetchInventory = async () => {
+			try {
+				const res = await fetch(`/api/inventory/by-character/${characterId}`);
+				const data = await res.json();
+				// Acessa diretamente o array de items dentro de inventoryItems
+				const inventoryItems = data[0]?.inventoryItems || [];
+				setItems(inventoryItems); // Atualiza o estado com os itens do inventário
+			} catch (error) {
+				console.error('Erro ao buscar inventário:', error);
+			} finally {
+				setLoading(false);
+			}
+		};
 
-        fetchInventory();
-    }, [characterId]);
+		fetchInventory();
+	}, [characterId]);
 
-    return ReactDOM.createPortal(
-        <Overlay onClick={onClose}>
-            <ModalBox onClick={(e) => e.stopPropagation()}>
-                <CloseButton onClick={onClose}>X</CloseButton>
-                {loading ? (
-                    <p>Carregando itens...</p>
-                ) : items.length > 0 ? (
-                    <GridContainer>
-                        {items.map((inv, idx) => (
-                            <GridItem
-                                key={idx}
-                                onClick={() => setSelectedItem(inv.item)}
-                                title={inv.item?.description || 'Item desconhecido'}
-                            >
-                                <ItemIcon><BagItemIcon iconName={inv.item.attributes.definition.type}/></ItemIcon>
-                            </GridItem>
-                        ))}
-                    </GridContainer>
-                ) : (
-                    <p>Inventário vazio.</p>
-                )}
+	return ReactDOM.createPortal(
+		<Overlay onClick={onClose}>
+			<ModalBox onClick={(e) => e.stopPropagation()}>
+				<CloseButton onClick={onClose}>X</CloseButton>
+				{loading ? (
+					<p>Carregando itens...</p>
+				) : items.length > 0 ? (
+					<GridContainer>
+						{items.map((inv, idx) => (
+							<GridItem
+								key={idx}
+								onClick={() => setSelectedItem(inv.item)}
+								title={inv.item?.name || 'Item desconhecido'}
+							>
+								<ItemIcon><BagItemIcon iconName={inv.item.type} /></ItemIcon>
+							</GridItem>
+						))}
+					</GridContainer>
+				) : (
+					<GridContainer>
+						Vazio
+					</GridContainer>
+				)}
 
-                {/* Verifica se há um item selecionado e exibe os detalhes no modal */}
-                {selectedItem && (
-                    <InventoryModalItemDetails item={selectedItem} />
-                )}
-            </ModalBox>
-        </Overlay>,
-        document.body
-    );
+				<MonetaryContainer>
+					<ItemIcon>
+						<BagItemIcon iconName="brics" />
+					</ItemIcon>
+
+					<span>0</span>
+				</MonetaryContainer>
+
+				{/* Verifica se há um item selecionado e exibe os detalhes no modal */}
+				{selectedItem && (
+					<InventoryModalItemDetails item={selectedItem} />
+				)}
+			</ModalBox>
+		</Overlay>,
+		document.body
+	);
 }

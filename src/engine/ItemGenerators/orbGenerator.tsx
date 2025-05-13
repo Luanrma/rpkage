@@ -11,12 +11,14 @@ interface Orb {
 export const orbGenerator = (): InterfaceItemGenerator => {
     const roll = generateRandomNumberWithMinAndMaxRange(1, 100);
     const drop = orbDrops.find(orb => roll >= orb.range[0] && roll <= orb.range[1]) as Orb;
-    
+    const orbName = translateOrb(drop.orb)
+
     return {
+        name: orbName,
         type: "orb",
         rarity: drop.rarity,
-        model: translateOrb(drop.orb),
-        options: []
+        slot: translateOrb(drop.orb),
+        attributes: []
     }
 }
 

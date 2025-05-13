@@ -36,11 +36,14 @@ export const weaponGenerator = (playerLevel: number): InterfaceItemGenerator => 
         });
     }
 
+    const weaponTypeName = translateWeaponModel(weaponType);
+
     return {
+        name: weaponTypeName,
         type: "weapon",
-        model: translateWeaponModel(weaponType),
+        slot: weaponTypeName,
         rarity,
-        options: selectedOpts
+        attributes: selectedOpts
     }
 }
 
@@ -116,6 +119,6 @@ const getRandomWeaponType = (): string => {
     return value as string
 }
 
-const translateWeapon = (key: string): string => translateMap.weapon[key] || "Desconhecido"
-const translateWeaponModel = (key: string): string => translateMap.weaponTranslations[key] || "Desconhecido"
-const translateWeaponSkillBonus = (key: string): string => translateMap.skills[key] || "Desconhecido"
+const translateWeapon = (key: string): string => translateMap.weapon[key] || key
+const translateWeaponModel = (key: string): string => translateMap.weaponTranslations[key] || key
+const translateWeaponSkillBonus = (key: string): string => translateMap.skills[key] || key
