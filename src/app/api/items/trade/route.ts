@@ -14,6 +14,7 @@ export async function POST(request: Request) {
 
         const {
             itemId,
+            inventoryItemId,
             characterId,
             campaignId,
             toInventoryId,
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
 
         const payload = {
             itemId,
+            inventoryItemId,
             characterId: Number(characterId),
             campaignId: Number(campaignId),
             toInventoryId: Number(toInventoryId),

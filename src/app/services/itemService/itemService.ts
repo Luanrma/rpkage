@@ -5,6 +5,7 @@ import { z } from 'zod';
 // Validação com Zod
 const SaveItemSchema = z.object({
     itemId: z.number().nullable().optional(),
+    inventoryItemId: z.number().nullable().optional(),
     characterId: z.number().optional(),
     campaignId: z.number(),
     toInventoryId: z.number(),
@@ -14,7 +15,7 @@ const SaveItemSchema = z.object({
     name: z.string(),
     slot: z.string(),
     attributes: z.array(z.any()),
-    transactionType: z.string(),
+    transactionType: z.enum(['DROP', 'TRADE', 'SELL', 'GIFT']),
     itemValue: z.string().nullable().optional(),
 });
 
@@ -29,6 +30,7 @@ export async function createItemIfNecessaryAndLinkToInventory(payload: SaveItemP
 
     const {
         itemId,
+        inventoryItemId,
         toInventoryId,
         fromInventoryId,
         transactionType,
@@ -55,16 +57,21 @@ export async function createItemIfNecessaryAndLinkToInventory(payload: SaveItemP
         })).id);
 
         // Linka item ao inventário, se necessário
-        if (toInventoryId) {
+        if (toInventoryId && inventoryItemId) {
             await tx.inventoryItem.create({
                 data: {
                     inventoryId: toInventoryId,
                     itemsId: BigInt(itemIdFinal),
                 },
             });
-        }
 
+            await tx.inventoryItem.delete({
+                where: { id: inventoryItemId }
+            })
+        }
+        
         // Cria histórico de transação
+        const finalItemValue = transactionType === 'SELL' ? itemValue : '0';
         await tx.itemTransactionHistory.create({
             data: {
                 itemId: BigInt(itemIdFinal),
@@ -72,7 +79,7 @@ export async function createItemIfNecessaryAndLinkToInventory(payload: SaveItemP
                 inventoryId: toInventoryId,
                 fromInventoryId: fromInventoryId,
                 transactionType,
-                amount: itemValue
+                amount: finalItemValue
             },
         });
 

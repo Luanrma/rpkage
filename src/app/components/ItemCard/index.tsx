@@ -202,7 +202,16 @@ type Character = {
 	role: string;
 };
 
-export default function ItemCard({ id, name, type, rarity, slot, attributes }: InterfaceItemGenerator) {
+export default function ItemCard({ 
+	id,
+	name,
+	type,
+	rarity,
+	slot,
+	attributes,
+	inventoryItemId,
+	onTransactionComplete
+}: InterfaceItemGenerator & { onTransactionComplete?: () => void }) {
 	const { campaignUser } = useSession();
 	const [showDropdown, setShowDropdown] = useState(false);
 	const [otherCharacters, setOtherCharacters] = useState<Character[]>([]);
@@ -228,6 +237,36 @@ export default function ItemCard({ id, name, type, rarity, slot, attributes }: I
 		}
 	};
 
+	const handleTransactionMoney = async (amount: number) => {
+		if (amount <= 0) {
+			return
+		}
+
+		try {
+			const payload = { amount };
+
+			const res = await fetch('/api/items/trade', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
+
+			if (!res.ok) {
+				throw new Error('Erro ao transferir brics')
+			}
+
+			alert('Brics enviado com sucesso!');
+			onTransactionComplete?.();
+		} catch (err) {
+			console.error(err);
+			alert('Erro ao enviar brics.');
+		} finally {
+			setShowDropdown(false);
+			setShowTransactionModal(false);
+			setSelectedCharacter(null);
+		}
+	}
+
 	const handleTransactionConfirm = async (transactionType: "TRADE" | "SELL" | "GIFT" | "DROP") => {
 		if (!selectedCharacter || !campaignUser) {
 			return;
@@ -239,7 +278,8 @@ export default function ItemCard({ id, name, type, rarity, slot, attributes }: I
 
 		try {
 			const payload: SaveItemPayload = {
-				itemId: Number(id) ?? null,
+				itemId: id ?? null,
+				inventoryItemId: inventoryItemId ?? null,
 				characterId: selectedCharacter.userId,
 				campaignId: Number(campaignUser.campaignId),
 				toInventoryId: selectedCharacter.inventoryId,
@@ -248,7 +288,7 @@ export default function ItemCard({ id, name, type, rarity, slot, attributes }: I
 				rarity,
 				attributes,
 				name,
-				slot: slot ?? "",
+				slot: slot ?? "In your pocket",
 				transactionType,
 				itemValue,
 			};
@@ -264,6 +304,7 @@ export default function ItemCard({ id, name, type, rarity, slot, attributes }: I
 			}
 
 			alert('Item salvo com sucesso!');
+			onTransactionComplete?.();
 		} catch (err) {
 			console.error(err);
 			alert('Erro ao salvar item.');
@@ -301,19 +342,41 @@ export default function ItemCard({ id, name, type, rarity, slot, attributes }: I
 
 			{showTransactionModal && (
 				<ModalOverlay>
-					<ModalContent>
-						<h3>Tipo de Transação</h3>
-						<div className="modal-content-send-items">
+					{type === 'brics' ? (
+						<ModalContent>
+							<h3>Transferir Brics</h3>
+
+							<label htmlFor="amount">Quantidade:</label>
+							<input
+								className="input-brics-amount"
+								type="number"
+								name="amount"
+								min="1"
+								max={1000} // Simulação de valor máximo
+								value={itemValue}
+								onChange={(e) => setItemValue(e.target.value)}
+							/>
+							<p style={{ color: parseInt(itemValue) > 1000 ? 'red' : 'inherit' }}>
+								Máximo disponível: 1000
+							</p>
+
+							<button onClick={() => handleTransactionConfirm("TRADE")}>Confirmar</button>
+							<button className="cancel" onClick={() => setShowTransactionModal(false)}>Cancelar</button>
+						</ModalContent>
+					) : (
+						<ModalContent>
+							<h3>Tipo de Transação</h3>
+							<div className="modal-content-send-items">
 							<button onClick={() => handleTransactionConfirm("TRADE")}>Troca</button>
 							<button onClick={() => handleTransactionConfirm("GIFT")}>Doação</button>
 							{campaignUser?.role === 'MASTER' && (
 								<button onClick={() => handleTransactionConfirm("DROP")}>Drop</button>
 							)}
-						</div>
-						<hr/>
-						<div className="modal-content-sell-items">
+							</div>
+							<hr />
+							<div className="modal-content-sell-items">
 							<button onClick={() => handleTransactionConfirm("SELL")}>Venda</button>
-							<label htmlFor="item">Value:</label>
+							<label htmlFor="item">Valor:</label>
 							<input 
 								className='input-item-value'
 								name="item-value"
@@ -322,9 +385,10 @@ export default function ItemCard({ id, name, type, rarity, slot, attributes }: I
 								value={itemValue}
 								onChange={(e) => setItemValue(e.target.value)}
 							/>
-						</div>
-						<button className="cancel" onClick={() => setShowTransactionModal(false)}>Cancelar</button>
-					</ModalContent>
+							</div>
+							<button className="cancel" onClick={() => setShowTransactionModal(false)}>Cancelar</button>
+						</ModalContent>
+					)}
 				</ModalOverlay>
 			)}
 

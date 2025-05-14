@@ -93,9 +93,8 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 			try {
 				const res = await fetch(`/api/inventory/by-character/${characterId}`);
 				const data = await res.json();
-				// Acessa diretamente o array de items dentro de inventoryItems
-				const inventoryItems = data[0]?.inventoryItems || [];
-				setItems(inventoryItems); // Atualiza o estado com os itens do inventário
+				const inventoryItems = data?.inventoryItems || [];
+				setItems(inventoryItems);
 			} catch (error) {
 				console.error('Erro ao buscar inventário:', error);
 			} finally {
@@ -105,6 +104,17 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 
 		fetchInventory();
 	}, [characterId]);
+
+	const handleUpdateInventory = async () => {
+		try {
+			const res = await fetch(`/api/inventory/by-character/${characterId}`);
+			const data = await res.json();
+			setItems(data?.inventoryItems || []);
+			setSelectedItem(null); // opcional: fecha o detalhe após a ação
+		} catch (error) {
+			console.error('Erro ao atualizar inventário:', error);
+		}
+	};
 
 	return ReactDOM.createPortal(
 		<Overlay onClick={onClose}>
@@ -117,7 +127,7 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 						{items.map((inv, idx) => (
 							<GridItem
 								key={idx}
-								onClick={() => setSelectedItem(inv.item)}
+								onClick={() => setSelectedItem(inv)}
 								title={inv.item?.name || 'Item desconhecido'}
 							>
 								<ItemIcon><BagItemIcon iconName={inv.item.type} /></ItemIcon>
@@ -140,10 +150,14 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 
 				{/* Verifica se há um item selecionado e exibe os detalhes no modal */}
 				{selectedItem && (
-					<InventoryModalItemDetails item={selectedItem} />
+					<InventoryModalItemDetails 
+						inventoryItem={selectedItem}
+						onInventoryChange={handleUpdateInventory}
+					/>
 				)}
 			</ModalBox>
 		</Overlay>,
 		document.body
 	);
 }
+

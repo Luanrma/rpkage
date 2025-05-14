@@ -6,6 +6,7 @@ export interface SelectedOpt {
 
 export interface InterfaceItemGenerator {
     id?: number,
+    inventoryItemId?: number,
     name: string,
     type: string;
     rarity: string;

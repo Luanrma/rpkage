@@ -12,18 +12,16 @@ const CampaignSchema = z.object({
 });
 
 export async function GET(req: NextRequest, context: { params: { characterId: string } }) {
-    // Aguardando os parâmetros assíncronos
-    const { characterId } = await context.params;  // Aguarde o contexto para acessar os parâmetros
-	console.log(characterId)
+    const { characterId } = await context.params;
+
     if (!characterId) {
         return NextResponse.json({ message: 'CharacterId is required' }, { status: 400 });
     }
 
     try {
-        // Convertendo userId para BigInt de forma segura
         const characterIdBigInt = BigInt(characterId);
 
-        const inventory = await prisma.inventory.findMany({
+        const inventory = await prisma.inventory.findUnique({
             where: { characterId: characterIdBigInt },
             include: {
                 inventoryItems: {
@@ -33,9 +31,7 @@ export async function GET(req: NextRequest, context: { params: { characterId: st
                 },
             },
         });
-
-        console.log(inventory[0].inventoryItems[0].item)
-
+		
         return NextResponse.json(fixBigInt(inventory));
     } catch (error) {
         return NextResponse.json({ message: 'Invalid characterId format' }, { status: 400 });

@@ -32,15 +32,25 @@ type ItemDetail = {
     };
 };
 
-interface InventoryModalItemDetailsProps {
+type InventoryItem = {
+    id: bigint;
+    inventoryId: bigint;
+    itemsId: bigint;
+    createdAt: Date;
+    updatedAt: Date;
     item: ItemDetail;
+};
+
+interface InventoryModalItemDetailsProps {
+    inventoryItem: InventoryItem;
+    onInventoryChange: () => void;
 }
 
-export default function InventoryModalItemDetails({ item }: InventoryModalItemDetailsProps) {
+export default function InventoryModalItemDetails({ inventoryItem, onInventoryChange }: InventoryModalItemDetailsProps) {
     // Filtrando os atributos para passar para o ItemCard
-    const options = Object.keys(item.attributes)
-        .filter(key => key !== 'definition' && item.attributes[key as keyof typeof item.attributes])
-        .map(key => item.attributes[key as keyof typeof item.attributes]);
+    const options = Object.keys(inventoryItem.item.attributes)
+        .filter(key => key !== 'definition' && inventoryItem.item.attributes[key as keyof typeof inventoryItem.item.attributes])
+        .map(key => inventoryItem.item.attributes[key as keyof typeof inventoryItem.item.attributes]);
 
     // Garantindo que as opções passadas para o ItemCard são de tipo ItemAttributes
     const filteredOptions = options.filter(option => option && 'description' in option) as ItemAttributes[];
@@ -48,12 +58,14 @@ export default function InventoryModalItemDetails({ item }: InventoryModalItemDe
     return (
         <ItemDetailContainer>
             <ItemCard
-                id={Number(item.id)}
+                id={Number(inventoryItem.item.id)}
+                inventoryItemId={Number(inventoryItem.id)}
                 name=""
-                type={item.type}
-                rarity={item.rarity}
-                slot={item.type}
+                type={inventoryItem.item.type}
+                rarity={inventoryItem.item.rarity}
+                slot={inventoryItem.item.type}
                 attributes={filteredOptions}
+                onTransactionComplete={onInventoryChange}
             />
         </ItemDetailContainer>
     );
