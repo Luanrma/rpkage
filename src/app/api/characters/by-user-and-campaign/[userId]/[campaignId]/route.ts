@@ -2,14 +2,10 @@ import { NextResponse } from 'next/server';
 import prisma from '../../../../../../../prisma/ConnectionPrisma';
 import { fixBigInt } from '@/utils/fixBigInt';
 
-type Params = {
-    params: {
-        userId: string;
-        campaignId: string;
-    };
-};
-
-export async function GET(req: Request, { params }: Params) {
+export async function GET(
+    req: Request,
+    { params } : { params: Promise<{ userId: string, campaignId:string }> }
+) {
     const { userId, campaignId } = await params;
 
     const userIdBigInt = await BigInt(userId);

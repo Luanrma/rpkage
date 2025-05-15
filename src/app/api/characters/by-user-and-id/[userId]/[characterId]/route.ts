@@ -2,21 +2,19 @@ import { NextResponse } from 'next/server';
 import prisma from '../../../../../../../prisma/ConnectionPrisma';
 import { fixBigInt } from '@/utils/fixBigInt';
 
-type Params = {
-    params: {
-        userId: string;
-        characterId: string;
-    };
-};
+export async function GET(
+    req: Request,
+    { params } : { params: Promise<{ userId: string, characterId:string }> }
+) {
+    const { userId, characterId } = await params;
 
-export async function GET(req: Request, { params }: Params) {
-    const userId = BigInt(params.userId);
-    const characterId = BigInt(params.characterId);
+    const userIdBigInt = BigInt(userId);
+    const characterIdBigInt = BigInt(characterId);
 
     const character = await prisma.character.findUnique({
         where: {
-            id: characterId,
-            userId,
+            id: characterIdBigInt,
+            userId: userIdBigInt,
         },
         include: {
             campaign: true,

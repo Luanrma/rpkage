@@ -10,17 +10,16 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { inventoryId, itemId, quantity } = body;
+        const { inventoryId, itemId } = body;
 
-        if (!inventoryId || !itemId || !quantity) {
+        if (!inventoryId || !itemId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
         const newInventoryItem = await prisma.inventoryItem.create({
             data: {
                 inventoryId,
-                itemsId: itemId, // Preciso alterar esse nome
-                quantity,
+                itemsId: itemId
             }
         });
 

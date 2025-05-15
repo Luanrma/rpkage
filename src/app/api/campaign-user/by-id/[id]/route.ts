@@ -3,8 +3,11 @@ import prisma from '../../../../../../prisma/ConnectionPrisma';
 import { fixBigInt } from '@/utils/fixBigInt';
 import { verifyToken, signToken } from '../../../../../../lib/jwt' // ajuste o caminho se necessário
 
-export async function GET(req: NextRequest, context: { params: { id: string } }) {
-	const { id } = await context.params;
+export async function GET(
+	req: NextRequest, 
+	{ params } : { params: Promise<{ id: string }> }
+) {
+	const { id } = await params;
 	
 	if (!id) {
 		return NextResponse.json({ message: 'ID is required' }, { status: 400 });

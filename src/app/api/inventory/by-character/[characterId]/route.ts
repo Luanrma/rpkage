@@ -11,8 +11,11 @@ const CampaignSchema = z.object({
 	userId: z.number() // precisamos saber quem está criando
 });
 
-export async function GET(req: NextRequest, context: { params: { characterId: string } }) {
-    const { characterId } = await context.params;
+export async function GET(
+	req: NextRequest,
+	{ params } : { params: Promise<{ characterId:string }> }
+) {
+    const { characterId } = await params;
 
     if (!characterId) {
         return NextResponse.json({ message: 'CharacterId is required' }, { status: 400 });

@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../../../prisma/ConnectionPrisma';
 import { fixBigInt } from '@/utils/fixBigInt';
 
-export async function GET(context: { params: { inventoryId: string } }) {
-    const { inventoryId } = await context.params;
+export async function GET(
+    req: NextRequest,
+    { params } : { params: Promise<{ inventoryId: string }> }
+) {
+    const { inventoryId } = await params;
 
     if (!inventoryId) {
         return NextResponse.json({ message: 'inventoryId is required' }, { status: 400 });

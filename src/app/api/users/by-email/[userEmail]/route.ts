@@ -5,10 +5,12 @@ import { z } from 'zod';
 
 const EmailSchema = z.string().email();
 
-export async function GET(req: NextRequest, context: { params: { userEmail: string } }) {
+export async function GET(
+    req: NextRequest,
+    { params } : { params: Promise<{ userEmail: string }> }
+) {
     try {
-        // Aguarde o carregamento dos parâmetros da URL
-        const { userEmail } = await context.params;
+        const { userEmail } = await params;
 
         const decodedEmail = decodeURIComponent(userEmail);
         const parse = EmailSchema.safeParse(decodedEmail);
@@ -23,7 +25,6 @@ export async function GET(req: NextRequest, context: { params: { userEmail: stri
             where: { email }
         });
 
-        // Garante que sempre será retornado um array
         return NextResponse.json(user ? [fixBigInt(user)] : []);
     } catch (error) {
         return NextResponse.json({ message: 'Erro na requisição' }, { status: 400 });

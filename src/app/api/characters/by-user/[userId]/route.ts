@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../../../prisma/ConnectionPrisma';
 import { fixBigInt } from '@/utils/fixBigInt';
 
-export async function GET(req: NextRequest, context: { params: { userId: string } }) {
-    // Aguardando os parâmetros assíncronos
-    const { userId } = await context.params;  // Aguarde o contexto para acessar os parâmetros
+export async function GET(
+    req: NextRequest,
+    { params } : { params: Promise<{ userId: string }> }
+) {
+    const { userId } = await params;
 
     if (!userId) {
         return NextResponse.json({ message: 'User ID is required' }, { status: 400 });

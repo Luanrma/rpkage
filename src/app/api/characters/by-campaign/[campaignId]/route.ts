@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../../../prisma/ConnectionPrisma';
 import { fixBigInt } from '@/utils/fixBigInt';
 
-export async function GET(req: NextRequest, context: { params: { campaignId: string } }) {
-    const { campaignId } = await context.params;
+export async function GET(
+    req: NextRequest,
+    { params } : { params: Promise<{ campaignId: string }> }
+) {
+    const { campaignId } = await params;
 
     if (!campaignId) {
         return NextResponse.json({ message: 'CampaignId is required' }, { status: 400 });
