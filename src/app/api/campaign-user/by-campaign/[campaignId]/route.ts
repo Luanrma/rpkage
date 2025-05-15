@@ -1,14 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '../../../../../../prisma/ConnectionPrisma';
-import { fixBigInt } from '@/utils/fixBigInt';
+import { NextRequest, NextResponse } from 'next/server'
+import prisma from '../../../../../../prisma/ConnectionPrisma'
+import { fixBigInt } from '@/utils/fixBigInt'
 
-export type ParamsType = Promise<{ campaignId: string }>;
-
-export async function GET(
-  req: Request,
-  props: { params: ParamsType }
-) {
-  const { campaignId } = await props.params;
+export async function GET(req: NextRequest, { params }: { params: { campaignId: string } }) {
+  const { campaignId } = await params;
 
   if (!campaignId) {
     return NextResponse.json({ message: 'campaignId is required' }, { status: 400 });
