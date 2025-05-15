@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
-import prisma from '../../../../../../prisma/ConnectionPrisma'
-import { fixBigInt } from '@/utils/fixBigInt'
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../../../../../prisma/ConnectionPrisma';
+import { fixBigInt } from '@/utils/fixBigInt';
 
-export async function GET(req: NextRequest, { params }: { params: { campaignId: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { campaignId: string } }
+) {
   const { campaignId } = params;
 
   if (!campaignId) {
