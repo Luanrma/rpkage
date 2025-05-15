@@ -7,8 +7,8 @@ export const bricsGenerator = (playerLevel: number): InterfaceItemGenerator => {
         name: "brics",
         type: "brics",
         rarity: "common",
-        slot: getBricsByLevel(playerLevel),
-        attributes: selectedOpts
+        slot: "brics",
+        attributes: [{ description: "brics x", status: getBricsByLevel(playerLevel), diceBonus: "" }]
     }
 }
 

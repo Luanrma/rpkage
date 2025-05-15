@@ -8,6 +8,7 @@ import { User } from '@prisma/client'
 import Logout from '../components/LogoutButton'
 import { LogOut } from 'lucide-react'
 
+// === Styled Components ===
 const Container = styled.div`
   max-width: 700px;
   margin: 0 auto;
@@ -88,159 +89,227 @@ const CampaignBox = styled.div`
   margin: 0.5rem 0;
 `
 
+// === Tipagens ===
 type Role = 'MASTER' | 'PLAYER'
 
 type CampaignUser = {
-	id: string,
-	campaignId: string
-	userId: number,
-	role: Role,
-	user: {
-		name: string
-	}
-	campaign: {
-		name: string,
-		description: string,
-	}
+  id: string
+  campaignId: string
+  userId: number
+  role: Role
+  user: { name: string }
+  campaign: { name: string; description: string }
 }
 
 type SelectedCampaign = {
-	name: string,
-	description:string,
-	userId: number | null 
+  name: string
+  description: string
+  userId: number | null
 }
 
+// === Componente Principal ===
 export default function CampaignEntry() {
-	const { setCampaignUser } = useSession()
-	const router = useRouter()
+  const { setCampaignUser, setCampaignCurrency } = useSession()
+  const router = useRouter()
 
-	const [view, setView] = useState<'initial' | 'create' | 'join'>('initial')
-	const [campaignList, setCampaignList] = useState<CampaignUser[]>([])
-	const [selectedCampaign, setSelectedCampaign] = useState<SelectedCampaign>({ name: '', description: '', userId: null, })
-	const [userData, setUserData] = useState<User | null>(null)
+  const [view, setView] = useState<'initial' | 'create' | 'join' | 'currency'>('initial')
+  const [campaignCreatedId, setCampaignCreatedId] = useState<string | null>(null)
+  const [campaignList, setCampaignList] = useState<CampaignUser[]>([])
+  const [selectedCampaign, setSelectedCampaign] = useState<SelectedCampaign>({
+    name: '',
+    description: '',
+    userId: null,
+  })
+  const [campaignUserId, setCampaignUserId] = useState<string | null>(null)
+  const [userData, setUserData] = useState<User | null>(null)
+  const [currencyItem, setCurrencyItem] = useState({ name: '' })
 
-	useEffect(() => {
-		async function loadUser() {
-			const res = await fetch('/api/me')
-			if (res.ok) {
-				const data = await res.json()
-				setUserData(data)
-				setSelectedCampaign(prev => ({ ...prev, userId: Number(data.id) }))
-			}
-		}
-		loadUser()
-	}, [])
+  // === Carrega o usuário ===
+  useEffect(() => {
+    async function loadUser() {
+      const res = await fetch('/api/me')
+      if (res.ok) {
+        const data = await res.json()
+        setUserData(data)
+        setSelectedCampaign(prev => ({ ...prev, userId: Number(data.id) }))
+      }
+    }
+    loadUser()
+  }, [])
 
-	useEffect(() => {
-		if (!userData || view !== 'join') return
+  // === Lista campanhas para o usuário se juntar ===
+  useEffect(() => {
+    if (!userData || view !== 'join') return
 
-		fetch(`/api/campaign-user/by-user/${userData.id}`)
-			.then(res => res.json())
-			.then(setCampaignList)
-	}, [view, userData])
+    fetch(`/api/campaign-user/by-user/${userData.id}`)
+      .then(res => res.json())
+      .then(setCampaignList)
+  }, [view, userData])
 
-	const handleCreate = async () => {
-		if (!selectedCampaign.userId) {
-			console.error('userId está vazio!')
-			return
-		}
+  // === Criação da campanha ===
+  const handleCreate = async () => {
+    if (!selectedCampaign.userId) return
 
-		const newCampaignResponse = await fetch(`/api/campaigns`, {
-			method: 'POST',
-			body: JSON.stringify(selectedCampaign),
-			headers: { 'Content-Type': 'application/json' },
-		})
+    const res = await fetch(`/api/campaigns`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(selectedCampaign),
+    })
 
-		if (newCampaignResponse.ok) {
-			const campaignCreated = await newCampaignResponse.json()
+    if (!res.ok) {
+      console.error('Erro ao criar campanha')
+      return
+    }
 
-			const newCampaignUserResponse = await fetch(`/api/campaign-user`, {
-				method: 'POST',
-				body: JSON.stringify({
-					userId: selectedCampaign.userId,
-					campaignId: campaignCreated.id,
-					role: 'MASTER'
-				}),
-				headers: { 'Content-Type': 'application/json' },
-			})
+    const campaign = await res.json()
+    setCampaignCreatedId(campaign.id)
 
-			if (newCampaignUserResponse.ok) {
-				const newCampaignUserCreated = await newCampaignUserResponse.json()
-				fetch(`/api/campaign-user/by-id/${newCampaignUserCreated.id}`)
-					.then(res => res.json())
-					.then(setCampaignUser)
+    const resUser = await fetch(`/api/campaign-user`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: selectedCampaign.userId,
+        campaignId: campaign.id,
+        role: 'MASTER',
+      }),
+    })
 
-				handleRefreshToken(newCampaignUserCreated.id)
-			}
-		}
-	}
+    if (resUser.ok) {
+      const campaignUser = await resUser.json()
+      const fullData = await fetch(`/api/campaign-user/by-id/${campaignUser.id}`).then(r => r.json())
 
-	const handleJoin = async (campaignUserId: string) => {
-		const selectedCampaignUser = campaignList.find(c => c.id === campaignUserId)
-		if (!selectedCampaignUser) return
+      setCampaignUser(fullData)
+      setCampaignUserId(campaignUser.id)
+      setView('currency')
+    }
+  }
 
-		setCampaignUser(selectedCampaignUser)
-		handleRefreshToken(selectedCampaignUser.id)
-	}
+  // === Criação da moeda ===
+  const handleCreateCurrencyItem = async () => {
+    if (!campaignCreatedId || !campaignUserId) return
 
-	const handleRefreshToken = async (selectedCampaignUserId: string) => {
-		await fetch('/api/token/refresh', {
-			method: 'POST',
-			body: JSON.stringify({ campaignUserId: selectedCampaignUserId }),
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		})
-		router.push('/home')
-	}
+    const res = await fetch('/api/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        campaignId: campaignCreatedId,
+        type: 'currency',
+        rarity: 'common',
+        name: currencyItem.name,
+        slot: 'pocket',
+        attributes: {
+          description: 'Moeda da campanha',
+        },
+      }),
+    })
 
-	return (
-		<Container>
-			<Logout><LogOut/></Logout>
-			
-			<Title>🎲 Bem-vindo ao Gerenciador de Campanhas</Title>
+    if (res.ok) {
+      const currency = await res.json()
+      setCampaignCurrency({ id: currency.id, name: currency.name })
+      handleRefreshToken(campaignUserId)
+    }
+  }
 
-			{view === 'initial' && (
-				<ButtonGroup>
-					<Button onClick={() => setView('create')}>Criar Campanha</Button>
-					<Button onClick={() => setView('join')}>Entrar em Campanha</Button>
-				</ButtonGroup>
-			)}
+  // === Entrar em uma campanha existente ===
+  const handleJoin = async (campaignUserId: string) => {
+    const selected = campaignList.find(c => c.id === campaignUserId)
+    if (!selected) return
 
-			{view === 'create' && (
-				<Card>
-					<SubTitle>Criar Nova Campanha</SubTitle>
-					<Input
-						placeholder="Nome da campanha"
-						value={selectedCampaign.name}
-						onChange={e => setSelectedCampaign({ ...selectedCampaign, name: e.target.value })}
-					/>
-					<TextArea
-						placeholder="Descrição"
-						value={selectedCampaign.description}
-						onChange={e => setSelectedCampaign({ ...selectedCampaign, description: e.target.value })}
-					/>
-					<ButtonGroup>
-						<Button onClick={handleCreate}>Salvar</Button>
-						<Button onClick={() => setView('initial')}>Voltar</Button>
-					</ButtonGroup>
-				</Card>
-			)}
+    setCampaignUser(selected)
 
-			{view === 'join' && (
-				<Card>
-					<SubTitle>Escolha uma campanha existente</SubTitle>
-					{campaignList.map(c => (
-						<CampaignBox key={c.id}>
-							<strong>Criado por: {c.user.name}</strong>
-							<strong>{c.campaign.name}</strong>
-							<p>{c.campaign.description}</p>
-							<Button onClick={() => handleJoin(c.id)}>Entrar</Button>
-						</CampaignBox>
-					))}
-					<Button style={{ marginTop: '1rem' }} onClick={() => setView('initial')}>Voltar</Button>
-				</Card>
-			)}
-		</Container>
-	)
+    try {
+      const res = await fetch(`/api/items/by-campaign-and-type/${selected.campaignId}/currency`)
+      if (!res.ok) {
+        alert('Erro ao buscar moeda da campanha')
+        return
+      }
+
+      const currency = await res.json()
+      if (!currency.id) {
+        alert('Moeda inválida')
+        return
+      }
+
+      setCampaignCurrency({ id: currency.id, name: currency.name })
+      handleRefreshToken(selected.id)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  // === Atualiza o token e redireciona ===
+  const handleRefreshToken = async (campaignUserId: string) => {
+    await fetch('/api/token/refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaignUserId }),
+    })
+
+    router.push('/home')
+  }
+
+  // === Render ===
+  return (
+    <Container>
+      <Logout><LogOut /></Logout>
+
+      <Title>🎲 Bem-vindo ao Gerenciador de Campanhas</Title>
+
+      {view === 'initial' && (
+        <ButtonGroup>
+          <Button onClick={() => setView('create')}>Criar Campanha</Button>
+          <Button onClick={() => setView('join')}>Entrar em Campanha</Button>
+        </ButtonGroup>
+      )}
+
+      {view === 'create' && (
+        <Card>
+          <SubTitle>Criar Nova Campanha</SubTitle>
+          <Input
+            placeholder="Nome da campanha"
+            value={selectedCampaign.name}
+            onChange={e => setSelectedCampaign({ ...selectedCampaign, name: e.target.value })}
+          />
+          <TextArea
+            placeholder="Descrição"
+            value={selectedCampaign.description}
+            onChange={e => setSelectedCampaign({ ...selectedCampaign, description: e.target.value })}
+          />
+          <ButtonGroup>
+            <Button onClick={handleCreate}>Salvar</Button>
+            <Button onClick={() => setView('initial')}>Voltar</Button>
+          </ButtonGroup>
+        </Card>
+      )}
+
+      {view === 'currency' && (
+        <Card>
+          <SubTitle>Defina a Moeda da Campanha</SubTitle>
+          <Input
+            placeholder="Nome da Moeda (ex: BRICS)"
+            value={currencyItem.name}
+            onChange={e => setCurrencyItem({ ...currencyItem, name: e.target.value })}
+          />
+          <ButtonGroup>
+            <Button onClick={handleCreateCurrencyItem}>Salvar Moeda</Button>
+          </ButtonGroup>
+        </Card>
+      )}
+
+      {view === 'join' && (
+        <Card>
+          <SubTitle>Escolha uma campanha existente</SubTitle>
+          {campaignList.map(campaignSelected => (
+            <CampaignBox key={campaignSelected.id}>
+              <strong>Criado por: {campaignSelected.user.name}</strong>
+              <strong>{campaignSelected.campaign.name}</strong>
+              <p>{campaignSelected.campaign.description}</p>
+              <Button onClick={() => handleJoin(campaignSelected.id)}>Entrar</Button>
+            </CampaignBox>
+          ))}
+          <Button style={{ marginTop: '1rem' }} onClick={() => setView('initial')}>Voltar</Button>
+        </Card>
+      )}
+    </Container>
+  )
 }

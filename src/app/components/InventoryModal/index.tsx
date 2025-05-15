@@ -3,6 +3,8 @@ import styled from "styled-components";
 import ReactDOM from 'react-dom';
 import InventoryModalItemDetails from "../InventoryModalItemDetails";
 import BagItemIcon from "../BagItemIcon";
+import ItemTransaction from '../ItemTransaction';
+import { Currency } from "@prisma/client";
 
 const Overlay = styled.div`
   position: fixed;
@@ -18,6 +20,7 @@ const Overlay = styled.div`
 `;
 
 const ModalBox = styled.div`
+  position: relative;
   background: #2a2a2a;
   padding: 1rem;
   border-radius: 10px;
@@ -71,7 +74,7 @@ const ItemIcon = styled.span`
   font-size: 2rem;
 `;
 
-const MonetaryContainer = styled.div`
+const CurrencyContainer = styled.div`
 	padding: .5rem .5rem 0 0;
 	display: flex;
     align-items: center;
@@ -83,10 +86,48 @@ const MonetaryContainer = styled.div`
 	}
 `
 
+export type ItemAttributes = {
+    dice: string;
+    status: string;
+    description: string;
+};
+
+type ItemDefinition = {
+    type: string;
+};
+
+type ItemDetail = {
+    id: string;
+    campaingId: string;
+    type: string;
+    rarity: string;
+    name: string;
+    slot: string;
+    attributes: {
+        opt_1: ItemAttributes | null;
+        opt_2: ItemAttributes | null;
+        opt_3: ItemAttributes | null;
+        opt_4: ItemAttributes | null;
+        definition: ItemDefinition;
+    };
+};
+
+export type InventoryItem = {
+    id: bigint;
+    inventoryId: bigint;
+    itemsId: bigint;
+    createdAt: Date;
+    updatedAt: Date;
+    item: ItemDetail;
+};
+
 export default function InventoryModal({ characterId, onClose }: { characterId: string; onClose: () => void }) {
-	const [items, setItems] = useState<any[]>([]);
+	const [items, setItems] = useState<InventoryItem[]>([]);
+	const [currency, setCurrency] = useState<Currency | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [selectedItem, setSelectedItem] = useState<any | null>(null);
+	const [showDropdownCurrency, setShowDropdownCurrency] = useState(false);
+	const [currencyPayload, setCurrencyPayload] = useState<any>();
 
 	useEffect(() => {
 		const fetchInventory = async () => {
@@ -95,6 +136,9 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 				const data = await res.json();
 				const inventoryItems = data?.inventoryItems || [];
 				setItems(inventoryItems);
+				setCurrency(data?.Currency?.[0] || null)
+
+				
 			} catch (error) {
 				console.error('Erro ao buscar inventário:', error);
 			} finally {
@@ -105,16 +149,38 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 		fetchInventory();
 	}, [characterId]);
 
+	const handleCurrencyDropDown = () => {
+		setShowDropdownCurrency(!showDropdownCurrency)
+	}
+
 	const handleUpdateInventory = async () => {
 		try {
 			const res = await fetch(`/api/inventory/by-character/${characterId}`);
 			const data = await res.json();
 			setItems(data?.inventoryItems || []);
+			setCurrency(data?.Currency?.[0] || null)
 			setSelectedItem(null); // opcional: fecha o detalhe após a ação
 		} catch (error) {
 			console.error('Erro ao atualizar inventário:', error);
 		}
 	};
+
+	useEffect(()=> {
+		if (!currency) {
+			return;
+		}
+
+		const currencyPayload = {
+			type: "brics",
+			rarity: "common",
+			slot: "brics",
+			attributes: [{status: currency.amount}],
+			name: currency.name,
+			itemId: Number(currency.id),
+			inventoryItemId: null,
+		}
+		setCurrencyPayload(currencyPayload)
+	},[currency])
 
 	return ReactDOM.createPortal(
 		<Overlay onClick={onClose}>
@@ -130,7 +196,7 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 								onClick={() => setSelectedItem(inv)}
 								title={inv.item?.name || 'Item desconhecido'}
 							>
-								<ItemIcon><BagItemIcon iconName={inv.item.type} /></ItemIcon>
+								<ItemIcon><BagItemIcon iconName={inv.item.slot} /></ItemIcon>
 							</GridItem>
 						))}
 					</GridContainer>
@@ -140,19 +206,35 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 					</GridContainer>
 				)}
 
-				<MonetaryContainer>
+				<CurrencyContainer 
+					title={currency?.name || "currency"}
+					onClick={() => handleCurrencyDropDown()}
+				>
 					<ItemIcon>
 						<BagItemIcon iconName="brics" />
 					</ItemIcon>
-
-					<span>0</span>
-				</MonetaryContainer>
+					<span>{currency?.amount || '0'}</span>
+				</CurrencyContainer>
 
 				{/* Verifica se há um item selecionado e exibe os detalhes no modal */}
 				{selectedItem && (
 					<InventoryModalItemDetails 
 						inventoryItem={selectedItem}
 						onInventoryChange={handleUpdateInventory}
+					/>
+				)}
+
+				{showDropdownCurrency && (
+					<ItemTransaction
+						showDropdown={showDropdownCurrency}
+						type={currencyPayload.type}
+						rarity={currencyPayload.rarity}
+						attributes={currencyPayload.attributes}
+						name={currencyPayload.name ?? 'brics'}
+						slot={currencyPayload.slot}
+						itemId={currencyPayload.itemId}
+						inventoryItemId={null}
+						onTransactionComplete={handleUpdateInventory}
 					/>
 				)}
 			</ModalBox>

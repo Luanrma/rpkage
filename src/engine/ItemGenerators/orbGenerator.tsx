@@ -17,7 +17,7 @@ export const orbGenerator = (): InterfaceItemGenerator => {
         name: orbName,
         type: "orb",
         rarity: drop.rarity,
-        slot: translateOrb(drop.orb),
+        slot: "orb",
         attributes: []
     }
 }

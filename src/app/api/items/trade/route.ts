@@ -25,7 +25,9 @@ export async function POST(request: Request) {
             rarity,
             attributes,
             transactionType,
-            itemValue
+            itemValue,
+            campaignCurrencyId,
+			campaignCurrencyName
         } = body;
         
         if (!characterId || !campaignId || !toInventoryId || !type || !rarity || !rarity || !slot || !attributes) {
@@ -45,9 +47,11 @@ export async function POST(request: Request) {
             slot,
             attributes,
             transactionType,
-            itemValue
+            itemValue,
+            campaignCurrencyId,
+            campaignCurrencyName
         } as SaveItemPayload
-       
+ 
         const newItem = createItemIfNecessaryAndLinkToInventory(payload)
 
         return NextResponse.json(fixBigInt(newItem), { status: 201 });

@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../prisma/ConnectionPrisma';
 import { fixBigInt } from '@/utils/fixBigInt';
 
+export async function GET() {
+	const campaign = await prisma.currency.findMany({
+		include: {
+			inventory: true,
+		},
+	});
+    
+	return NextResponse.json(fixBigInt(campaign));
+}
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
@@ -11,7 +21,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const newItem = await prisma.monetary.create({
+        const newItem = await prisma.currency.create({
             data: {
                 inventoryId,
                 name,
@@ -36,12 +46,12 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const monetary = await prisma.monetary.update({
+        const currency = await prisma.currency.update({
             where: { id, inventoryId },
             data: { amount }
         });
 
-        return NextResponse.json(fixBigInt(monetary), { status: 201 });
+        return NextResponse.json(fixBigInt(currency), { status: 201 });
 
     } catch (error) {
         console.error('PUT /api/monetary error:', error);

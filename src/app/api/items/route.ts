@@ -22,7 +22,7 @@ export async function POST(request: Request) {
                 type,
                 rarity,
                 name,
-                slot: slot ?? "In your pocket",
+                slot: slot ?? "pocket",
                 attributes
             }
         });

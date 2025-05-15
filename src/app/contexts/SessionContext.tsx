@@ -18,20 +18,30 @@ type CampaignUser = {
 	}
 }
 
+type CampaignCurrency = {
+	id: string
+	name: string
+}
+
 type SessionContextType = {
 	campaignUser: CampaignUser | null
 	setCampaignUser: (data: CampaignUser) => void
+	campaignCurrency: CampaignCurrency | null
+	setCampaignCurrency: (data: CampaignCurrency) => void
 }
 
 const defaultSession: SessionContextType = {
 	campaignUser: null,
 	setCampaignUser: () => {},
+	campaignCurrency: null,
+	setCampaignCurrency: () => {},
 }
 
 const SessionContext = createContext<SessionContextType>(defaultSession)
 
 export function SessionProvider({ children }: { children: ReactNode }) {
 	const [campaignUser, setCampaignUser] = useState<CampaignUser | null>(null)
+	const [campaignCurrency, setCampaignCurrency] = useState<CampaignCurrency | null>(null)
 
 	useEffect(() => {
 		async function restoreSession() {
@@ -49,6 +59,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
 				const campaignUserData = await campaignRes.json()
 				setCampaignUser(campaignUserData)
+
+				// Restoring campaignCurrency
+				const currencyRes = await fetch(`/api/items/by-campaign-and-type/${campaignUserData.campaignId}/currency`)
+				if (!currencyRes.ok) return
+
+				const campaignCurrencyData = await currencyRes.json()
+				setCampaignCurrency(campaignCurrencyData)
 			} catch (error) {
 				console.error('Erro ao restaurar sessão:', error)
 			}
@@ -58,7 +75,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 	}, [])
 
 	return (
-		<SessionContext.Provider value={{ campaignUser, setCampaignUser }}>
+		<SessionContext.Provider value={{ campaignUser, setCampaignUser, campaignCurrency, setCampaignCurrency }}>
 			{children}
 		</SessionContext.Provider>
 	)

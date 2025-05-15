@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight, Backpack, User, House, LogOut, Handshake, SmilePlus } from "lucide-react";
 import LogoutButton from '../LogoutButton';
@@ -61,6 +61,19 @@ const ToggleButton = styled.button<{ $collapsed: boolean }>`
 export default function Aside() {
 	const [collapsed, setCollapsed] = useState(true);
 	const { campaignUser } = useSession();
+
+	// Novo estado para controlar se está no client
+  	const [isClient, setIsClient] = useState(false);
+
+		// Após montar no client, ativa a renderização real
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	if (!isClient) {
+		// Retorna nulo no server e no primeiro render client, evitando mismatch
+		return null;
+	}
 
 	const isMaster = campaignUser?.role === 'MASTER';
 	const isPlayer = campaignUser?.role === 'PLAYER';

@@ -1,45 +1,12 @@
 import styled from "styled-components";
 import ItemCard from "../ItemCard";
+import { InventoryItem, ItemAttributes } from "../InventoryModal";
 
 // Estilos
 const ItemDetailContainer = styled.div`
     position: fixed;
     padding: 1rem 0 0 2rem;
 `;
-
-type ItemAttributes = {
-    dice: string;
-    status: string;
-    description: string;
-};
-
-type ItemDefinition = {
-    type: string;
-};
-
-type ItemDetail = {
-    id: string;
-    campaingId: string;
-    type: string;
-    rarity: string;
-    description: string;
-    attributes: {
-        opt_1: ItemAttributes | null;
-        opt_2: ItemAttributes | null;
-        opt_3: ItemAttributes | null;
-        opt_4: ItemAttributes | null;
-        definition: ItemDefinition;
-    };
-};
-
-type InventoryItem = {
-    id: bigint;
-    inventoryId: bigint;
-    itemsId: bigint;
-    createdAt: Date;
-    updatedAt: Date;
-    item: ItemDetail;
-};
 
 interface InventoryModalItemDetailsProps {
     inventoryItem: InventoryItem;
@@ -60,10 +27,10 @@ export default function InventoryModalItemDetails({ inventoryItem, onInventoryCh
             <ItemCard
                 id={Number(inventoryItem.item.id)}
                 inventoryItemId={Number(inventoryItem.id)}
-                name=""
+                name={inventoryItem.item.name}
                 type={inventoryItem.item.type}
                 rarity={inventoryItem.item.rarity}
-                slot={inventoryItem.item.type}
+                slot={inventoryItem.item.slot}
                 attributes={filteredOptions}
                 onTransactionComplete={onInventoryChange}
             />

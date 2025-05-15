@@ -54,8 +54,6 @@ async function main() {
             },
         ],
     });
-
-    console.log('Seed realizado com sucesso!');
 }
 
 main()

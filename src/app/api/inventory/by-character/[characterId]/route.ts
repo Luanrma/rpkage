@@ -29,6 +29,7 @@ export async function GET(req: NextRequest, context: { params: { characterId: st
                         item: true,
                     },
                 },
+				Currency: true
             },
         });
 		

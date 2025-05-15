@@ -11,11 +11,11 @@ export async function GET(context: { params: { inventoryId: string } }) {
 
     try {
         const inventoryIdBigInt = BigInt(inventoryId);
-        const monetary = await prisma.monetary.findUnique({
+        const currency = await prisma.currency.findUnique({
             where: { inventoryId: inventoryIdBigInt },
         });
 
-        return NextResponse.json(fixBigInt(monetary));
+        return NextResponse.json(fixBigInt(currency));
     } catch (error) {
         return NextResponse.json({ message: 'Invalid inventoryId format' }, { status: 400 });
     }
