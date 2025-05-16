@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import styled, { keyframes, css } from 'styled-components'
-import { GiDiceTwentyFacesTwenty } from 'react-icons/gi'
+import DiceTwentyFaces from '../DiceTwentyFaces';
+import { LoadingScreen } from '../LoadingScreen';
 
 const createSpin = (clockwise: boolean) => keyframes`
   0% { transform: rotate(0deg); }
@@ -82,7 +83,7 @@ export const SpinningDice: React.FC<SpinningDiceProps> = ({
                     duration={duration}
                     clockwise={clockwise}
                 >
-                    <GiDiceTwentyFacesTwenty />
+                    <DiceTwentyFaces size={5} />
                 </DiceWrapper>
                 <ResultText>
                     <strong>{value > 0 ? value : "..."}</strong>
@@ -91,6 +92,8 @@ export const SpinningDice: React.FC<SpinningDiceProps> = ({
             <Button onClick={roll} disabled={animating}>
                 {animating ? 'Rolando...' : 'Rolar Dado'}
             </Button>
+
+            <LoadingScreen/>
         </div>
     )
 }

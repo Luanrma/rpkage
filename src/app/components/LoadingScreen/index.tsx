@@ -1,5 +1,5 @@
-import { GiDiceTwentyFacesTwenty } from 'react-icons/gi'
 import styled, { keyframes } from 'styled-components'
+import DiceTwentyFaces from '../DiceTwentyFaces'
 
 type LoadingScreenProps = {
     message?: string
@@ -24,7 +24,7 @@ const Overlay = styled.div`
   justify-content: center;
 `
 
-const SpinningDice = styled(GiDiceTwentyFacesTwenty)`
+const SpinningDice = styled(DiceTwentyFaces)`
   font-size: 150px;
   color: #ffdd57;
   animation: ${spin} 1.6s linear infinite;
@@ -42,7 +42,7 @@ const LoadingText = styled.p`
 export function LoadingScreen({ message = 'Carregando seu destino...' }: LoadingScreenProps) {
     return (
         <Overlay>
-            <SpinningDice />
+            <SpinningDice size={20} />
             <LoadingText>{message}</LoadingText>
         </Overlay>
     )

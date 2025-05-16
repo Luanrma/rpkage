@@ -5,7 +5,6 @@ import { Character, Campaign } from '@prisma/client'
 import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { motion } from 'framer-motion'
-import { GiWizardFace } from 'react-icons/gi'
 import { LoadingScreen } from '../LoadingScreen'
 
 type CharacterWithCampaign = Character & {
@@ -187,7 +186,6 @@ export default function HomePage() {
 					transition={{ duration: 0.8 }}
 				>
 					<Header>
-						<GiWizardFace size={52} color="#ffdd57" />
 						<CampaignInfo>
 							<h1>{campaignUser.campaign.name}</h1>
 							<p>{campaignUser.campaign.description}</p>

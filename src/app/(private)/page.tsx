@@ -7,7 +7,7 @@ import styled, { keyframes } from 'styled-components'
 import { User } from '@prisma/client'
 import Logout from '../components/LogoutButton'
 import { LogOut } from 'lucide-react'
-import { GiDiceTwentyFacesTwenty } from 'react-icons/gi'
+import DiceTwentyFaces from '../components/DiceTwentyFaces'
 
 // === Styled Components ===
 const LogoutWrapper = styled.div`
@@ -41,7 +41,7 @@ const spin = keyframes`
   100% { transform: rotate(360deg); }
 `
 
-const SpinningDice = styled(GiDiceTwentyFacesTwenty)`
+const SpinningDice = styled(DiceTwentyFaces)`
   font-size: 3rem;
   color:rgb(168, 103, 212);
   animation: ${spin} 4s linear infinite;
