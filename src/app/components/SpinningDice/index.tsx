@@ -92,8 +92,6 @@ export const SpinningDice: React.FC<SpinningDiceProps> = ({
             <Button onClick={roll} disabled={animating}>
                 {animating ? 'Rolando...' : 'Rolar Dado'}
             </Button>
-
-            <LoadingScreen/>
         </div>
     )
 }
