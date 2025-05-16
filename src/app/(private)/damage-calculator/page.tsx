@@ -1,5 +1,6 @@
 'use client'
 
+import { SpinningDice } from "@/app/components/SpinningDice";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -20,11 +21,7 @@ const Container = styled.div`
 export default function DamageCalculatorContainer() {
   return (
     <Container>
-        <div className="damage-container">
-            <h2>Damage Calculator em construção 🛠️</h2>
-            <p>Aqui você poderá calcular o dano causado por armas, habilidades e buffs.</p>
-            <p>(Em breve... ⚔️🔥)</p>
-        </div>
+        <SpinningDice sides={20} />
     </Container>
   );
 }

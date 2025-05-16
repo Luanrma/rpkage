@@ -8,6 +8,7 @@ import KageSheetForm from '@/app/components/KageSheetForm';
 import { SheetModelKageForCharacter } from './sheetModel';
 import { Backpack } from 'lucide-react';
 import InventoryModal from '@/app/components/InventoryModal';
+import { LoadingScreen } from '@/app/components/LoadingScreen';
 
 const Container = styled.div`
   max-width: 800px;
@@ -89,7 +90,7 @@ export default function CreateCharacterPage() {
                     setSheet(undefined);
                 }
             } catch (err) {
-                console.error('Erro ao buscar personagem existente');
+                console.error('Erro ao buscar personagem');
             } finally {
                 setLoading(false);
             }
@@ -153,7 +154,9 @@ export default function CreateCharacterPage() {
         }
     };
 
-    if (loading) return <Container>Carregando ficha...</Container>;
+    if (loading) {
+        return <LoadingScreen />
+    }
 
     return (
         <Container>

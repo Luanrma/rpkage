@@ -38,9 +38,6 @@ export default function SignInPage() {
 			return
 		}
 
-		const data = await res.json()
-		const { type } = data
-
 		router.push('/')
 	}
 

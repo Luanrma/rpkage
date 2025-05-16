@@ -41,7 +41,7 @@ export async function GET(
             },
         });
 
-        const parsed = characters.map((char) => ({
+        const parsed = characters.map((char: any) => ({
             id: char.id,
             userId: char.userId,
             inventoryId: char.inventory?.id ?? null,
