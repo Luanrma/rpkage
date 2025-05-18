@@ -106,7 +106,7 @@ export const createCurrencyTransaction = async (payload: CurrencyTransactionPayl
             });
 
             // 3. Cria histórico da transação
-            await tx.currencyTransactionHistory.create({
+           /* await tx.currencyTransactionHistory.create({
                 data: {
                     campaignId,
                     walletId: toWalletId,
@@ -114,7 +114,7 @@ export const createCurrencyTransaction = async (payload: CurrencyTransactionPayl
                     transactionType,
                     amount: amount,
                 },
-            });
+            });*/
 
             return Number(newAmount);
         });
@@ -163,14 +163,14 @@ const createItemTransaction = async (payload: SaveItemPayload) => {
         }
 
         // Se o item está vinculado a algum inventário, remove ele da origem
-        if (inventoryItemId) {
+        if (fromInventoryId) {
             await tx.inventoryItem.delete({
-                where: { id: inventoryItemId }
+                where: { id: fromInventoryId }
             })
         }
 
         // Cria histórico de transação
-        const finalItemValue = transactionType === 'SELL' ? itemValue : '0';
+       /* const finalItemValue = transactionType === 'SELL' ? itemValue : '0';
         await tx.itemTransactionHistory.create({
             data: {
                 itemId: BigInt(itemIdFinal),
@@ -180,7 +180,7 @@ const createItemTransaction = async (payload: SaveItemPayload) => {
                 transactionType,
                 amount: finalItemValue
             },
-        });
+        });*/
 
         return itemIdFinal;
     });
