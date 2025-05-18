@@ -22,9 +22,16 @@ export async function GET(
                     include: {
                         item: true,
                     },
-                }
+                },
+                character: {
+					include: {
+						Wallet: true,
+					},
+				},
             },
         });
+
+        console.log(inventory?.character.Wallet)
 		
         return NextResponse.json(fixBigInt(inventory));
     } catch (error) {

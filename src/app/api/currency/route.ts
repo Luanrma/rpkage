@@ -5,7 +5,7 @@ import { fixBigInt } from '@/utils/fixBigInt';
 export async function GET() {
 	const campaign = await prisma.currency.findMany({
 		include: {
-			inventory: true,
+			Wallet: true,
 		},
 	});
     
@@ -15,17 +15,16 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { inventoryId, name, amount } = body;
+        const { campaignId, name } = body;
 
-        if (!inventoryId || !name || !amount) {
+        if (!campaignId || !name) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
         const newItem = await prisma.currency.create({
             data: {
-                inventoryId,
+                campaignId,
                 name,
-                amount
             }
         });
 
@@ -37,7 +36,7 @@ export async function POST(request: Request) {
     }
 }
 
-export async function PUT(request: Request) {
+/*export async function PUT(request: Request) {
     try {
         const body = await request.json();
         const { id, inventoryId, amount } = body;
@@ -57,4 +56,4 @@ export async function PUT(request: Request) {
         console.error('PUT /api/monetary error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-}
+}*/

@@ -4,7 +4,8 @@ import ReactDOM from 'react-dom';
 import InventoryModalItemDetails from "../InventoryModalItemDetails";
 import BagItemIcon from "../BagItemIcon";
 import ItemTransaction from '../ItemTransaction';
-import { Currency } from "@prisma/client";
+import { Wallet } from "@prisma/client";
+import { useSession } from "@/app/contexts/SessionContext";
 
 const Overlay = styled.div`
   position: fixed;
@@ -122,23 +123,29 @@ export type InventoryItem = {
 };
 
 export default function InventoryModal({ characterId, onClose }: { characterId: string; onClose: () => void }) {
+	const { campaignUser } = useSession()
 	const [items, setItems] = useState<InventoryItem[]>([]);
-	const [currency, setCurrency] = useState<Currency | null>(null);
+	const [wallet, setWallet] = useState<Wallet | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [selectedItem, setSelectedItem] = useState<any | null>(null);
 	const [showDropdownCurrency, setShowDropdownCurrency] = useState(false);
 	const [currencyPayload, setCurrencyPayload] = useState<any>();
 
 	useEffect(() => {
+		if (!campaignUser) {
+			return
+		}
+	}, [])
+
+	useEffect(() => {
 		const fetchInventory = async () => {
 			try {
-				const res = await fetch(`/api/inventory/by-character/${characterId}`);
-				const data = await res.json();
-				const inventoryItems = data?.inventoryItems || [];
+				const res = await fetch(`/api/inventory-and-wallet/by-character/${characterId}`);
+				const inventoryAndWallet = await res.json();
+				const inventoryItems = inventoryAndWallet?.inventoryItems || [];
+				const wallet = inventoryAndWallet?.character.Wallet || [];
 				setItems(inventoryItems);
-				setCurrency(data?.Currency?.[0] || null)
-
-				
+				setWallet(wallet)
 			} catch (error) {
 				console.error('Erro ao buscar inventário:', error);
 			} finally {
@@ -150,6 +157,7 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 	}, [characterId]);
 
 	const handleCurrencyDropDown = () => {
+		if (!wallet) return;
 		setShowDropdownCurrency(!showDropdownCurrency)
 	}
 
@@ -158,7 +166,7 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 			const res = await fetch(`/api/inventory/by-character/${characterId}`);
 			const data = await res.json();
 			setItems(data?.inventoryItems || []);
-			setCurrency(data?.Currency?.[0] || null)
+			setWallet(data?.Currency?.[0] || null)
 			setSelectedItem(null); // opcional: fecha o detalhe após a ação
 		} catch (error) {
 			console.error('Erro ao atualizar inventário:', error);
@@ -166,21 +174,21 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 	};
 
 	useEffect(()=> {
-		if (!currency) {
+		if (!wallet) {
 			return;
 		}
-
-		const currencyPayload = {
-			type: "brics",
+		const walletPayload = {
+			type: "currency",
 			rarity: "common",
-			slot: "brics",
-			attributes: [{status: currency.amount}],
-			name: currency.name,
-			itemId: Number(currency.id),
+			slot: "wallet",
+			attributes: [{status: wallet.amount}],
+			name: campaignUser?.campaign.currencyName,
+			itemId: Number(wallet.id),
 			inventoryItemId: null,
 		}
-		setCurrencyPayload(currencyPayload)
-	},[currency])
+		setCurrencyPayload(walletPayload)
+		
+	}, [wallet])
 
 	return ReactDOM.createPortal(
 		<Overlay onClick={onClose}>
@@ -207,13 +215,13 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 				)}
 
 				<CurrencyContainer 
-					title={currency?.name || "currency"}
+					title={campaignUser?.campaign.currencyName || "currency"}
 					onClick={() => handleCurrencyDropDown()}
 				>
 					<ItemIcon>
 						<BagItemIcon iconName="brics" />
 					</ItemIcon>
-					<span>{currency?.amount || '0'}</span>
+					<span>{wallet?.amount || '0'}</span>
 				</CurrencyContainer>
 
 				{/* Verifica se há um item selecionado e exibe os detalhes no modal */}
@@ -224,7 +232,7 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 					/>
 				)}
 
-				{showDropdownCurrency && (
+				{showDropdownCurrency && currencyPayload && (
 					<ItemTransaction
 						showDropdown={showDropdownCurrency}
 						type={currencyPayload.type}

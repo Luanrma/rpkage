@@ -30,7 +30,7 @@ export async function createItemIfNecessaryAndLinkToInventory(payload: SaveItemP
         throw new Error(validation.error.message);
     }
 
-    if (payload.type === "brics") {
+    if (payload.type === "currency") {
         return createCurrencyTransaction(payload)
     }
 
@@ -62,7 +62,7 @@ const createCurrencyTransaction = async (payload: SaveItemPayload) => {
             }
             // 1. Verificar se a origem tem saldo suficiente (somente se itemId != null)
             if (itemId && fromInventoryId) {
-                const fromCurrency = await tx.currency.findUnique({
+                const fromCurrency = await tx.wallet.findUnique({
                     where: { inventoryId: fromInventoryId },
                 });
                 
@@ -73,7 +73,7 @@ const createCurrencyTransaction = async (payload: SaveItemPayload) => {
                 }
 
                 // Subtrai o valor da origem
-                await tx.currency.update({
+                await tx.wallet.update({
                     where: { inventoryId: fromInventoryId },
                     data: {
                         amount: (fromAmount - incomingAmount).toString(),
@@ -82,37 +82,35 @@ const createCurrencyTransaction = async (payload: SaveItemPayload) => {
             }
 
             // 2. Adiciona o valor ao destino
-            const existingCurrency = await tx.currency.findUnique({
+            const existingCurrency = await tx.wallet.findUnique({
                 where: { inventoryId: toInventoryId },
             });
 
             const currentAmount = Number(existingCurrency?.amount || 0);
             const newAmount = currentAmount + incomingAmount;
 
-            await tx.currency.upsert({
+            await tx.wallet.upsert({
                 where: { inventoryId: toInventoryId },
                 update: {
-                    amount: newAmount.toString(),
-                    name: campaignCurrencyName ?? "currency",
+                    amount: newAmount.toString()
                 },
                 create: {
                     inventoryId: toInventoryId,
-                    name: campaignCurrencyName ?? "currency",
+                    currencyId: BigInt(campaignCurrencyId),
                     amount: newAmount.toString(),
                 },
             });
 
             // 3. Cria histórico da transação
-            await tx.itemTransactionHistory.create({
+            /*await tx.currencyTransactionHistory.create({
                 data: {
-                    itemId: BigInt(campaignCurrencyId),
                     campaignId,
-                    inventoryId: toInventoryId,
-                    fromInventoryId,
+                    walletId: toWalletId,
+                    fromWalletId,
                     transactionType,
                     amount: itemValue,
                 },
-            });
+            });*/
 
             return Number(newAmount);
         });

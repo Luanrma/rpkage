@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { SaveItemPayload } from '@/app/services/itemService/itemService';
 import { useSession } from '@/app/contexts/SessionContext';
+import { LoadingScreen } from '../LoadingScreen';
 
 const Dropdown = styled.ul`
   position: absolute;
@@ -177,7 +178,7 @@ export default function ItemTransaction({
 	onTransactionComplete,
 	showDropdown
 }: TransactionModalProps) {
-	const { campaignUser, campaignCurrency } = useSession();
+	const { campaignUser } = useSession();
 
 	const [otherCharacters, setOtherCharacters] = useState<Character[]>([]);
 	const [currentCharacter, setCurrentCharacter] = useState<{ userId: number; inventoryId: number } | null>(null);
@@ -187,10 +188,11 @@ export default function ItemTransaction({
 	const [error, setError] = useState("");
 
 	useEffect(() => {
+		if (!campaignUser || !showDropdown) return;
+
 		const fetchCharacters = async () => {
-			if (!campaignUser?.campaignId) return;
 			try {
-				const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser.campaignId}/${campaignUser.userId}`);
+				const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`);
 				const data = await res.json();
 				setOtherCharacters(data.othersPlayer);
 				setCurrentCharacter({ userId: data.currentPlayer.userId, inventoryId: data.currentPlayer.inventoryId });
@@ -198,13 +200,12 @@ export default function ItemTransaction({
 				console.error('Erro ao buscar personagens:', err);
 			}
 		};
-
-		if (showDropdown) fetchCharacters();
-	}, [showDropdown, campaignUser]);
+		fetchCharacters()
+	}, [campaignUser, showDropdown]);
 
 	useEffect(() => {
-		if (type === "brics" && attributes.length > 0) {
-			setItemValue(prev => (prev === "0" ? attributes[0].status!.toString() : prev));
+		if (type === "currency" && attributes.length > 0) {
+			setItemValue(prev => (prev === "0" ? attributes[0].status : prev));
 		}
 	}, [type, attributes]);
 
@@ -235,8 +236,7 @@ export default function ItemTransaction({
 				slot: slot ?? "pocket",
 				transactionType,
 				itemValue,
-				campaignCurrencyId: campaignCurrency!.id,
-				campaignCurrencyName: campaignCurrency!.name,
+				campaignCurrencyName: campaignUser.campaign.currencyName,
 			};
 
 			const response = await fetch('/api/items/trade', {
@@ -284,7 +284,7 @@ export default function ItemTransaction({
 						{error && <ErrorMessage>{error}</ErrorMessage>}
 						<h3>Tipo de Transação</h3>
 						<div className="modal-content-send-items">
-							{type !== "brics" && (
+							{type !== "currency" && (
 								<button onClick={() => handleTransactionConfirm("TRADE")}>Troca</button>
 							)}
 							<button onClick={() => handleTransactionConfirm("GIFT")}>Doação</button>

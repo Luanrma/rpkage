@@ -4,7 +4,7 @@ import { getOtherCharactersInTheCampaign } from '@/app/services/characterService
 
 export async function GET(
     req: Request, 
-    { params } : { params: Promise<{ campaignId:string, userId: string }> }
+    { params } : { params: Promise<{ campaignId: string, userId: string }> }
 ) {
     const { campaignId, userId } = await params;
     const inventoriesByCampaign = await getOtherCharactersInTheCampaign(campaignId, userId)

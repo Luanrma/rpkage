@@ -127,35 +127,33 @@ type CampaignUser = {
 	userId: number
 	role: Role
 	user: { name: string }
-	campaign: { name: string; description: string }
+	campaign: { name: string; currencyName: string, description: string }
 }
 
-type SelectedCampaign = {
+type CreateCampaign = {
 	name: string
+	currencyName: string
 	description: string
 	userId: number | null
 }
 
 // === Componente Principal ===
 export default function CampaignEntry() {
+	const { setCampaignUser } = useSession()
 	const [loadingCreate, setLoadingCreate] = useState(false)
-	const [loadingCurrency, setLoadingCurrency] = useState(false)
 	const [loadingJoinId, setLoadingJoinId] = useState<string | null>(null)
 	const [errorMessage, setErrorMessage] = useState('')
-	const { setCampaignUser, setCampaignCurrency } = useSession()
 	const router = useRouter()
 
-	const [view, setView] = useState<'initial' | 'create' | 'join' | 'currency'>('initial')
-	const [campaignCreatedId, setCampaignCreatedId] = useState<string | null>(null)
+	const [view, setView] = useState<'initial' | 'create' | 'join'>('initial')
 	const [campaignList, setCampaignList] = useState<CampaignUser[]>([])
-	const [selectedCampaign, setSelectedCampaign] = useState<SelectedCampaign>({
+	const [createCampaign, setCreateCampaign] = useState<CreateCampaign>({
 		name: '',
+		currencyName: '',
 		description: '',
 		userId: null,
 	})
-	const [campaignUserId, setCampaignUserId] = useState<string | null>(null)
 	const [userData, setUserData] = useState<User | null>(null)
-	const [currencyItem, setCurrencyItem] = useState({ name: '' })
 
 	// === Carrega o usuário ===
 	useEffect(() => {
@@ -164,7 +162,7 @@ export default function CampaignEntry() {
 			if (res.ok) {
 				const data = await res.json()
 				setUserData(data)
-				setSelectedCampaign(prev => ({ ...prev, userId: Number(data.id) }))
+				setCreateCampaign(prev => ({ ...prev, userId: Number(data.id) }))
 			}
 		}
 		loadUser()
@@ -181,7 +179,7 @@ export default function CampaignEntry() {
 
 	// === Criação da campanha ===
 	const handleCreate = async () => {
-		if (!selectedCampaign.name || !selectedCampaign.description || !selectedCampaign.userId) {
+		if (!createCampaign.name || !createCampaign.description || !createCampaign.userId) {
 			setErrorMessage('Preencha todos os campos obrigatórios.')
 			return
 		}
@@ -193,19 +191,17 @@ export default function CampaignEntry() {
 			const res = await fetch('/api/campaigns', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(selectedCampaign),
+				body: JSON.stringify(createCampaign),
 			})
 
 			if (!res.ok) throw new Error()
 
 			const campaign = await res.json()
-			setCampaignCreatedId(campaign.id)
-
 			const resUser = await fetch('/api/campaign-user', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					userId: selectedCampaign.userId,
+					userId: createCampaign.userId,
 					campaignId: campaign.id,
 					role: 'MASTER',
 				}),
@@ -216,54 +212,12 @@ export default function CampaignEntry() {
 				const fullData = await fetch(`/api/campaign-user/by-id/${campaignUser.id}`).then(r => r.json())
 
 				setCampaignUser(fullData)
-				setCampaignUserId(campaignUser.id)
-				setView('currency')
 			}
 		} catch {
 			setErrorMessage('Erro ao criar campanha.')
 		} finally {
 			setLoadingCreate(false)
-		}
-	}
-
-
-	// === Criação da moeda ===
-	const handleCreateCurrencyItem = async () => {
-		if (!currencyItem.name) {
-			setErrorMessage('Informe o nome da moeda.')
-			return
-		}
-
-		setLoadingCurrency(true)
-		setErrorMessage('')
-
-		try {
-			if (!campaignCreatedId || !campaignUserId) return
-
-			const res = await fetch('/api/items', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					campaignId: campaignCreatedId,
-					type: 'currency',
-					rarity: 'common',
-					name: currencyItem.name,
-					slot: 'pocket',
-					attributes: {
-						description: 'Moeda da campanha',
-					},
-				}),
-			})
-
-			if (!res.ok) throw new Error()
-
-			const currency = await res.json()
-			setCampaignCurrency({ id: currency.id, name: currency.name })
-			handleRefreshToken(campaignUserId)
-		} catch {
-			setErrorMessage('Erro ao salvar a moeda.')
-		} finally {
-			setLoadingCurrency(false)
+			router.push('/home')
 		}
 	}
 
@@ -277,14 +231,6 @@ export default function CampaignEntry() {
 			if (!selected) throw new Error()
 
 			setCampaignUser(selected)
-
-			const res = await fetch(`/api/items/by-campaign-and-type/${selected.campaignId}/currency`)
-			if (!res.ok) throw new Error()
-
-			const currency = await res.json()
-			if (!currency.id) throw new Error()
-
-			setCampaignCurrency({ id: currency.id, name: currency.name })
 			handleRefreshToken(selected.id)
 		} catch {
 			setErrorMessage('Erro ao entrar na campanha.')
@@ -313,7 +259,6 @@ export default function CampaignEntry() {
 			</LogoutWrapper>
 
 			<ContainerTitle>
-				<SpinningDice /> 
 				<Title>Bem-vindo ao Gerenciador de Campanhas</Title>
 			</ContainerTitle>
 
@@ -330,37 +275,24 @@ export default function CampaignEntry() {
 					{errorMessage && <p style={{ color: 'red', marginBottom: '1rem' }}>{errorMessage}</p>}
 					<Input
 						placeholder="Nome da campanha"
-						value={selectedCampaign.name}
-						onChange={e => setSelectedCampaign({ ...selectedCampaign, name: e.target.value })}
+						value={createCampaign.name}
+						onChange={e => setCreateCampaign({ ...createCampaign, name: e.target.value })}
+					/>
+					<Input
+						placeholder="Nome da moeda da campanha"
+						value={createCampaign.currencyName}
+						onChange={e => setCreateCampaign({ ...createCampaign, currencyName: e.target.value })}
 					/>
 					<TextArea
 						placeholder="Descrição"
-						value={selectedCampaign.description}
-						onChange={e => setSelectedCampaign({ ...selectedCampaign, description: e.target.value })}
+						value={createCampaign.description}
+						onChange={e => setCreateCampaign({ ...createCampaign, description: e.target.value })}
 					/>
 					<ButtonGroup>
 						<Button onClick={handleCreate} disabled={loadingCreate}>
 							{loadingCreate ? 'Salvando...' : 'Salvar'}
 						</Button>
 						<Button onClick={() => setView('initial')}>Voltar</Button>
-					</ButtonGroup>
-				</Card>
-			)}
-
-			{view === 'currency' && (
-				<Card>
-					<SubTitle>Defina a Moeda da Campanha</SubTitle>
-					{errorMessage && <p style={{ color: 'red', marginBottom: '1rem' }}>{errorMessage}</p>}
-
-					<Input
-						placeholder="Nome da Moeda (ex: BRICS)"
-						value={currencyItem.name}
-						onChange={e => setCurrencyItem({ ...currencyItem, name: e.target.value })}
-					/>
-					<ButtonGroup>
-						<Button onClick={handleCreateCurrencyItem} disabled={loadingCurrency}>
-							{loadingCurrency ? 'Salvando...' : 'Salvar Moeda'}
-						</Button>
 					</ButtonGroup>
 				</Card>
 			)}

@@ -18,7 +18,8 @@ CREATE TABLE "Campaign" (
     "id" BIGSERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "active" BOOLEAN NOT NULL,
+    "currencyName" TEXT NOT NULL,
+    "active" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -53,15 +54,28 @@ CREATE TABLE "Character" (
 );
 
 -- CreateTable
-CREATE TABLE "Currency" (
+CREATE TABLE "Wallet" (
     "id" BIGSERIAL NOT NULL,
-    "inventoryId" BIGINT NOT NULL,
-    "name" TEXT NOT NULL,
+    "characterId" BIGINT NOT NULL,
     "amount" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Currency_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Wallet_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CurrencyTransactionHistory" (
+    "id" BIGSERIAL NOT NULL,
+    "campaignId" BIGINT NOT NULL,
+    "walletId" BIGINT NOT NULL,
+    "fromWalletId" BIGINT,
+    "transactionType" TEXT NOT NULL,
+    "amount" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "CurrencyTransactionHistory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -184,13 +198,19 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "CampaignUser_userId_campaignId_key" ON "CampaignUser"("userId", "campaignId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Currency_inventoryId_key" ON "Currency"("inventoryId");
+CREATE UNIQUE INDEX "Wallet_characterId_key" ON "Wallet"("characterId");
+
+-- CreateIndex
+CREATE INDEX "Wallet_characterId_idx" ON "Wallet"("characterId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Inventory_characterId_key" ON "Inventory"("characterId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "EquippedItem_inventoryItemId_key" ON "EquippedItem"("inventoryItemId");
+
+-- CreateIndex
+CREATE INDEX "CharacterBattleHistory_characterId_idx" ON "CharacterBattleHistory"("characterId");
 
 -- AddForeignKey
 ALTER TABLE "CampaignUser" ADD CONSTRAINT "CampaignUser_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -205,7 +225,13 @@ ALTER TABLE "Character" ADD CONSTRAINT "Character_userId_fkey" FOREIGN KEY ("use
 ALTER TABLE "Character" ADD CONSTRAINT "Character_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES "Campaign"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Currency" ADD CONSTRAINT "Currency_inventoryId_fkey" FOREIGN KEY ("inventoryId") REFERENCES "Inventory"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Wallet" ADD CONSTRAINT "Wallet_characterId_fkey" FOREIGN KEY ("characterId") REFERENCES "Character"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CurrencyTransactionHistory" ADD CONSTRAINT "CurrencyTransactionHistory_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES "Campaign"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CurrencyTransactionHistory" ADD CONSTRAINT "CurrencyTransactionHistory_walletId_fkey" FOREIGN KEY ("walletId") REFERENCES "Wallet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Inventory" ADD CONSTRAINT "Inventory_characterId_fkey" FOREIGN KEY ("characterId") REFERENCES "Character"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

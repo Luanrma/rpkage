@@ -4,6 +4,7 @@ export async function getOtherCharactersInTheCampaign(campaignId: string, userId
 	const userIdBigInt = BigInt(userId);
 	const campaignIdBigInt = BigInt(campaignId);
 
+	console.log("userId: ", userId, "campaignId:", campaignId)
 	// Traz todos os personagens da campanha, sem filtrar o userId
 	const characters = await prisma.character.findMany({
 		where: {

@@ -58,6 +58,14 @@ export async function POST(req: Request) {
 			},
 		});
 
+		await tx.wallet.create({
+			data: {
+				characterId: newCharacter.id,
+				amount: "0"
+			},
+		});
+
+
 		return newCharacter;
 	});
 

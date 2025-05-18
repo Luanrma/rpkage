@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const { email, password } = await req.json()
 
     const user = await prisma.user.findUnique({ where: { email } })
-
+    
     if (!user || !user.password) {
         return NextResponse.json({ error: 'Credenciais inválidas' }, { status: 401 })
     }

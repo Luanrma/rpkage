@@ -18,24 +18,28 @@ model User {
   active    Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
   characters Character[]
   campaignUsers CampaignUser[]
 }
 
 model Campaign {
-  id          BigInt    @id @default(autoincrement())
-  name        String
-  description String
-  active      Boolean
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  characters  Character[]
+  id            BigInt    @id @default(autoincrement())
+  name          String
+  description   String
+  currencyName  String
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  characters    Character[]
   campaignUsers CampaignUser[]
-  items       Items[]
-  spells      Spells[]
+  items         Items[]
+  spells        Spells[]
   levelingRules LevelingRule[]
 
   ItemTransactionHistory ItemTransactionHistory[]
+  CurrencyTransactionHistory CurrencyTransactionHistory[]
 }
 
 model CampaignUser {
@@ -53,31 +57,50 @@ model CampaignUser {
 }
 
 model Character {
-  id         BigInt    @id @default(autoincrement())
-  userId     BigInt
-  campaignId BigInt
-  name       String
-  avatar     String?
-  sheet      Json
-  active     Boolean   @default(true)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  user       User      @relation(fields: [userId], references: [id])
-  campaign   Campaign @relation(fields: [campaignId], references: [id])
-  inventory  Inventory?
-  equippedItems EquippedItem[]
+  id             BigInt     @id @default(autoincrement())
+  userId         BigInt
+  campaignId     BigInt
+  name           String
+  avatar         String?
+  sheet          Json
+  active         Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  user           User       @relation(fields: [userId], references: [id])
+  campaign       Campaign   @relation(fields: [campaignId], references: [id])
+  inventory      Inventory?
+  equippedItems  EquippedItem[]
   equippedSpells EquippedSpell[]
-  battleHistory CharacterBattleHistory[]
+  battleHistory  CharacterBattleHistory[]
+  Wallet Wallet[]
 }
 
-model Currency {
+model Wallet {
   id          BigInt     @id @default(autoincrement())
-  inventoryId BigInt     @unique
-  name        String
-  amount      String     
+  characterId BigInt     @unique 
+  amount      String
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  inventory   Inventory  @relation(fields: [inventoryId], references: [id])
+
+  character   Character  @relation(fields: [characterId], references: [id])
+  CurrencyTransactionHistory CurrencyTransactionHistory[]
+
+  @@index([characterId])
+}
+
+model CurrencyTransactionHistory {
+  id              BigInt   @id @default(autoincrement())
+  campaignId      BigInt
+  walletId        BigInt
+  fromWalletId    BigInt?
+  transactionType String
+  amount          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  campaign        Campaign @relation(fields: [campaignId], references: [id])
+  wallet          Wallet   @relation(fields: [walletId], references: [id])
 }
 
 model Inventory {
@@ -86,9 +109,9 @@ model Inventory {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   character   Character  @relation(fields: [characterId], references: [id])
+
   inventoryItems InventoryItem[]
   transactions ItemTransactionHistory[]
-  Currency Currency[]
 }
 
 model InventoryItem {
@@ -97,6 +120,7 @@ model InventoryItem {
   itemsId     BigInt
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
   inventory   Inventory @relation(fields: [inventoryId], references: [id])
   item        Items     @relation(fields: [itemsId], references: [id])
   equippedItem EquippedItem?
@@ -112,6 +136,7 @@ model Items {
   attributes  Json
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
   campaign    Campaign  @relation(fields: [campaignId], references: [id])
   inventoryItems InventoryItem[]
   transactionHistories ItemTransactionHistory[]
@@ -127,6 +152,7 @@ model ItemTransactionHistory {
   amount          String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
   campaign        Campaign  @relation(fields: [campaignId], references: [id])
   item            Items     @relation(fields: [itemId], references: [id])
   inventory       Inventory @relation(fields: [inventoryId], references: [id])
@@ -139,6 +165,7 @@ model EquippedItem {
   slot            String
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
   character       Character @relation(fields: [characterId], references: [id])
   inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
 }
@@ -152,6 +179,7 @@ model Spells {
   specifications  Json
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
   campaign        Campaign  @relation(fields: [campaignId], references: [id])
   equippedSpells  EquippedSpell[]
 }
@@ -162,6 +190,7 @@ model EquippedSpell {
   spellId     BigInt
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
   character   Character @relation(fields: [characterId], references: [id])
   spell       Spells    @relation(fields: [spellId], references: [id])
 }
@@ -174,7 +203,10 @@ model CharacterBattleHistory {
   xpGained    Int
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
   character   Character @relation(fields: [characterId], references: [id])
+
+  @@index([characterId])
 }
 
 model LevelingRule {
@@ -184,5 +216,6 @@ model LevelingRule {
   requiredXp  BigInt
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  
   campaign    Campaign  @relation(fields: [campaignId], references: [id])
 }
