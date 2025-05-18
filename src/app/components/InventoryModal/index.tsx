@@ -143,7 +143,7 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 				const res = await fetch(`/api/inventory-and-wallet/by-character/${characterId}`);
 				const inventoryAndWallet = await res.json();
 				const inventoryItems = inventoryAndWallet?.inventoryItems || [];
-				const wallet = inventoryAndWallet?.character.Wallet || [];
+				const wallet = inventoryAndWallet?.character.Wallet[0] || [];
 				setItems(inventoryItems);
 				setWallet(wallet)
 			} catch (error) {
@@ -163,10 +163,12 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 
 	const handleUpdateInventory = async () => {
 		try {
-			const res = await fetch(`/api/inventory/by-character/${characterId}`);
-			const data = await res.json();
-			setItems(data?.inventoryItems || []);
-			setWallet(data?.Currency?.[0] || null)
+			const res = await fetch(`/api/inventory-and-wallet/by-character/${characterId}`);
+			const inventoryAndWallet = await res.json();
+			const inventoryItems = inventoryAndWallet?.inventoryItems || [];
+			const wallet = inventoryAndWallet?.character.Wallet[0] || [];
+			setItems(inventoryItems);
+			setWallet(wallet)
 			setSelectedItem(null); // opcional: fecha o detalhe após a ação
 		} catch (error) {
 			console.error('Erro ao atualizar inventário:', error);

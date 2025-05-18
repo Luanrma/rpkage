@@ -4,7 +4,6 @@ export async function getOtherCharactersInTheCampaign(campaignId: string, userId
 	const userIdBigInt = BigInt(userId);
 	const campaignIdBigInt = BigInt(campaignId);
 
-	console.log("userId: ", userId, "campaignId:", campaignId)
 	// Traz todos os personagens da campanha, sem filtrar o userId
 	const characters = await prisma.character.findMany({
 		where: {
@@ -31,7 +30,8 @@ export async function getOtherCharactersInTheCampaign(campaignId: string, userId
 					},
 				},
 			},
-		},
+			Wallet: true
+		}
 	});
 
 	// Separa em dois grupos
@@ -41,6 +41,7 @@ export async function getOtherCharactersInTheCampaign(campaignId: string, userId
 			id: char.id,
 			userId: char.userId,
 			inventoryId: char.inventory?.id ?? null,
+			walletId: char.Wallet[0]?.id ?? null,
 			name: char.name,
 			role: char.user.campaignUsers[0]?.role ?? null,
 		}))[0];
@@ -51,10 +52,11 @@ export async function getOtherCharactersInTheCampaign(campaignId: string, userId
 			id: char.id,
 			userId: char.userId,
 			inventoryId: char.inventory?.id ?? null,
+			walletId: char.Wallet[0].id ?? null,
 			name: char.name,
 			role: char.user.campaignUsers[0]?.role ?? null,
 		}));
-
+	
 	return {
 		currentPlayer,
 		othersPlayer,

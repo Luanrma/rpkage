@@ -30,8 +30,6 @@ export async function GET(
 				},
             },
         });
-
-        console.log(inventory?.character.Wallet)
 		
         return NextResponse.json(fixBigInt(inventory));
     } catch (error) {

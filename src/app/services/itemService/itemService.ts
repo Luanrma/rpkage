@@ -21,7 +21,17 @@ const SaveItemSchema = z.object({
     campaignCurrencyId: z.string().nullable().optional(),
 });
 
+const CurrencyTransferSchema = z.object({
+    characterId: z.number().nullable().optional(),
+    campaignId: z.number(),
+    toWalletId: z.number(),
+    fromWalletId: z.number().nullable().optional(),
+    transactionType: z.enum(['DROP', 'TRADE', 'SELL', 'GIFT']),
+    amount: z.string()
+});
+
 export type SaveItemPayload = z.infer<typeof SaveItemSchema>;
+export type CurrencyTransactionPayload = z.infer<typeof CurrencyTransferSchema>;
 
 export async function createItemIfNecessaryAndLinkToInventory(payload: SaveItemPayload): Promise<number> {
     const validation = SaveItemSchema.safeParse(payload);
@@ -30,40 +40,39 @@ export async function createItemIfNecessaryAndLinkToInventory(payload: SaveItemP
         throw new Error(validation.error.message);
     }
 
-    if (payload.type === "currency") {
-        return createCurrencyTransaction(payload)
-    }
-
     return createItemTransaction(payload)
 }
 
-const createCurrencyTransaction = async (payload: SaveItemPayload) => {
+export const createCurrencyTransaction = async (payload: CurrencyTransactionPayload) => {
+    const validation = CurrencyTransferSchema.safeParse(payload);
+
+    if (!validation.success) {
+        throw new Error(validation.error.message);
+    }
+
     const {
-        itemId,
-        toInventoryId,
-        fromInventoryId,
-        transactionType,
+        characterId,
         campaignId,
-        itemValue,
-        campaignCurrencyName,
-        campaignCurrencyId,
+        toWalletId,
+        fromWalletId,
+        transactionType,
+        amount
     } = payload;
 
     try {
         return await prisma.$transaction(async (tx) => {
-            
-            if (!toInventoryId || !campaignCurrencyId || !itemValue) {
+            if (!characterId || !campaignId || !toWalletId || !transactionType || !amount) {
                 throw new Error("Required value empty");
             }
 
-            const incomingAmount = Number(itemValue);
+            const incomingAmount = Number(amount);
             if (incomingAmount === 0) {
                 throw new Error("Você não tem saldo o suficiente para essa transação.");
             }
             // 1. Verificar se a origem tem saldo suficiente (somente se itemId != null)
-            if (itemId && fromInventoryId) {
+            if (fromWalletId) {
                 const fromCurrency = await tx.wallet.findUnique({
-                    where: { inventoryId: fromInventoryId },
+                    where: { id: fromWalletId },
                 });
                 
                 const fromAmount = Number(fromCurrency?.amount || 0);
@@ -74,7 +83,7 @@ const createCurrencyTransaction = async (payload: SaveItemPayload) => {
 
                 // Subtrai o valor da origem
                 await tx.wallet.update({
-                    where: { inventoryId: fromInventoryId },
+                    where: { id: fromWalletId },
                     data: {
                         amount: (fromAmount - incomingAmount).toString(),
                     },
@@ -83,34 +92,29 @@ const createCurrencyTransaction = async (payload: SaveItemPayload) => {
 
             // 2. Adiciona o valor ao destino
             const existingCurrency = await tx.wallet.findUnique({
-                where: { inventoryId: toInventoryId },
+                where: { id: toWalletId },
             });
 
             const currentAmount = Number(existingCurrency?.amount || 0);
             const newAmount = currentAmount + incomingAmount;
 
-            await tx.wallet.upsert({
-                where: { inventoryId: toInventoryId },
-                update: {
+            await tx.wallet.update({
+                where: { id: toWalletId },
+                data: {
                     amount: newAmount.toString()
-                },
-                create: {
-                    inventoryId: toInventoryId,
-                    currencyId: BigInt(campaignCurrencyId),
-                    amount: newAmount.toString(),
-                },
+                }
             });
 
             // 3. Cria histórico da transação
-            /*await tx.currencyTransactionHistory.create({
+            await tx.currencyTransactionHistory.create({
                 data: {
                     campaignId,
                     walletId: toWalletId,
                     fromWalletId,
                     transactionType,
-                    amount: itemValue,
+                    amount: amount,
                 },
-            });*/
+            });
 
             return Number(newAmount);
         });

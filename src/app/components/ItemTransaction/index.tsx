@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { SaveItemPayload } from '@/app/services/itemService/itemService';
+import { SaveItemPayload, CurrencyTransactionPayload } from '@/app/services/itemService/itemService';
 import { useSession } from '@/app/contexts/SessionContext';
 import { LoadingScreen } from '../LoadingScreen';
 
@@ -151,6 +151,7 @@ type Character = {
 	id: string;
 	userId: number;
 	inventoryId: number;
+	walletId: number;
 	name: string;
 	role: string;
 };
@@ -181,9 +182,9 @@ export default function ItemTransaction({
 	const { campaignUser } = useSession();
 
 	const [otherCharacters, setOtherCharacters] = useState<Character[]>([]);
-	const [currentCharacter, setCurrentCharacter] = useState<{ userId: number; inventoryId: number } | null>(null);
+	const [currentCharacter, setCurrentCharacter] = useState<{ userId: number; inventoryId: number, walletId: number } | null>(null);
 	const [showTransactionModal, setShowTransactionModal] = useState(false);
-	const [selectedCharacter, setSelectedCharacter] = useState<{ userId: number; inventoryId: number } | null>(null);
+	const [selectedCharacter, setSelectedCharacter] = useState<{ userId: number; inventoryId: number, walletId: number } | null>(null);
 	const [itemValue, setItemValue] = useState<string>("0");
 	const [error, setError] = useState("");
 
@@ -195,7 +196,7 @@ export default function ItemTransaction({
 				const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`);
 				const data = await res.json();
 				setOtherCharacters(data.othersPlayer);
-				setCurrentCharacter({ userId: data.currentPlayer.userId, inventoryId: data.currentPlayer.inventoryId });
+				setCurrentCharacter({ userId: data.currentPlayer.userId, inventoryId: data.currentPlayer.inventoryId, walletId: data.currentPlayer.walletId });
 			} catch (err) {
 				console.error('Erro ao buscar personagens:', err);
 			}
@@ -222,36 +223,12 @@ export default function ItemTransaction({
 		}
 
 		try {
-			const payload: SaveItemPayload = {
-				itemId,
-				inventoryItemId,
-				characterId: selectedCharacter.userId,
-				campaignId: Number(campaignUser.campaignId),
-				toInventoryId: selectedCharacter.inventoryId,
-				fromInventoryId: currentCharacter?.inventoryId,
-				type,
-				rarity,
-				attributes,
-				name,
-				slot: slot ?? "pocket",
-				transactionType,
-				itemValue,
-				campaignCurrencyName: campaignUser.campaign.currencyName,
-			};
-
-			const response = await fetch('/api/items/trade', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload),
-			});
-
-			const result = await response.json();
-
-			if (!response.ok) {
-				setError(result.error || 'Erro inesperado na transação');
-				return;
+			if (type == "currency") {
+				await handleCurrencyTransaction(campaignUser, selectedCharacter, transactionType)
+			} else {
+				await handleItemTransaction(campaignUser, selectedCharacter, transactionType)
 			}
-
+		
 			onTransactionComplete?.();
 			setShowTransactionModal(false)
 		} catch (err: any) {
@@ -263,6 +240,70 @@ export default function ItemTransaction({
 		}
 	};
 
+	const handleCurrencyTransaction = async (
+		campaignUser: any ,
+		selectedCharacter: any,
+		transactionType: "TRADE" | "SELL" | "GIFT" | "DROP"
+	) => {
+		const payload: CurrencyTransactionPayload = {
+			characterId: selectedCharacter?.userId ? Number(selectedCharacter.userId) : null,
+			campaignId: Number(campaignUser.campaignId),
+			toWalletId: Number(selectedCharacter.walletId),
+			fromWalletId: currentCharacter?.walletId ? Number(currentCharacter.walletId ) : null,
+			transactionType,
+			amount: itemValue
+		}
+
+		const response = await fetch('/api/wallet/trade', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(payload),
+		});
+
+		const result = await response.json();
+
+		if (!response.ok) {
+			setError(result.error || 'Erro inesperado na transação');
+			return;
+		}
+	}
+
+	const handleItemTransaction = async (
+		campaignUser: any ,
+		selectedCharacter: any,
+		transactionType: "TRADE" | "SELL" | "GIFT" | "DROP"
+	) => {
+		const payload: SaveItemPayload = {
+			itemId,
+			inventoryItemId,
+			characterId: selectedCharacter.userId,
+			campaignId: Number(campaignUser.campaignId),
+			toInventoryId: selectedCharacter.inventoryId,
+			fromInventoryId: currentCharacter?.inventoryId,
+			type,
+			rarity,
+			attributes,
+			name,
+			slot: slot ?? "pocket",
+			transactionType,
+			itemValue,
+			campaignCurrencyName: campaignUser.campaign.currencyName,
+		};
+
+		const response = await fetch('/api/items/trade', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(payload),
+		});
+
+		const result = await response.json();
+
+		if (!response.ok) {
+			setError(result.error || 'Erro inesperado na transação');
+			return;
+		}
+	}
+
 	if (!showDropdown) return null;
 
 	return (
@@ -270,7 +311,7 @@ export default function ItemTransaction({
 			<Dropdown>
 				{otherCharacters.map((char) => (
 					<DropdownItem key={char.id} onClick={() => {
-						setSelectedCharacter({ userId: char.userId, inventoryId: char.inventoryId });
+						setSelectedCharacter({ userId: char.userId, inventoryId: char.inventoryId, walletId: char.walletId });
 						setShowTransactionModal(true);
 					}}>
 						{char.name} <span className={`char-role-${char.role}`}>{char.role}</span>
@@ -282,7 +323,7 @@ export default function ItemTransaction({
 				<ModalOverlay>
 					<ModalContent>
 						{error && <ErrorMessage>{error}</ErrorMessage>}
-						<h3>Tipo de Transação</h3>
+						<h3>Tipo de Transação - {type}</h3>
 						<div className="modal-content-send-items">
 							{type !== "currency" && (
 								<button onClick={() => handleTransactionConfirm("TRADE")}>Troca</button>
@@ -292,7 +333,7 @@ export default function ItemTransaction({
 								<button onClick={() => handleTransactionConfirm("DROP")}>Drop</button>
 							)}
 						</div>
-						<hr />
+			
 						<div className="modal-content-sell-items">
 							<button onClick={() => handleTransactionConfirm("SELL")}>Venda</button>
 							<label htmlFor="item">Valor:</label>
