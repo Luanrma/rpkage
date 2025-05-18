@@ -6,8 +6,8 @@ import { z } from 'zod';
 // Validação com Zod
 const CampaignSchema = z.object({
 	name: z.string().min(1, "Nome da campanha é obrigatório"),
+	currencyName: z.string().min(1, "Nome da moeda da campanha é obrigatório"),
 	description: z.string(),
-	active: z.boolean().optional(),
 	userId: z.number() // precisamos saber quem está criando
 });
 
@@ -45,14 +45,14 @@ export async function POST(req: Request) {
 		return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
 	}
 
-	const { name, description, active = true, userId } = parsed.data;
+	const { name, description, currencyName, userId } = parsed.data;
 
 	try {
 		const newCampaign = await prisma.campaign.create({
 			data: {
 				name,
 				description,
-				active,
+				currencyName,
 			},
 		});
 
