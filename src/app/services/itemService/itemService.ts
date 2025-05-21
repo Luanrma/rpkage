@@ -19,8 +19,7 @@ const SaveItemSchema = z.object({
     itemValue: z.string().nullable().optional(),
 });
 
-const CurrencyTransferSchema = z.object({
-    characterId: z.number().nullable().optional(),
+const WalletTransferSchema = z.object({
     campaignId: z.number(),
     toWalletId: z.number(),
     fromWalletId: z.number().nullable().optional(),
@@ -29,7 +28,7 @@ const CurrencyTransferSchema = z.object({
 });
 
 export type SaveItemPayload = z.infer<typeof SaveItemSchema>;
-export type CurrencyTransactionPayload = z.infer<typeof CurrencyTransferSchema>;
+export type SaveWalletPayload = z.infer<typeof WalletTransferSchema>;
 
 export async function createItemIfNecessaryAndLinkToInventory(payload: SaveItemPayload): Promise<number> {
     const validation = SaveItemSchema.safeParse(payload);
@@ -41,15 +40,14 @@ export async function createItemIfNecessaryAndLinkToInventory(payload: SaveItemP
     return createItemTransaction(payload)
 }
 
-export const createCurrencyTransaction = async (payload: CurrencyTransactionPayload) => {
-    const validation = CurrencyTransferSchema.safeParse(payload);
+export const createCurrencyTransaction = async (payload: SaveWalletPayload) => {
+    const validation = WalletTransferSchema.safeParse(payload);
 
     if (!validation.success) {
         throw new Error(validation.error.message);
     }
 
     const {
-        characterId,
         campaignId,
         toWalletId,
         fromWalletId,
@@ -58,64 +56,63 @@ export const createCurrencyTransaction = async (payload: CurrencyTransactionPayl
     } = payload;
 
     try {
-        return await prisma.$transaction(async (tx) => {
-            if (!characterId || !campaignId || !toWalletId || !transactionType || !amount) {
-                throw new Error("Required value empty");
-            }
+        if (!campaignId || !toWalletId || !transactionType || !amount) {
+            throw new Error("Required value empty");
+        }
 
-            const incomingAmount = Number(amount);
-            if (incomingAmount === 0) {
-                throw new Error("Você não tem saldo o suficiente para essa transação.");
-            }
-            // 1. Verificar se a origem tem saldo suficiente (somente se itemId != null)
-            if (fromWalletId) {
-                const fromCurrency = await tx.wallet.findUnique({
-                    where: { id: fromWalletId },
-                });
-                
-                const fromAmount = Number(fromCurrency?.amount || 0);
-
-                if (fromAmount < incomingAmount) {
-                    throw new Error("Saldo insuficiente para completar a transação.");
-                }
-
-                // Subtrai o valor da origem
-                await tx.wallet.update({
-                    where: { id: fromWalletId },
-                    data: {
-                        amount: (fromAmount - incomingAmount).toString(),
-                    },
-                });
-            }
-
-            // 2. Adiciona o valor ao destino
-            const existingCurrency = await tx.wallet.findUnique({
-                where: { id: toWalletId },
+        const incomingAmount = Number(amount);
+        if (incomingAmount === 0) {
+            throw new Error("Você não tem saldo o suficiente para essa transação.");
+        }
+        // 1. Verificar se a origem tem saldo suficiente (somente se itemId != null)
+        if (fromWalletId) {
+            const fromCurrency = await prisma.wallet.findUnique({
+                where: { id: fromWalletId },
             });
+            
+            const fromAmount = Number(fromCurrency?.amount || 0);
 
-            const currentAmount = Number(existingCurrency?.amount || 0);
-            const newAmount = currentAmount + incomingAmount;
+            if (fromAmount < incomingAmount) {
+                throw new Error("Saldo insuficiente para completar a transação.");
+            }
 
-            await tx.wallet.update({
-                where: { id: toWalletId },
+            // Subtrai o valor da origem
+            await prisma.wallet.update({
+                where: { id: fromWalletId },
                 data: {
-                    amount: newAmount.toString()
-                }
-            });
-
-            // 3. Cria histórico da transação
-           /* await tx.currencyTransactionHistory.create({
-                data: {
-                    campaignId,
-                    walletId: toWalletId,
-                    fromWalletId,
-                    transactionType,
-                    amount: amount,
+                    amount: (fromAmount - incomingAmount).toString(),
                 },
-            });*/
+            });
+        }
 
-            return Number(newAmount);
+        // 2. Adiciona o valor ao destino
+        const existingCurrency = await prisma.wallet.findUnique({
+            where: { id: toWalletId },
         });
+
+        const currentAmount = Number(existingCurrency?.amount || 0);
+        const newAmount = currentAmount + incomingAmount;
+
+        await prisma.wallet.update({
+            where: { id: toWalletId },
+            data: {
+                amount: newAmount.toString()
+            }
+        });
+
+        // 3. Cria histórico da transação
+        /* await tx.currencyTransactionHistory.create({
+            data: {
+                campaignId,
+                walletId: toWalletId,
+                fromWalletId,
+                transactionType,
+                amount: amount,
+            },
+        });*/
+
+        return Number(newAmount);
+     
     } catch (error: any) {
         throw new Error(error.message || "Erro na transação monetária");
     }

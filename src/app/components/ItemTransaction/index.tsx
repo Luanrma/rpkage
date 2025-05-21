@@ -1,52 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { SaveItemPayload, CurrencyTransactionPayload } from '@/app/services/itemService/itemService';
+import { SaveItemPayload, SaveWalletPayload } from '@/app/services/itemService/itemService';
 import { LoadingScreen } from '../LoadingScreen';
-
-const Dropdown = styled.ul`
-  position: absolute;
-  top: 2.5rem;
-  right: 0rem;
-  background: #2a2a2a;
-  border: 1px solid rgb(111, 61, 190);
-  border-radius: 5px;
-  padding: 0.5rem;
-  z-index: 10;
-  width: 15rem;
-`;
-
-const DropdownItem = styled.li`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem;
-  cursor: pointer;
-  color: #eee;
-  border-radius: 5px;
-  border: 1px dashed rgb(111, 61, 190);
-  list-style: none;
-
-  &:hover {
-    border: 1px solid rgb(111, 61, 190);
-    background: rgb(62, 32, 109);
-  }
-
-  .char-role-MASTER {
-    font-size: .8rem;
-    padding: 0.2rem;
-    background: rgb(111, 61, 190);
-    border-radius: 5px;
-    color: rgb(247, 247, 247);
-  }
-
-  .char-role-PLAYER {
-    font-size: .8rem;
-    padding: 0.2rem;
-    background: rgb(33, 134, 2);
-    border-radius: 5px;
-    color: rgb(247, 247, 247);
-  }
-`;
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -158,7 +113,8 @@ type TransactionModalProps = {
 	campaignUser: any;
 	selectedCharacter: Character;
 	currentCharacter: Character;
-	item: ItemDataProps;
+	item?: ItemDataProps;
+	walletData?: WalletDataProps;
 	onTransactionComplete?: () => void;
 };
 
@@ -172,11 +128,17 @@ type ItemDataProps = {
 	attributes: any[];
 }
 
+type WalletDataProps = {
+	amountOrigin: string
+    amount: string
+}
+
 export default function ItemTransaction({
 	campaignUser,
 	selectedCharacter,
 	currentCharacter,
 	item,
+	walletData,
 	onTransactionComplete
 }: TransactionModalProps) {
 	const [showTransactionModal, setShowTransactionModal] = useState(true);
@@ -212,22 +174,40 @@ export default function ItemTransaction({
 		selectedCharacter: any,
 		transactionType: "TRADE" | "SELL" | "GIFT" | "DROP"
 	): Promise<boolean> => {
-		const payload: SaveItemPayload = {
-			itemId: item.id,
-			inventoryItemId: item.inventoryItemId,
-			characterId: selectedCharacter.userId,
-			campaignId: Number(campaignUser.campaignId),
-			toInventoryId: selectedCharacter.inventoryId,
-			fromInventoryId: currentCharacter?.inventoryId,
-			type: item.type,
-			rarity: item.rarity,
-			attributes: item.attributes,
-			name: item.name,
-			slot: item.slot ?? "pocket",
-			transactionType,
-			itemValue,
-		};
+		if (item && !walletData) {
+			const payload: SaveItemPayload = {
+				itemId: item.id,
+				inventoryItemId: item.inventoryItemId,
+				characterId: selectedCharacter.userId,
+				campaignId: Number(campaignUser.campaignId),
+				toInventoryId: selectedCharacter.inventoryId,
+				fromInventoryId: currentCharacter?.inventoryId,
+				type: item.type,
+				rarity: item.rarity,
+				attributes: item.attributes,
+				name: item.name,
+				slot: item.slot ?? "pocket",
+				transactionType,
+				itemValue,
+			}
+			return await sendItemTransaction(payload)
+		}
 
+		if (walletData && !item) {
+			const payload: SaveWalletPayload = {
+				campaignId: Number(campaignUser.campaignId),
+				transactionType,
+				toWalletId: selectedCharacter.walletId,
+				amount: itemValue,
+				fromWalletId: walletData.amountOrigin === "itemGenerator" ? null : currentCharacter?.walletId
+			}
+			return await sendWalletTransaction(payload)
+		}
+		
+		return false
+	}
+
+	const sendItemTransaction = async (payload: SaveItemPayload): Promise<boolean> => {
 		const response = await fetch('/api/items/trade', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -235,13 +215,33 @@ export default function ItemTransaction({
 		});
 
 		const result = await response.json();
-
 		if (!response.ok) {
 			setError(result.error || 'Erro inesperado na transação');
 			return false;
 		}
-
 		return true;
+	}
+
+	const sendWalletTransaction = async (payload: SaveWalletPayload) => {
+		const response = await fetch('/api/wallet/trade', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(payload),
+		});
+
+		const result = await response.json();
+		if (!response.ok) {
+			setError(result.error || 'Erro inesperado na transação');
+			return false;
+		}
+		return true;
+	}
+
+	const handleTransactionAmountValue = (value: string) => {
+		if (walletData && walletData.amountOrigin === "itemGenerator") {
+			setItemValue(walletData?.amount)
+		}
+		return setItemValue(value)
 	}
 
 	if (!showTransactionModal) return null;
@@ -252,9 +252,9 @@ export default function ItemTransaction({
 				<ModalOverlay>
 					<ModalContent>
 						{error && <ErrorMessage>{error}</ErrorMessage>}
-						<h3>Tipo de Transação - {item.type}</h3>
+						<h3>Tipo de Transação</h3>
 						<div className="modal-content-send-items">
-							{item.type !== "currency" && (
+							{walletData && (
 								<button onClick={() => handleTransactionConfirm("TRADE")}>Troca</button>
 							)}
 							<button onClick={() => handleTransactionConfirm("GIFT")}>Doação</button>
@@ -271,7 +271,7 @@ export default function ItemTransaction({
 								name="item-value"
 								type="number"
 								min="0"
-								value={item.id ? itemValue : item.attributes[0].status}
+								value={walletData?.amountOrigin === "itemGenerator" ? walletData?.amount : itemValue }
 								onChange={(e) => setItemValue(e.target.value)}
 							/>
 						</div>

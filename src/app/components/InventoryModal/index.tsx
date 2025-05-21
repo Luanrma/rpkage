@@ -6,6 +6,7 @@ import BagItemIcon from "../BagItemIcon";
 import ItemTransaction from '../ItemTransaction';
 import { Wallet } from "@prisma/client";
 import { useSession } from "@/app/contexts/SessionContext";
+import ModalTransactionSelectCharacter from "../ModalTransactionSelectCharacter";
 
 const Overlay = styled.div`
   position: fixed;
@@ -137,12 +138,14 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 		if (!campaignUser) {
 			return
 		}
+
 		const fetchInventory = async () => {
 			try {
 				const res = await fetch(`/api/inventory-and-wallet/by-character/${characterId}`);
 				const inventoryAndWallet = await res.json();
 				const inventoryItems = inventoryAndWallet?.inventoryItems || [];
 				const wallet = inventoryAndWallet?.character.Wallet[0] || [];
+
 				setItems(inventoryItems);
 				setWallet(wallet)
 			} catch (error) {
@@ -173,7 +176,9 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 	}, [wallet])
 
 	const handleCurrencyDropDown = () => {
-		if (!wallet) return;
+		if (!wallet) {
+			return;
+		}
 		setShowDropdownCurrency(!showDropdownCurrency)
 	}
 
@@ -182,17 +187,30 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 			setItems([]);
 			setWallet(null)
 			setSelectedItem(null)
+
 			const res = await fetch(`/api/inventory-and-wallet/by-character/${characterId}`);
 			const inventoryAndWallet = await res.json();
 			const inventoryItems = inventoryAndWallet?.inventoryItems || [];
 			const wallet = inventoryAndWallet?.character.Wallet[0] || [];
+
 			setItems(inventoryItems);
 			setWallet(wallet)
-			setSelectedItem(null)
 		} catch (error) {
 			console.error('Erro ao atualizar inventário:', error);
 		}
-	};
+	}
+
+	const handleWalletData = () => {
+		if (!wallet) {
+			return
+		}
+
+		const walletData = {
+			amountOrigin: "player",
+			amount: wallet.amount
+		}
+		return walletData
+	}
 
 	if (!campaignUser) {
 		return
@@ -237,6 +255,13 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 					<InventoryModalItemDetails 
 						inventoryItem={selectedItem}
 						onInventoryChange={handleUpdateInventory}
+					/>
+				)}
+
+				{wallet && showDropdownCurrency && (
+					<ModalTransactionSelectCharacter 
+						walletData={handleWalletData()}
+						onTransactionComplete={handleUpdateInventory} 
 					/>
 				)}
 			</ModalBox>

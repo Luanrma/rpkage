@@ -68,6 +68,7 @@ type ItemDataProps = {
 }
 
 type WalletDataProps = {
+    amountOrigin: string
     amount: string
 }
 
@@ -79,8 +80,7 @@ type ModalTransactionSelectCharacterProps = {
 
 export default function ModalTransactionSelectCharacter({itemData, walletData, onTransactionComplete} : ModalTransactionSelectCharacterProps) {
     const { campaignUser } = useSession();
-
-    const [showCharacterListForTransaction, setShowCharacterListForTransaction] = useState(true);
+    
     const [showTransactionModal, setShowTransactionModal] = useState(false);
     const [currentCharacter, setCurrentCharacter] = useState<Character| null>(null);
     const [otherCharacters, setOtherCharacters] = useState<Character[]>([]);
@@ -91,7 +91,6 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
             return
         }
         const fetchCharacters = async () => {
-            console.log("TES$TE")
             try {
                 const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`);
                 const data = await res.json();
@@ -110,25 +109,33 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
 
     return (
 		<>
-            {showCharacterListForTransaction && (
-                <Dropdown>
-                    {otherCharacters.map((char) => (
-                        <DropdownItem key={char.id} onClick={() => {
-                            setSelectedCharacter(char);
-                            setShowTransactionModal(true);
-                        }}>
-                            {char.name} <span className={`char-role-${char.role}`}>{char.role}</span>
-                        </DropdownItem>
-                    ))}
-                </Dropdown>
-            )}
-        
-            {showTransactionModal && selectedCharacter && currentCharacter && itemData && (
+            <Dropdown>
+                {otherCharacters.map((char) => (
+                    <DropdownItem key={char.id} onClick={() => {
+                        setSelectedCharacter(char);
+                        setShowTransactionModal(true);
+                    }}>
+                        {char.name} <span className={`char-role-${char.role}`}>{char.role}</span>
+                    </DropdownItem>
+                ))}
+            </Dropdown>
+            
+            {showTransactionModal && selectedCharacter && currentCharacter && itemData  && !walletData && (
                 <ItemTransaction
                     campaignUser={campaignUser}
                     selectedCharacter={selectedCharacter}
                     currentCharacter={currentCharacter}
                     item={itemData}
+                    onTransactionComplete={onTransactionComplete}
+			    />
+            )}
+
+            {showTransactionModal && selectedCharacter && currentCharacter && walletData && (
+                <ItemTransaction
+                    campaignUser={campaignUser}
+                    selectedCharacter={selectedCharacter}
+                    currentCharacter={currentCharacter}
+                    walletData={walletData}
                     onTransactionComplete={onTransactionComplete}
 			    />
             )}

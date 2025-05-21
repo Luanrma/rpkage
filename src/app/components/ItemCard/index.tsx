@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { InterfaceItemGenerator } from '@/engine/ItemGenerators/Interfaces/ItemGenerator';
 import styled from 'styled-components';
 import { Send } from 'lucide-react';
-import ItemTransaction from '../ItemTransaction';
 import ModalTransactionSelectCharacter from '../ModalTransactionSelectCharacter';
 
 const Card = styled.div`
@@ -86,6 +85,7 @@ export default function ItemCard({
 	const handleWalletData = () => {
 		if (type === "currency") {
 			const wallet = {
+				amountOrigin: "itemGenerator",
 				amount: attributes[0].status ?? ""
 			}
 			return wallet

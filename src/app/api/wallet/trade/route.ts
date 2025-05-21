@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../../../prisma/ConnectionPrisma';
 import { fixBigInt } from '@/utils/fixBigInt';
-import { createCurrencyTransaction, CurrencyTransactionPayload } from '@/app/services/itemService/itemService';
+import { createCurrencyTransaction, SaveWalletPayload } from '@/app/services/itemService/itemService';
 
 export async function GET() {
     const wallets = await prisma.wallet.findMany();
@@ -13,7 +13,6 @@ export async function POST(request: Request) {
         const body = await request.json();
 
         const {
-            characterId,
             campaignId,
             toWalletId,
             fromWalletId,
@@ -21,18 +20,17 @@ export async function POST(request: Request) {
             amount
         } = body;
         
-        if (!characterId || !campaignId || !toWalletId || !transactionType || !amount) {
+        if (!campaignId || !toWalletId || !transactionType || !amount) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
         const payload = {
-            characterId,
             campaignId,
-            toWalletId,
-            fromWalletId,
+            toWalletId: Number(toWalletId),
+            fromWalletId: Number(fromWalletId) ?? fromWalletId,
             transactionType,
             amount
-        } as CurrencyTransactionPayload
+        } as SaveWalletPayload
  
         const newItem = createCurrencyTransaction(payload)
 
