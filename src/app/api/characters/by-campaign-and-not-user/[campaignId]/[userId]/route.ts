@@ -8,7 +8,7 @@ export async function GET(
 ) {
     const { campaignId, userId } = await params;
     const inventoriesByCampaign = await getOtherCharactersInTheCampaign(campaignId, userId)
-
+    console.log(inventoriesByCampaign)
     if (!inventoriesByCampaign) {
         return NextResponse.json({}, { status: 404 });
     }

@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { SaveItemPayload, CurrencyTransactionPayload } from '@/app/services/itemService/itemService';
-import { useSession } from '@/app/contexts/SessionContext';
 import { LoadingScreen } from '../LoadingScreen';
 
 const Dropdown = styled.ul`
@@ -157,58 +156,35 @@ type Character = {
 };
 
 type TransactionModalProps = {
+	campaignUser: any;
+	selectedCharacter: Character;
+	currentCharacter: Character;
 	showDropdown: boolean;
-	type: string;
-	rarity: string;
-	attributes: any[];
-	name: string;
-	slot?: string;
-	itemId?: number;
-	inventoryItemId?: number | null;
+	item: ItemDataProps;
 	onTransactionComplete?: () => void;
 };
 
-export default function ItemTransaction({
-	type,
-	rarity,
-	attributes,
-	name,
-	slot,
-	itemId,
-	inventoryItemId,
-	onTransactionComplete,
-	showDropdown
-}: TransactionModalProps) {
-	const { campaignUser } = useSession();
+type ItemDataProps = {
+    id?: number;
+	inventoryItemId?: number;
+    name: string;
+	rarity: string;
+	type: string;
+	slot?: string;
+    attributes: any[];
+}
 
-	const [otherCharacters, setOtherCharacters] = useState<Character[]>([]);
-	const [currentCharacter, setCurrentCharacter] = useState<{ userId: number; inventoryId: number, walletId: number } | null>(null);
-	const [showTransactionModal, setShowTransactionModal] = useState(false);
-	const [selectedCharacter, setSelectedCharacter] = useState<{ userId: number; inventoryId: number, walletId: number } | null>(null);
+export default function ItemTransaction({
+	campaignUser,
+	selectedCharacter,
+	currentCharacter,
+	item,
+	showDropdown,
+	onTransactionComplete
+}: TransactionModalProps) {
+	const [showTransactionModal, setShowTransactionModal] = useState(showDropdown);
 	const [itemValue, setItemValue] = useState<string>("0");
 	const [error, setError] = useState("");
-
-	useEffect(() => {
-		if (!campaignUser || !showDropdown) return;
-
-		const fetchCharacters = async () => {
-			try {
-				const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`);
-				const data = await res.json();
-				setOtherCharacters(data.othersPlayer);
-				setCurrentCharacter({ userId: data.currentPlayer.userId, inventoryId: data.currentPlayer.inventoryId, walletId: data.currentPlayer.walletId });
-			} catch (err) {
-				console.error('Erro ao buscar personagens:', err);
-			}
-		};
-		fetchCharacters()
-	}, [campaignUser, showDropdown]);
-
-	useEffect(() => {
-		if (type === "currency" && attributes.length > 0) {
-			setItemValue(prev => (prev === "0" ? attributes[0].status : prev));
-		}
-	}, [type, attributes]);
 
 	const handleTransactionConfirm = async (transactionType: "TRADE" | "SELL" | "GIFT" | "DROP") => {
 		setError("");
@@ -223,50 +199,16 @@ export default function ItemTransaction({
 		}
 
 		try {
-			if (type == "currency") {
-				await handleCurrencyTransaction(campaignUser, selectedCharacter, transactionType)
-			} else {
-				await handleItemTransaction(campaignUser, selectedCharacter, transactionType)
-			}
-		
-			onTransactionComplete?.();
+			await handleItemTransaction(campaignUser, selectedCharacter, transactionType)
 			setShowTransactionModal(false)
 		} catch (err: any) {
 			console.error("Erro capturado no componente:", err.message);
 			setError(err.message || 'Erro ao realizar a transação');
 		} finally {
-			setSelectedCharacter(null);
 			setShowTransactionModal(false)
+			onTransactionComplete?.();
 		}
 	};
-
-	const handleCurrencyTransaction = async (
-		campaignUser: any ,
-		selectedCharacter: any,
-		transactionType: "TRADE" | "SELL" | "GIFT" | "DROP"
-	) => {
-		const payload: CurrencyTransactionPayload = {
-			characterId: selectedCharacter?.userId ? Number(selectedCharacter.userId) : null,
-			campaignId: Number(campaignUser.campaignId),
-			toWalletId: Number(selectedCharacter.walletId),
-			fromWalletId: currentCharacter?.walletId ? Number(currentCharacter.walletId ) : null,
-			transactionType,
-			amount: itemValue
-		}
-
-		const response = await fetch('/api/wallet/trade', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
-		});
-
-		const result = await response.json();
-
-		if (!response.ok) {
-			setError(result.error || 'Erro inesperado na transação');
-			return;
-		}
-	}
 
 	const handleItemTransaction = async (
 		campaignUser: any ,
@@ -274,20 +216,19 @@ export default function ItemTransaction({
 		transactionType: "TRADE" | "SELL" | "GIFT" | "DROP"
 	) => {
 		const payload: SaveItemPayload = {
-			itemId,
-			inventoryItemId,
+			itemId: item.id,
+			inventoryItemId: item.inventoryItemId,
 			characterId: selectedCharacter.userId,
 			campaignId: Number(campaignUser.campaignId),
 			toInventoryId: selectedCharacter.inventoryId,
 			fromInventoryId: currentCharacter?.inventoryId,
-			type,
-			rarity,
-			attributes,
-			name,
-			slot: slot ?? "pocket",
+			type: item.type,
+			rarity: item.rarity,
+			attributes: item.attributes,
+			name: item.name,
+			slot: item.slot ?? "pocket",
 			transactionType,
 			itemValue,
-			campaignCurrencyName: campaignUser.campaign.currencyName,
 		};
 
 		const response = await fetch('/api/items/trade', {
@@ -304,28 +245,17 @@ export default function ItemTransaction({
 		}
 	}
 
-	if (!showDropdown) return null;
+	if (!showTransactionModal) return null;
 
 	return (
 		<>
-			<Dropdown>
-				{otherCharacters.map((char) => (
-					<DropdownItem key={char.id} onClick={() => {
-						setSelectedCharacter({ userId: char.userId, inventoryId: char.inventoryId, walletId: char.walletId });
-						setShowTransactionModal(true);
-					}}>
-						{char.name} <span className={`char-role-${char.role}`}>{char.role}</span>
-					</DropdownItem>
-				))}
-			</Dropdown>
-
-			{showTransactionModal && (
+			{showDropdown && (
 				<ModalOverlay>
 					<ModalContent>
 						{error && <ErrorMessage>{error}</ErrorMessage>}
-						<h3>Tipo de Transação - {type}</h3>
+						<h3>Tipo de Transação - {item.type}</h3>
 						<div className="modal-content-send-items">
-							{type !== "currency" && (
+							{item.type !== "currency" && (
 								<button onClick={() => handleTransactionConfirm("TRADE")}>Troca</button>
 							)}
 							<button onClick={() => handleTransactionConfirm("GIFT")}>Doação</button>
@@ -342,7 +272,7 @@ export default function ItemTransaction({
 								name="item-value"
 								type="number"
 								min="0"
-								value={itemId ? itemValue : attributes[0].status}
+								value={item.id ? itemValue : item.attributes[0].status}
 								onChange={(e) => setItemValue(e.target.value)}
 							/>
 						</div>

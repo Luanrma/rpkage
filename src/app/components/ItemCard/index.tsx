@@ -5,6 +5,7 @@ import { InterfaceItemGenerator } from '@/engine/ItemGenerators/Interfaces/ItemG
 import styled from 'styled-components';
 import { Send } from 'lucide-react';
 import ItemTransaction from '../ItemTransaction';
+import ModalTransactionSelectCharacter from '../ModalTransactionSelectCharacter';
 
 const Card = styled.div`
   position: relative;
@@ -72,6 +73,26 @@ export default function ItemCard({
 }: InterfaceItemGenerator & { onTransactionComplete?: () => void }) {
 	const [showDropdown, setShowDropdown] = useState(false);
 
+	const item = {
+		id,
+		inventoryItemId,
+		name,
+		type,
+		rarity,
+		slot,
+		attributes,
+	}
+	
+	const handleWalletData = () => {
+		if (type === "currency") {
+			const wallet = {
+				amount: attributes[0].status ?? ""
+			}
+			return wallet
+		}
+		return undefined
+	}
+
 	return (
 		<Card>
 			<SaveIcon onClick={() => setShowDropdown(prev => !prev)}>
@@ -80,17 +101,7 @@ export default function ItemCard({
 
 			{showDropdown && (
 				<div>
-					<ItemTransaction
-						showDropdown={showDropdown}
-						type={type}
-						rarity={rarity}
-						attributes={attributes}
-						name={name}
-						slot={slot}
-						itemId={id}
-						inventoryItemId={inventoryItemId}
-						onTransactionComplete={onTransactionComplete}
-					/>
+					<ModalTransactionSelectCharacter itemData={item} walletData={handleWalletData()} onTransactionComplete={onTransactionComplete} />
 				</div>
 			)}
 

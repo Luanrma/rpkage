@@ -17,8 +17,6 @@ const SaveItemSchema = z.object({
     attributes: z.array(z.any()),
     transactionType: z.enum(['DROP', 'TRADE', 'SELL', 'GIFT']),
     itemValue: z.string().nullable().optional(),
-    campaignCurrencyName: z.string().nullable().optional(),
-    campaignCurrencyId: z.string().nullable().optional(),
 });
 
 const CurrencyTransferSchema = z.object({
@@ -123,7 +121,6 @@ export const createCurrencyTransaction = async (payload: CurrencyTransactionPayl
     }
 };
 
-
 const createItemTransaction = async (payload: SaveItemPayload) => {
     const {
         itemId,
@@ -139,49 +136,47 @@ const createItemTransaction = async (payload: SaveItemPayload) => {
         attributes,
         itemValue,
     } = payload;
-    
-    return await prisma.$transaction(async (tx) => {
-        const itemIdFinal = itemId ?? fixBigInt((await tx.items.create({
-            data: {
-                campaignId,
-                type,
-                rarity,
-                name,
-                slot: slot || 'In your pocket',
-                attributes: attributes ?? [],
-            }
-        })).id);
 
-        // Linka item ao inventário, se necessário
-        if (toInventoryId) {
-            await tx.inventoryItem.create({
-                data: {
-                    inventoryId: toInventoryId,
-                    itemsId: BigInt(itemIdFinal),
-                },
-            });
+    const itemIdFinal = itemId ?? fixBigInt((await prisma.items.create({
+        data: {
+            campaignId,
+            type,
+            rarity,
+            name,
+            slot: slot || 'In your pocket',
+            attributes: attributes ?? [],
         }
+    })).id);
 
-        // Se o item está vinculado a algum inventário, remove ele da origem
-        if (fromInventoryId) {
-            await tx.inventoryItem.delete({
-                where: { id: fromInventoryId }
-            })
-        }
-
-        // Cria histórico de transação
-       /* const finalItemValue = transactionType === 'SELL' ? itemValue : '0';
-        await tx.itemTransactionHistory.create({
+    // Linka item ao inventário, se necessário
+    if (toInventoryId) {
+        await prisma.inventoryItem.create({
             data: {
-                itemId: BigInt(itemIdFinal),
-                campaignId,
                 inventoryId: toInventoryId,
-                fromInventoryId: fromInventoryId,
-                transactionType,
-                amount: finalItemValue
+                itemsId: BigInt(itemIdFinal),
             },
-        });*/
+        });
+    }
 
-        return itemIdFinal;
-    });
+    // Se o item está vinculado a algum inventário, remove ele da origem
+    if (inventoryItemId) {
+        await prisma.inventoryItem.delete({
+            where: { id: inventoryItemId }
+        })
+    }
+
+    // Cria histórico de transação
+    /* const finalItemValue = transactionType === 'SELL' ? itemValue : '0';
+    await tx.itemTransactionHistory.create({
+        data: {
+            itemId: BigInt(itemIdFinal),
+            campaignId,
+            inventoryId: toInventoryId,
+            fromInventoryId: fromInventoryId,
+            transactionType,
+            amount: finalItemValue
+        },
+    });*/
+
+    return itemIdFinal;
 }

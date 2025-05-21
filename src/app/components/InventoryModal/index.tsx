@@ -46,6 +46,7 @@ const CloseButton = styled.button`
 const GridContainer = styled.div`
   padding: 0.4rem;
   display: grid;
+  background-color: rgb(36, 35, 35);
   grid-template-columns: repeat(6, 1fr);
   grid-template-rows: repeat(6, 1fr);
   gap: 0.5rem;
@@ -169,7 +170,7 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 			const wallet = inventoryAndWallet?.character.Wallet[0] || [];
 			setItems(inventoryItems);
 			setWallet(wallet)
-			setSelectedItem(null); // opcional: fecha o detalhe após a ação
+			setSelectedItem(null)
 		} catch (error) {
 			console.error('Erro ao atualizar inventário:', error);
 		}
@@ -233,23 +234,8 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 						onInventoryChange={handleUpdateInventory}
 					/>
 				)}
-
-				{showDropdownCurrency && currencyPayload && (
-					<ItemTransaction
-						showDropdown={showDropdownCurrency}
-						type={currencyPayload.type}
-						rarity={currencyPayload.rarity}
-						attributes={currencyPayload.attributes}
-						name={currencyPayload.name ?? 'brics'}
-						slot={currencyPayload.slot}
-						itemId={currencyPayload.itemId}
-						inventoryItemId={null}
-						onTransactionComplete={handleUpdateInventory}
-					/>
-				)}
 			</ModalBox>
 		</Overlay>,
 		document.body
 	);
 }
-
