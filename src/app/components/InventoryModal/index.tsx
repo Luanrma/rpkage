@@ -125,6 +125,7 @@ export type InventoryItem = {
 
 export default function InventoryModal({ characterId, onClose }: { characterId: string; onClose: () => void }) {
 	const { campaignUser } = useSession()
+
 	const [items, setItems] = useState<InventoryItem[]>([]);
 	const [wallet, setWallet] = useState<Wallet | null>(null);
 	const [loading, setLoading] = useState(true);
@@ -136,9 +137,6 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 		if (!campaignUser) {
 			return
 		}
-	}, [])
-
-	useEffect(() => {
 		const fetchInventory = async () => {
 			try {
 				const res = await fetch(`/api/inventory-and-wallet/by-character/${characterId}`);
@@ -155,26 +153,7 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 		};
 
 		fetchInventory();
-	}, [characterId]);
-
-	const handleCurrencyDropDown = () => {
-		if (!wallet) return;
-		setShowDropdownCurrency(!showDropdownCurrency)
-	}
-
-	const handleUpdateInventory = async () => {
-		try {
-			const res = await fetch(`/api/inventory-and-wallet/by-character/${characterId}`);
-			const inventoryAndWallet = await res.json();
-			const inventoryItems = inventoryAndWallet?.inventoryItems || [];
-			const wallet = inventoryAndWallet?.character.Wallet[0] || [];
-			setItems(inventoryItems);
-			setWallet(wallet)
-			setSelectedItem(null)
-		} catch (error) {
-			console.error('Erro ao atualizar inventário:', error);
-		}
-	};
+	}, [campaignUser]);
 
 	useEffect(()=> {
 		if (!wallet) {
@@ -193,12 +172,38 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 		
 	}, [wallet])
 
+	const handleCurrencyDropDown = () => {
+		if (!wallet) return;
+		setShowDropdownCurrency(!showDropdownCurrency)
+	}
+
+	const handleUpdateInventory = async () => {
+		try {
+			setItems([]);
+			setWallet(null)
+			setSelectedItem(null)
+			const res = await fetch(`/api/inventory-and-wallet/by-character/${characterId}`);
+			const inventoryAndWallet = await res.json();
+			const inventoryItems = inventoryAndWallet?.inventoryItems || [];
+			const wallet = inventoryAndWallet?.character.Wallet[0] || [];
+			setItems(inventoryItems);
+			setWallet(wallet)
+			setSelectedItem(null)
+		} catch (error) {
+			console.error('Erro ao atualizar inventário:', error);
+		}
+	};
+
+	if (!campaignUser) {
+		return
+	}
+
 	return ReactDOM.createPortal(
 		<Overlay onClick={onClose}>
 			<ModalBox onClick={(e) => e.stopPropagation()}>
 				<CloseButton onClick={onClose}>X</CloseButton>
 				{loading ? (
-					<p>Carregando itens...</p>
+					<p style={{position:"absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)"}}>Carregando itens...</p>
 				) : items.length > 0 ? (
 					<GridContainer>
 						{items.map((inv, idx) => (

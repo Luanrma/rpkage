@@ -87,22 +87,22 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
     const [selectedCharacter, setSelectedCharacter] = useState<Character| null>(null);
 
     useEffect(() => {
-            if (!campaignUser) {
-                return
+        if (!campaignUser) {
+            return
+        }
+        const fetchCharacters = async () => {
+            console.log("TES$TE")
+            try {
+                const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`);
+                const data = await res.json();
+                setOtherCharacters(data.othersPlayer);
+                setCurrentCharacter(data.currentPlayer);
+            } catch (err) {
+                console.error('Erro ao buscar personagens:', err);
             }
-    
-            const fetchCharacters = async () => {
-                try {
-                    const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`);
-                    const data = await res.json();
-                    setOtherCharacters(data.othersPlayer);
-                    setCurrentCharacter(data.currentPlayer);
-                } catch (err) {
-                    console.error('Erro ao buscar personagens:', err);
-                }
-            };
-            fetchCharacters()
-        }, [campaignUser]);
+        };
+        fetchCharacters()
+    }, [campaignUser]);
 
     if (!campaignUser) {
         return
@@ -129,7 +129,6 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
                     selectedCharacter={selectedCharacter}
                     currentCharacter={currentCharacter}
                     item={itemData}
-                    showDropdown={true}
                     onTransactionComplete={onTransactionComplete}
 			    />
             )}

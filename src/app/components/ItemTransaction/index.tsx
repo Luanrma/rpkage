@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { SaveItemPayload, CurrencyTransactionPayload } from '@/app/services/itemService/itemService';
@@ -159,19 +158,18 @@ type TransactionModalProps = {
 	campaignUser: any;
 	selectedCharacter: Character;
 	currentCharacter: Character;
-	showDropdown: boolean;
 	item: ItemDataProps;
 	onTransactionComplete?: () => void;
 };
 
 type ItemDataProps = {
-    id?: number;
+	id?: number;
 	inventoryItemId?: number;
-    name: string;
+	name: string;
 	rarity: string;
 	type: string;
 	slot?: string;
-    attributes: any[];
+	attributes: any[];
 }
 
 export default function ItemTransaction({
@@ -179,10 +177,9 @@ export default function ItemTransaction({
 	selectedCharacter,
 	currentCharacter,
 	item,
-	showDropdown,
 	onTransactionComplete
 }: TransactionModalProps) {
-	const [showTransactionModal, setShowTransactionModal] = useState(showDropdown);
+	const [showTransactionModal, setShowTransactionModal] = useState(true);
 	const [itemValue, setItemValue] = useState<string>("0");
 	const [error, setError] = useState("");
 
@@ -199,22 +196,22 @@ export default function ItemTransaction({
 		}
 
 		try {
-			await handleItemTransaction(campaignUser, selectedCharacter, transactionType)
-			setShowTransactionModal(false)
+			const success = await handleItemTransaction(campaignUser, selectedCharacter, transactionType);
+			if (success) {
+				onTransactionComplete?.();
+				setShowTransactionModal(false);
+			}
 		} catch (err: any) {
 			console.error("Erro capturado no componente:", err.message);
 			setError(err.message || 'Erro ao realizar a transação');
-		} finally {
-			setShowTransactionModal(false)
-			onTransactionComplete?.();
 		}
-	};
+	}
 
 	const handleItemTransaction = async (
-		campaignUser: any ,
+		campaignUser: any,
 		selectedCharacter: any,
 		transactionType: "TRADE" | "SELL" | "GIFT" | "DROP"
-	) => {
+	): Promise<boolean> => {
 		const payload: SaveItemPayload = {
 			itemId: item.id,
 			inventoryItemId: item.inventoryItemId,
@@ -241,15 +238,17 @@ export default function ItemTransaction({
 
 		if (!response.ok) {
 			setError(result.error || 'Erro inesperado na transação');
-			return;
+			return false;
 		}
+
+		return true;
 	}
 
 	if (!showTransactionModal) return null;
 
 	return (
 		<>
-			{showDropdown && (
+			{showTransactionModal && (
 				<ModalOverlay>
 					<ModalContent>
 						{error && <ErrorMessage>{error}</ErrorMessage>}
@@ -263,7 +262,7 @@ export default function ItemTransaction({
 								<button onClick={() => handleTransactionConfirm("DROP")}>Drop</button>
 							)}
 						</div>
-			
+
 						<div className="modal-content-sell-items">
 							<button onClick={() => handleTransactionConfirm("SELL")}>Venda</button>
 							<label htmlFor="item">Valor:</label>

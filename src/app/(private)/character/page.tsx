@@ -131,6 +131,7 @@ export default function CreateCharacterPage() {
                 }
 
                 alert('Ficha editada com sucesso!');
+                setCharacterId(data.id);
                 return;
             }
 
@@ -148,7 +149,6 @@ export default function CreateCharacterPage() {
             }
 
             alert('Ficha salva com sucesso!');
-            router.push('/character');
         } catch (err) {
             setError('Erro inesperado ao salvar personagem.');
         }
@@ -160,6 +160,7 @@ export default function CreateCharacterPage() {
 
     return (
         <Container>
+            {error && <ErrorMessage>{error}</ErrorMessage>}
             <TitleRow>
                 <Title>{sheet ? 'Editar Personagem' : 'Criar Personagem'}</Title>
                 {characterId && (
@@ -181,8 +182,6 @@ export default function CreateCharacterPage() {
 
             <KageSheetForm sheet={sheet} onChange={setSheet} />
             <Button onClick={handleSubmit}>Salvar Ficha</Button>
-            {error && <ErrorMessage>{error}</ErrorMessage>}
-
             {showInventory && characterId && (
                 <InventoryModal characterId={characterId} onClose={() => setShowInventory(false)} />
             )}
