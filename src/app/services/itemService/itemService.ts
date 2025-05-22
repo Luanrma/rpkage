@@ -54,7 +54,7 @@ export const createCurrencyTransaction = async (payload: SaveWalletPayload) => {
         transactionType,
         amount
     } = payload;
-    console.log(payload)
+
     try {
         if (!campaignId || !toWalletId || !transactionType || !amount) {
             throw new Error("Required value empty");
