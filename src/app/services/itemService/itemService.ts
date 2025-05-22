@@ -54,24 +54,28 @@ export const createCurrencyTransaction = async (payload: SaveWalletPayload) => {
         transactionType,
         amount
     } = payload;
-
+    console.log(payload)
     try {
         if (!campaignId || !toWalletId || !transactionType || !amount) {
             throw new Error("Required value empty");
         }
 
         const incomingAmount = Number(amount);
-        if (incomingAmount === 0) {
-            throw new Error("Você não tem saldo o suficiente para essa transação.");
+        if (isNaN(incomingAmount) || incomingAmount <= 0) {
+            throw new Error("Informe um valor válido maior que zero para a transação.");
         }
-        // 1. Verificar se a origem tem saldo suficiente (somente se itemId != null)
+
+        // 1. Se a transação envolve retirada de saldo fromWalletId tem valor
         if (fromWalletId) {
             const fromCurrency = await prisma.wallet.findUnique({
                 where: { id: fromWalletId },
             });
-            
-            const fromAmount = Number(fromCurrency?.amount || 0);
 
+            if (!fromCurrency) {
+                throw new Error("Carteira de origem não encontrada.");
+            }
+
+            const fromAmount = Number(fromCurrency?.amount || 0);
             if (fromAmount < incomingAmount) {
                 throw new Error("Saldo insuficiente para completar a transação.");
             }
@@ -86,18 +90,17 @@ export const createCurrencyTransaction = async (payload: SaveWalletPayload) => {
         }
 
         // 2. Adiciona o valor ao destino
-        const existingCurrency = await prisma.wallet.findUnique({
-            where: { id: toWalletId },
-        });
+        const toCurrency = await prisma.wallet.findUnique({ where: { id: toWalletId } })
+        if (!toCurrency) {
+            throw new Error("Carteira de destino não encontrada.");
+        }
 
-        const currentAmount = Number(existingCurrency?.amount || 0);
+        const currentAmount = Number(toCurrency.amount || 0);
         const newAmount = currentAmount + incomingAmount;
 
         await prisma.wallet.update({
             where: { id: toWalletId },
-            data: {
-                amount: newAmount.toString()
-            }
+            data: { amount: newAmount.toString() }
         });
 
         // 3. Cria histórico da transação

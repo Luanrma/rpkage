@@ -237,12 +237,12 @@ export default function ItemTransaction({
 		return true;
 	}
 
-	const handleTransactionAmountValue = (value: string) => {
-		if (walletData && walletData.amountOrigin === "itemGenerator") {
-			setItemValue(walletData?.amount)
+	const isFromGenerator = walletData?.amountOrigin === "itemGenerator";
+	useEffect(() => {
+		if (isFromGenerator && walletData?.amount) {
+			setItemValue(walletData.amount);
 		}
-		return setItemValue(value)
-	}
+	}, [walletData, isFromGenerator]);
 
 	if (!showTransactionModal) return null;
 
@@ -271,7 +271,8 @@ export default function ItemTransaction({
 								name="item-value"
 								type="number"
 								min="0"
-								value={walletData?.amountOrigin === "itemGenerator" ? walletData?.amount : itemValue }
+								value={ itemValue }
+								readOnly={isFromGenerator}
 								onChange={(e) => setItemValue(e.target.value)}
 							/>
 						</div>
