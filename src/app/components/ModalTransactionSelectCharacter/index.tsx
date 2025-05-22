@@ -82,6 +82,7 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
     const { campaignUser } = useSession();
     
     const [showTransactionModal, setShowTransactionModal] = useState(false);
+    const [showCharacterSelectorModal, setShowCharacterSelectorModal] = useState(true)
     const [currentCharacter, setCurrentCharacter] = useState<Character| null>(null);
     const [otherCharacters, setOtherCharacters] = useState<Character[]>([]);
     const [selectedCharacter, setSelectedCharacter] = useState<Character| null>(null);
@@ -103,22 +104,30 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
         fetchCharacters()
     }, [campaignUser]);
 
+    useEffect(() => {
+        if (showTransactionModal) {
+            setShowCharacterSelectorModal(false);
+        }
+    }, [showTransactionModal]);
+
     if (!campaignUser) {
         return
     }
 
     return (
 		<>
-            <Dropdown>
-                {otherCharacters.map((char) => (
-                    <DropdownItem key={char.id} onClick={() => {
-                        setSelectedCharacter(char);
-                        setShowTransactionModal(true);
-                    }}>
-                        {char.name} <span className={`char-role-${char.role}`}>{char.role}</span>
-                    </DropdownItem>
-                ))}
-            </Dropdown>
+            {showCharacterSelectorModal &&(
+                <Dropdown>
+                    {otherCharacters.map((char) => (
+                        <DropdownItem key={char.id} onClick={() => {
+                            setSelectedCharacter(char);
+                            setShowTransactionModal(true);
+                        }}>
+                            {char.name} <span className={`char-role-${char.role}`}>{char.role}</span>
+                        </DropdownItem>
+                    ))}
+                </Dropdown>
+            )}
             
             {showTransactionModal && selectedCharacter && currentCharacter && itemData  && !walletData && (
                 <ItemTransaction
@@ -137,7 +146,7 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
                     currentCharacter={currentCharacter}
                     walletData={walletData}
                     onTransactionComplete={onTransactionComplete}
-			    />
+			    /> 
             )}
         </>
     )

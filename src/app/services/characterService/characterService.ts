@@ -1,6 +1,15 @@
 import prisma from "../../../../prisma/ConnectionPrisma";
 
+const characterCache = new Map<string, any>();
+
 export async function getOtherCharactersInTheCampaign(campaignId: string, userId: string) {
+	const cacheKey = `${campaignId}-${userId}`;
+
+	// Verifica se já tem cache
+	if (characterCache.has(cacheKey)) {
+		return characterCache.get(cacheKey);
+	}
+
 	const userIdBigInt = BigInt(userId);
 	const campaignIdBigInt = BigInt(campaignId);
 
@@ -57,8 +66,12 @@ export async function getOtherCharactersInTheCampaign(campaignId: string, userId
 			role: char.user.campaignUsers[0]?.role ?? null,
 		}));
 	
-	return {
+	const result = {
 		currentPlayer,
 		othersPlayer,
-	};
+	}
+
+	// Armazena no cache
+	characterCache.set(cacheKey, result);
+	return result;
 }
