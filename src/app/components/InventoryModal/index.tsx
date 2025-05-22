@@ -3,7 +3,6 @@ import styled from "styled-components";
 import ReactDOM from 'react-dom';
 import InventoryModalItemDetails from "../InventoryModalItemDetails";
 import BagItemIcon from "../BagItemIcon";
-import ItemTransaction from '../ItemTransaction';
 import { Wallet } from "@prisma/client";
 import { useSession } from "@/app/contexts/SessionContext";
 import ModalTransactionSelectCharacter from "../ModalTransactionSelectCharacter";
@@ -132,84 +131,66 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 	const [loading, setLoading] = useState(true);
 	const [selectedItem, setSelectedItem] = useState<any | null>(null);
 	const [showDropdownCurrency, setShowDropdownCurrency] = useState(false);
-	const [currencyPayload, setCurrencyPayload] = useState<any>();
 
 	useEffect(() => {
 		if (!campaignUser) {
 			return
 		}
 
-		const fetchInventory = async () => {
-			try {
-				const res = await fetch(`/api/inventory-and-wallet/by-character/${characterId}`);
-				const inventoryAndWallet = await res.json();
-				const inventoryItems = inventoryAndWallet?.inventoryItems || [];
-				const wallet = inventoryAndWallet?.character.Wallet[0] || [];
-
-				setItems(inventoryItems);
-				setWallet(wallet)
-			} catch (error) {
-				console.error('Erro ao buscar inventário:', error);
-			} finally {
-				setLoading(false);
-			}
-		};
-
 		fetchInventory();
 	}, [campaignUser]);
 
-	useEffect(()=> {
-		if (!wallet) {
-			return;
-		}
-		const walletPayload = {
-			type: "currency",
-			rarity: "common",
-			slot: "wallet",
-			attributes: [{status: wallet.amount}],
-			name: campaignUser?.campaign.currencyName,
-			itemId: Number(wallet.id),
-			inventoryItemId: null,
-		}
-		setCurrencyPayload(walletPayload)
-		
-	}, [wallet])
-
-	const handleCurrencyDropDown = () => {
-		if (!wallet) {
-			return;
-		}
-		setShowDropdownCurrency(!showDropdownCurrency)
-	}
-
-	const handleUpdateInventory = async () => {
+	const fetchInventory = async () => {
 		try {
-			setItems([]);
+			setLoading(true);
+			setItems([])
 			setWallet(null)
 			setSelectedItem(null)
 
-			const res = await fetch(`/api/inventory-and-wallet/by-character/${characterId}`);
-			const inventoryAndWallet = await res.json();
-			const inventoryItems = inventoryAndWallet?.inventoryItems || [];
-			const wallet = inventoryAndWallet?.character.Wallet[0] || [];
+			const res = await fetch(`/api/inventory-and-wallet/by-character/${characterId}`)
+			const inventoryAndWallet = await res.json()
 
-			setItems(inventoryItems);
-			setWallet(wallet)
+			setItems(inventoryAndWallet?.inventoryItems || [])
+			setWallet(inventoryAndWallet?.character.Wallet[0] || [])
+			setLoading(false);
 		} catch (error) {
-			console.error('Erro ao atualizar inventário:', error);
+			console.error('Erro ao buscar inventário:', error);
 		}
+	};
+
+	const handleUpdateInventory = async () => {
+		try {
+			setItems(prevItems => prevItems.filter(item => item.id !== selectedItem.id));
+			setSelectedItem(null); // opcional, se quiser fechar os detalhes após envio
+		} catch (error) {
+			console.error('Erro ao atualizar inventário: ', error);
+		}
+	}
+
+	const handleUpdateWallet = async (transferredAmount: number) => {
+		if (!wallet) {
+			return
+		}
+		const actualAmount = Number(wallet.amount) - transferredAmount
+		setWallet(prev => prev ? { ...prev, amount: actualAmount.toString() } : prev)
 	}
 
 	const handleWalletData = () => {
 		if (!wallet) {
 			return
 		}
-
 		const walletData = {
-			amountOrigin: "player",
+			amountOrigin: "characterInventory",
 			amount: wallet.amount
 		}
 		return walletData
+	}
+
+	const handleCurrencyDropDown = () => {
+		if (!wallet) {
+			return;
+		}
+		setShowDropdownCurrency(!showDropdownCurrency)
 	}
 
 	if (!campaignUser) {
@@ -224,9 +205,9 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 					<p style={{position:"absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)"}}>Carregando itens...</p>
 				) : items.length > 0 ? (
 					<GridContainer>
-						{items.map((inv, idx) => (
+						{items.map((inv) => (
 							<GridItem
-								key={idx}
+								key={inv.id.toString()}
 								onClick={() => setSelectedItem(inv)}
 								title={inv.item?.name || 'Item desconhecido'}
 							>
@@ -247,7 +228,7 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 					<ItemIcon>
 						<BagItemIcon iconName="brics" />
 					</ItemIcon>
-					<span>{wallet?.amount || '0'}</span>
+					<span>{wallet?.amount ?? '0'}</span>
 				</CurrencyContainer>
 
 				{/* Verifica se há um item selecionado e exibe os detalhes no modal */}
@@ -261,7 +242,7 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 				{wallet && showDropdownCurrency && (
 					<ModalTransactionSelectCharacter 
 						walletData={handleWalletData()}
-						onTransactionComplete={handleUpdateInventory} 
+						onWalletTransactionComplete={handleUpdateWallet} 
 					/>
 				)}
 			</ModalBox>

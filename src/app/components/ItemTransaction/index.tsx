@@ -17,15 +17,16 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: #2a2a2a;
-  padding: 2rem;
+  padding: 1rem;
   border-radius: 10px;
   border: 1px solid #6f3dbe;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 1rem;
-  min-width: 300px;
+  min-width: 200px;
   max-width: 90%;
-  text-align: center;
 
   h3 {
     color: #fff;
@@ -34,7 +35,7 @@ const ModalContent = styled.div`
 
   button {
     padding: .2rem;
-    border-radius: 20px;
+    border-radius: 5px;
     border: none;
     background: rgb(111, 61, 190);
     color: #fff;
@@ -51,18 +52,8 @@ const ModalContent = styled.div`
   .modal-content-send-items {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: .5rem;
-  }
-
-  .modal-content-sell-items {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  .modal-content-sell-items button {
-    margin-right: 1rem;
+    justify-content: center;
+    gap: 1rem;
   }
 
   .modal-content-sell-items label {
@@ -116,6 +107,7 @@ type TransactionModalProps = {
 	item?: ItemDataProps;
 	walletData?: WalletDataProps;
 	onTransactionComplete?: () => void;
+	onWalletTransactionComplete?: (transferredAmount: number) => void;
 };
 
 type ItemDataProps = {
@@ -139,7 +131,8 @@ export default function ItemTransaction({
 	currentCharacter,
 	item,
 	walletData,
-	onTransactionComplete
+	onTransactionComplete,
+	onWalletTransactionComplete
 }: TransactionModalProps) {
 	const [showTransactionModal, setShowTransactionModal] = useState(true);
 	const [itemValue, setItemValue] = useState<string>("0");
@@ -160,7 +153,6 @@ export default function ItemTransaction({
 		try {
 			const success = await handleItemTransaction(campaignUser, selectedCharacter, transactionType);
 			if (success) {
-				onTransactionComplete?.();
 				setShowTransactionModal(false);
 			}
 		} catch (err: any) {
@@ -208,34 +200,50 @@ export default function ItemTransaction({
 	}
 
 	const sendItemTransaction = async (payload: SaveItemPayload): Promise<boolean> => {
-		const response = await fetch('/api/items/trade', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
-		});
+		try {
+			const response = await fetch('/api/items/trade', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
 
-		const result = await response.json();
-		if (!response.ok) {
-			setError(result.error || 'Erro inesperado na transação');
+			const result = await response.json();
+			if (!response.ok) {
+				setError(result.error || 'Erro inesperado na transação');
+				return false;
+			}
+
+			onTransactionComplete?.();
+			return true;
+		} catch (error: any) {
+			setError(error.message || 'Erro na requisição');
 			return false;
 		}
-		return true;
 	}
 
 	const sendWalletTransaction = async (payload: SaveWalletPayload) => {
-		const response = await fetch('/api/wallet/trade', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(payload),
-		});
+		try {
+			const response = await fetch('/api/wallet/trade', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
 
-		const result = await response.json();
-		if (!response.ok) {
-			setError(result.error || 'Erro inesperado na transação');
+			const result = await response.json();
+
+			if (!response.ok) {
+				setError(result.error || 'Erro inesperado na transação');
+				return false;
+			}
+
+			onWalletTransactionComplete?.(Number(payload.amount));
+			return true;
+
+		} catch (error: any) {
+			setError(error.message || 'Erro na requisição');
 			return false;
 		}
-		return true;
-	}
+	};
 
 	const isFromGenerator = walletData?.amountOrigin === "itemGenerator";
 	useEffect(() => {
@@ -254,29 +262,26 @@ export default function ItemTransaction({
 						{error && <ErrorMessage>{error}</ErrorMessage>}
 						<h3>Tipo de Transação</h3>
 						<div className="modal-content-send-items">
-							{walletData && (
-								<button onClick={() => handleTransactionConfirm("TRADE")}>Troca</button>
-							)}
-							<button onClick={() => handleTransactionConfirm("GIFT")}>Doação</button>
+							<button onClick={() => handleTransactionConfirm("TRADE")}>Trade</button>
 							{campaignUser?.role === "MASTER" && (
 								<button onClick={() => handleTransactionConfirm("DROP")}>Drop</button>
 							)}
 						</div>
 
-						<div className="modal-content-sell-items">
-							<button onClick={() => handleTransactionConfirm("SELL")}>Venda</button>
-							<label htmlFor="item">Valor:</label>
-							<input
-								className="input-item-value"
-								name="item-value"
-								type="number"
-								min="0"
-								value={ itemValue }
-								readOnly={isFromGenerator}
-								onChange={(e) => setItemValue(e.target.value)}
-							/>
-						</div>
-
+						{walletData && !item && (
+							<div className="modal-content-sell-items">
+								<label htmlFor="item">Valor:</label>
+								<input
+									className="input-item-value"
+									name="item-value"
+									type="number"
+									min="0"
+									value={ itemValue }
+									readOnly={isFromGenerator}
+									onChange={(e) => setItemValue(e.target.value)}
+								/>
+							</div>
+						)}
 						<button className="cancel" onClick={() => setShowTransactionModal(false)}>
 							Cancelar
 						</button>

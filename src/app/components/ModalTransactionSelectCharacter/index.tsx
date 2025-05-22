@@ -76,9 +76,10 @@ type ModalTransactionSelectCharacterProps = {
     itemData?: ItemDataProps
     walletData?: WalletDataProps,
     onTransactionComplete?: () => void;
+    onWalletTransactionComplete?: (transferredAmount: number) => void;
 }
 
-export default function ModalTransactionSelectCharacter({itemData, walletData, onTransactionComplete} : ModalTransactionSelectCharacterProps) {
+export default function ModalTransactionSelectCharacter({itemData, walletData, onTransactionComplete, onWalletTransactionComplete} : ModalTransactionSelectCharacterProps) {
     const { campaignUser } = useSession();
     
     const [showTransactionModal, setShowTransactionModal] = useState(false);
@@ -93,7 +94,9 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
         }
         const fetchCharacters = async () => {
             try {
-                const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`);
+                const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`, {
+                    cache: 'force-cache'
+                });
                 const data = await res.json();
                 setOtherCharacters(data.othersPlayer);
                 setCurrentCharacter(data.currentPlayer);
@@ -145,7 +148,7 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
                     selectedCharacter={selectedCharacter}
                     currentCharacter={currentCharacter}
                     walletData={walletData}
-                    onTransactionComplete={onTransactionComplete}
+                    onWalletTransactionComplete={onWalletTransactionComplete}
 			    /> 
             )}
         </>

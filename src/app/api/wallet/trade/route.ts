@@ -27,17 +27,21 @@ export async function POST(request: Request) {
         const payload = {
             campaignId,
             toWalletId: Number(toWalletId),
-            fromWalletId: Number(fromWalletId) ?? fromWalletId,
+            fromWalletId: fromWalletId ? Number(fromWalletId) : null,
             transactionType,
             amount
         } as SaveWalletPayload
  
-        const newItem = createCurrencyTransaction(payload)
+        const newItem = await createCurrencyTransaction(payload)
 
         return NextResponse.json(fixBigInt(newItem), { status: 201 });
 
     } catch (error) {
         console.error('POST /api/items error:', error);
+
+        if (error instanceof Error) {
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

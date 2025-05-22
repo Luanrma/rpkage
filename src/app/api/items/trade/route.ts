@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../../../prisma/ConnectionPrisma';
 import { fixBigInt } from '@/utils/fixBigInt';
-import { createItemIfNecessaryAndLinkToInventory, SaveItemPayload } from '@/app/services/itemService/itemService';
+import { createItemTransaction, SaveItemPayload } from '@/app/services/itemService/itemService';
 
 export async function GET() {
     const items = await prisma.items.findMany();
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
             campaignCurrencyName
         } as SaveItemPayload
  
-        const newItem = createItemIfNecessaryAndLinkToInventory(payload)
+        const newItem = await createItemTransaction(payload)
 
         return NextResponse.json(fixBigInt(newItem), { status: 201 });
 

@@ -30,16 +30,6 @@ const WalletTransferSchema = z.object({
 export type SaveItemPayload = z.infer<typeof SaveItemSchema>;
 export type SaveWalletPayload = z.infer<typeof WalletTransferSchema>;
 
-export async function createItemIfNecessaryAndLinkToInventory(payload: SaveItemPayload): Promise<number> {
-    const validation = SaveItemSchema.safeParse(payload);
-
-    if (!validation.success) {
-        throw new Error(validation.error.message);
-    }
-
-    return createItemTransaction(payload)
-}
-
 export const createCurrencyTransaction = async (payload: SaveWalletPayload) => {
     const validation = WalletTransferSchema.safeParse(payload);
 
@@ -121,7 +111,13 @@ export const createCurrencyTransaction = async (payload: SaveWalletPayload) => {
     }
 };
 
-const createItemTransaction = async (payload: SaveItemPayload) => {
+export const createItemTransaction = async (payload: SaveItemPayload): Promise<number> => {
+    const validation = SaveItemSchema.safeParse(payload);
+
+    if (!validation.success) {
+        throw new Error(validation.error.message);
+    }
+
     const {
         itemId,
         inventoryItemId,
@@ -137,46 +133,50 @@ const createItemTransaction = async (payload: SaveItemPayload) => {
         itemValue,
     } = payload;
 
-    const itemIdFinal = itemId ?? fixBigInt((await prisma.items.create({
-        data: {
-            campaignId,
-            type,
-            rarity,
-            name,
-            slot: slot || 'In your pocket',
-            attributes: attributes ?? [],
-        }
-    })).id);
-
-    // Linka item ao inventário, se necessário
-    if (toInventoryId) {
-        await prisma.inventoryItem.create({
+    try {
+        const itemIdFinal = itemId ?? fixBigInt((await prisma.items.create({
             data: {
+                campaignId,
+                type,
+                rarity,
+                name,
+                slot: slot || 'In your pocket',
+                attributes: attributes ?? [],
+            }
+        })).id);
+
+        // Linka item ao inventário, se necessário
+        if (toInventoryId) {
+            await prisma.inventoryItem.create({
+                data: {
+                    inventoryId: toInventoryId,
+                    itemsId: BigInt(itemIdFinal),
+                },
+            });
+        }
+
+        // Se o item está vinculado a algum inventário, remove ele da origem
+        if (inventoryItemId) {
+            await prisma.inventoryItem.delete({
+                where: { id: inventoryItemId }
+            })
+        }
+
+        // Cria histórico de transação
+        /* const finalItemValue = transactionType === 'SELL' ? itemValue : '0';
+        await tx.itemTransactionHistory.create({
+            data: {
+                itemId: BigInt(itemIdFinal),
+                campaignId,
                 inventoryId: toInventoryId,
-                itemsId: BigInt(itemIdFinal),
+                fromInventoryId: fromInventoryId,
+                transactionType,
+                amount: finalItemValue
             },
-        });
+        });*/
+
+        return itemIdFinal;
+    } catch (error: any) {
+        throw new Error(error.message || "Erro na transação monetária");
     }
-
-    // Se o item está vinculado a algum inventário, remove ele da origem
-    if (inventoryItemId) {
-        await prisma.inventoryItem.delete({
-            where: { id: inventoryItemId }
-        })
-    }
-
-    // Cria histórico de transação
-    /* const finalItemValue = transactionType === 'SELL' ? itemValue : '0';
-    await tx.itemTransactionHistory.create({
-        data: {
-            itemId: BigInt(itemIdFinal),
-            campaignId,
-            inventoryId: toInventoryId,
-            fromInventoryId: fromInventoryId,
-            transactionType,
-            amount: finalItemValue
-        },
-    });*/
-
-    return itemIdFinal;
 }
