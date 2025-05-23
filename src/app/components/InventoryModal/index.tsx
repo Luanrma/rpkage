@@ -225,10 +225,12 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 					title={campaignUser?.campaign.currencyName || "currency"}
 					onClick={() => handleCurrencyDropDown()}
 				>
-					<ItemIcon>
-						<BagItemIcon iconName="brics" />
-					</ItemIcon>
-					<span>{wallet?.amount ?? '0'}</span>
+					<div style={{ display: "flex", textAlign: 'center', alignItems: "center", gap: "0.4rem", cursor: "pointer"}}>
+						<ItemIcon>
+							<BagItemIcon iconName="brics" />
+						</ItemIcon>
+						<span>{wallet?.amount ?? '0'}</span>
+					</div>
 				</CurrencyContainer>
 
 				{/* Verifica se há um item selecionado e exibe os detalhes no modal */}
