@@ -109,7 +109,7 @@ export const createCurrencyTransaction = async (payload: SaveWalletPayload) => {
     } catch (error: any) {
         throw new Error(error.message || "Erro na transação monetária");
     }
-};
+}
 
 export const createItemTransaction = async (payload: SaveItemPayload): Promise<number> => {
     const validation = SaveItemSchema.safeParse(payload);
@@ -134,7 +134,7 @@ export const createItemTransaction = async (payload: SaveItemPayload): Promise<n
     } = payload;
 
     try {
-        const itemIdFinal = itemId ?? fixBigInt((await prisma.items.create({
+        const itemIdFinal = itemId ?? Number((await prisma.items.create({
             data: {
                 campaignId,
                 type,

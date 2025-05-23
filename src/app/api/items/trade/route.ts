@@ -54,7 +54,7 @@ export async function POST(request: Request) {
  
         const newItem = await createItemTransaction(payload)
 
-        return NextResponse.json(fixBigInt(newItem), { status: 201 });
+        return NextResponse.json(newItem, { status: 201 });
 
     } catch (error) {
         console.error('POST /api/items error:', error);
