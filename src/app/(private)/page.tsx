@@ -21,13 +21,14 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-
   flex-direction: column;
+
   min-height: 100vh;
+  min-width: 320px; 
   padding: 2rem;
   font-family: sans-serif;
   color: #f0f0f0;
-  background-color: #1a1a1a;
+  background-color:rgb(26, 26, 26);
 `
 
 const ContainerTitle = styled.div`
@@ -66,18 +67,26 @@ const ButtonGroup = styled.div`
   align-items: center;
 `
 
-const Button = styled.button`
+const Button = styled.button<{ disabled?: boolean }>`
   background-color: #333;
   color: #f0f0f0;
   border: none;
   padding: 0.8rem 1.2rem;
   border-radius: 8px;
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   min-width: 200px;
+  max-width: 100%;
+  width: 100%;
   transition: background 0.3s;
 
   &:hover {
-    background-color: #555;
+    background-color: ${({ disabled }) => (disabled ? '#333' : '#555')};
+  }
+
+  @media (max-width: 480px) {
+    min-width: unset;
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
   }
 `
 
@@ -116,6 +125,7 @@ const CampaignBox = styled.div`
   border-radius: 8px;
   padding: 1rem;
   margin: 0.5rem 0;
+
 `
 
 // === Tipagens ===

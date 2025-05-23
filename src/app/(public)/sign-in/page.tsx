@@ -22,16 +22,20 @@ const LoginContainer = styled.div`
 export default function SignInPage() {
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
+	const [loading, setLoading] = useState(false)
 	const router = useRouter()
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
+		setLoading(true)
 
 		const res = await fetch('/api/sign-in', {
 			method: 'POST',
 			body: JSON.stringify({ email, password }),
 			headers: { 'Content-Type': 'application/json' },
 		})
+
+		setLoading(false)
 
 		if (!res.ok) {
 			alert('Email ou senha inválidos')
@@ -44,7 +48,6 @@ export default function SignInPage() {
 	return (
 		<LoginContainer>
 			<div className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-black to-gray-800 animate-background flex items-center justify-center relative overflow-hidden">
-				{/* Fundo animado com movimento sutil */}
 				<div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-indigo-800 via-purple-900 to-black opacity-20 animate-pulse-slow blur-3xl z-0" />
 				
 				<form
@@ -70,9 +73,14 @@ export default function SignInPage() {
 					/>
 					<button
 						type="submit"
-						className="bg-indigo-600 hover:bg-indigo-700 transition-colors text-white font-semibold py-2 rounded"
+						disabled={loading}
+						className={`transition-colors text-white font-semibold py-2 rounded ${
+							loading
+								? 'bg-indigo-800 cursor-not-allowed opacity-60'
+								: 'bg-indigo-600 hover:bg-indigo-700'
+						}`}
 					>
-						Entrar
+						{loading ? 'Entrando...' : 'Entrar'}
 					</button>
 				</form>
 			</div>

@@ -33,21 +33,6 @@ const ModalContent = styled.div`
     margin-bottom: 1rem;
   }
 
-  button {
-    padding: .2rem;
-    border-radius: 5px;
-    border: none;
-    background: rgb(111, 61, 190);
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s ease-in-out;
-    width: 5rem;
-
-    &:hover {
-      background: rgb(89, 34, 177);
-    }
-  }
 
   .modal-content-send-items {
     display: flex;
@@ -71,16 +56,36 @@ const ModalContent = styled.div`
   }
 
   .cancel {
+  	padding: 8px 16px;
+  	font-weight: bold;
     background: transparent;
     color: #ccc;
+	transition: 0.3s;
     border: 1px solid #555;
     margin-top: 1rem;
+	cursor: pointer;
+	border-radius: 8px;
 
     &:hover {
       background: #3a3a3a;
     }
   }
-`;
+`
+
+const TransactionButton = styled.button<{ isProcessing?: boolean }>`
+	padding: 8px 16px;
+	border-radius: 8px;
+	font-weight: bold;
+	transition: 0.3s;
+	background-color: ${({ isProcessing }) => (isProcessing ? 'rgb(103, 103, 104)' : 'rgb(111, 61, 190)')};
+	color: white;
+	opacity: ${({ isProcessing }) => (isProcessing ? 0.6 : 1)};
+	cursor: ${({ isProcessing }) => (isProcessing ? "allowed" : "pointer")};
+
+	&:hover {
+		background-color: rgb(80, 5, 151);
+	}
+`
 
 const ErrorMessage = styled.div`
   background-color: #512121;
@@ -134,11 +139,13 @@ export default function ItemTransaction({
 	onTransactionComplete,
 	onWalletTransactionComplete
 }: TransactionModalProps) {
+	const [isProcessing, setIsProcessing] = useState(false);
 	const [showTransactionModal, setShowTransactionModal] = useState(true);
 	const [itemValue, setItemValue] = useState<string>("0");
 	const [error, setError] = useState("");
 
 	const handleTransactionConfirm = async (transactionType: "TRADE" | "SELL" | "GIFT" | "DROP") => {
+		setIsProcessing(true);
 		setError("");
 		if (!selectedCharacter || !campaignUser) {
 			setError("Informações do personagem ou do campaignUser estão faltando.");
@@ -158,6 +165,8 @@ export default function ItemTransaction({
 		} catch (err: any) {
 			console.error("Erro capturado no componente:", err.message);
 			setError(err.message || 'Erro ao realizar a transação');
+		} finally {
+			setIsProcessing(false)
 		}
 	}
 
@@ -262,9 +271,19 @@ export default function ItemTransaction({
 						{error && <ErrorMessage>{error}</ErrorMessage>}
 						<h3>Tipo de Transação</h3>
 						<div className="modal-content-send-items">
-							<button onClick={() => handleTransactionConfirm("TRADE")}>Trade</button>
+							<TransactionButton 
+								isProcessing={isProcessing}
+								onClick={() => handleTransactionConfirm("TRADE")}
+								disabled={isProcessing}
+							>Trade
+							</TransactionButton>
 							{campaignUser?.role === "MASTER" && (
-								<button onClick={() => handleTransactionConfirm("DROP")}>Drop</button>
+								<TransactionButton 
+									isProcessing={isProcessing}
+									onClick={() => handleTransactionConfirm("DROP")}
+									disabled={isProcessing}
+								>Drop
+								</TransactionButton>
 							)}
 						</div>
 
