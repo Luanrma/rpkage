@@ -2,6 +2,7 @@ import { useSession } from "@/app/contexts/SessionContext";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import ItemTransaction from "../ItemTransaction";
+import { RefreshCcw } from 'lucide-react';
 
 const Dropdown = styled.ul`
   position: absolute;
@@ -48,6 +49,13 @@ const DropdownItem = styled.li`
   }
 `;
 
+const ButtonForceUpdate = styled.button`
+  padding: 0.2rem;
+  margin-bottom: .5rem;
+  cursor: pointer;
+  color: #eee;
+`
+
 type Character = {
 	id: string;
 	userId: number;
@@ -87,7 +95,7 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
     const [currentCharacter, setCurrentCharacter] = useState<Character| null>(null);
     const [otherCharacters, setOtherCharacters] = useState<Character[]>([]);
     const [selectedCharacter, setSelectedCharacter] = useState<Character| null>(null);
-
+    
     useEffect(() => {
         if (!campaignUser) {
             return
@@ -95,7 +103,7 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
         const fetchCharacters = async () => {
             try {
                 const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`, {
-                    cache: 'force-cache'
+                    cache: 'force-cache',
                 });
                 const data = await res.json();
                 setOtherCharacters(data.othersPlayer);
@@ -113,6 +121,17 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
         }
     }, [showTransactionModal]);
 
+    const forceUpdate = async () => {
+        try {
+            const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`)
+            const data = await res.json();
+            setOtherCharacters(data.othersPlayer);
+            setCurrentCharacter(data.currentPlayer);
+        } catch (err) {
+            console.error('Erro ao buscar personagens:', err);
+        }
+    }
+
     if (!campaignUser) {
         return
     }
@@ -121,6 +140,7 @@ export default function ModalTransactionSelectCharacter({itemData, walletData, o
 		<>
             {showCharacterSelectorModal &&(
                 <Dropdown>
+                    <ButtonForceUpdate onClick={forceUpdate}><RefreshCcw /></ButtonForceUpdate>
                     {otherCharacters.map((char) => (
                         <DropdownItem key={char.id} onClick={() => {
                             setSelectedCharacter(char);
