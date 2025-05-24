@@ -1,6 +1,9 @@
 import { RefObject } from "react";
 
-export default function (asideRef: RefObject<HTMLDivElement | null>, e: React.MouseEvent | React.TouchEvent) {
+export default function (
+    asideRef: RefObject<HTMLDivElement | null>,
+    e: React.MouseEvent | React.TouchEvent
+) {
     e.preventDefault();
 
     const aside = asideRef.current;
@@ -15,6 +18,10 @@ export default function (asideRef: RefObject<HTMLDivElement | null>, e: React.Mo
     const shiftY = startY - rect.top;
 
     const onMove = (moveEvent: MouseEvent | TouchEvent) => {
+        if ('touches' in moveEvent) {
+            moveEvent.preventDefault(); // <- Adicionado aqui
+        }
+
         const moveX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX;
         const moveY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY;
 
