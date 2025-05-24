@@ -43,9 +43,6 @@ interface PlayerInfoProps {
 }
 
 export default function PlayerInfo({ onLevelChange, onItemCountChange }: PlayerInfoProps) {
-	const [level, setLevel] = useState(1);
-	const [itemCount, setItemCount] = useState(1);
-
 	const handleLevelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const inputNumberOfItems = e.target?.value
 		if (!inputNumberOfItems) {
@@ -53,7 +50,6 @@ export default function PlayerInfo({ onLevelChange, onItemCountChange }: PlayerI
 		}
 
 		const newLevel = parseInt(inputNumberOfItems, 10);
-		setLevel(newLevel);
 		onLevelChange(newLevel);
 	};
 
@@ -62,10 +58,7 @@ export default function PlayerInfo({ onLevelChange, onItemCountChange }: PlayerI
 		if (!inputNumberOfItems) {
 			return
 		}
-
-		const count = parseInt(inputNumberOfItems, 10);
-		setItemCount(count);
-		onItemCountChange(count);
+		onItemCountChange(parseInt(inputNumberOfItems));
 	};
 
 	return (
@@ -76,7 +69,6 @@ export default function PlayerInfo({ onLevelChange, onItemCountChange }: PlayerI
 				id="playerLevel"
 				min="1"
 				max="60"
-				value={level}
 				onChange={handleLevelChange}
 			/>
 			<label id="itemCountLabel" htmlFor="itemCount">Number of items (1 to 10): </label>
@@ -85,7 +77,6 @@ export default function PlayerInfo({ onLevelChange, onItemCountChange }: PlayerI
 				id="itemCount"
 				min="1"
 				max="10"
-				value={itemCount > 10 ? 10 : itemCount}
 				onChange={handleItemCountChange}
 			/>
 		</PlayerInfoStyle>

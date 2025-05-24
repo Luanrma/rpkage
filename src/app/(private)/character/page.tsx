@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, RefObject } from 'react';
 import styled from 'styled-components';
-import { useRouter } from 'next/navigation';
 import { useSession } from '@/app/contexts/SessionContext';
 import KageSheetForm from '@/app/components/KageSheetForm';
 import { SheetModelKageForCharacter } from './sheetModel';
 import { Backpack } from 'lucide-react';
 import InventoryModal from '@/app/components/InventoryModal';
 import { LoadingScreen } from '@/app/components/LoadingScreen';
+import dragAndDrop from "@/app/utils/dragAndDrop";
 
 const Container = styled.div`
   max-width: 800px;
@@ -65,7 +65,6 @@ const ErrorMessage = styled.p`
 
 export default function CreateCharacterPage() {
     const [sheet, setSheet] = useState<SheetModelKageForCharacter | undefined>(undefined);
-    const router = useRouter();
     const { campaignUser } = useSession();
     const [characterId, setCharacterId] = useState<string | null>(null);
     const [name, setName] = useState('');
@@ -82,8 +81,8 @@ export default function CreateCharacterPage() {
                 if (res.ok) {
                     const data = await res.json();
                     setCharacterId(data.id);
-                    setName(data.name);
                     setSheet(data.sheet);
+                    setName(data.sheet.name);
                 } else {
                     setCharacterId(null);
                     setName('');
@@ -172,16 +171,9 @@ export default function CreateCharacterPage() {
                 )}
             </TitleRow>
 
-            <Label htmlFor="name">Nome</Label>
-            <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Digite o nome do personagem"
-            />
-
             <KageSheetForm sheet={sheet} onChange={setSheet} />
             <Button onClick={handleSubmit}>Salvar Ficha</Button>
+            
             {showInventory && characterId && (
                 <InventoryModal characterId={characterId} onClose={() => setShowInventory(false)} />
             )}

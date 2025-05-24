@@ -11,10 +11,10 @@ export default function PrivateLayout({ children }: { children: React.ReactNode 
     return (
         <div style={{ display: "flex", minHeight: "100vh" }}>
             <SessionProvider>
-                {!hideAside && <Aside />}
-                <main style={{ flex: 1, padding: "1rem", minWidth: 0 }}>
-                    {children}
-                </main>
+                    {!hideAside && <Aside />}
+                    <main style={{ flex: 1, padding: "1rem", minWidth: 0 }}>
+                        {children}
+                    </main>
             </SessionProvider>
         </div>
     )

@@ -3,6 +3,7 @@
 import { AttributeBlock, ExpertiseBlock, OrbOfEssence, PassiveSkill, SheetModelKageForCharacter } from '@/app/(private)/character/sheetModel';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 type Props = {
     sheet?: SheetModelKageForCharacter;
@@ -21,6 +22,8 @@ const expertiseDescriptions: Record<keyof ExpertiseBlock, string> = {
 };
 
 export default function KageSheetForm({ sheet, onChange }: Props) {
+    const [currentStep, setCurrentStep] = useState(0);
+    const totalSteps = 5;
     const [form, setForm] = useState<SheetModelKageForCharacter>(
         sheet || {
             name: '',
@@ -119,9 +122,9 @@ export default function KageSheetForm({ sheet, onChange }: Props) {
         setForm({ ...form, passiveSkills: updated });
     };
 
-    return (
-        <SheetContainer>
-            <Section>
+    const sections = [
+        (
+            <Section key="general">
                 <h3>General Info</h3>
                 <Row>
                     <label>Name</label>
@@ -158,8 +161,9 @@ export default function KageSheetForm({ sheet, onChange }: Props) {
                     </div>
                 </GroupedRow>
             </Section>
-
-            <Section>
+        ),
+        (
+            <Section key="attributes">
                 <h3>Attributes</h3>
                 {Object.entries(form.attributes).map(([key, attr]) => (
                     <AttributeGroup key={key}>
@@ -201,8 +205,9 @@ export default function KageSheetForm({ sheet, onChange }: Props) {
                     </AttributeGroup>
                 ))}
             </Section>
-
-            <Section>
+        ),
+        (
+            <Section key="expertise">
                 <h3>Expertise</h3>
                 {Object.entries(form.expertise).map(([key, value]) => (
                     <ExpertiseRow key={key}>
@@ -225,8 +230,9 @@ export default function KageSheetForm({ sheet, onChange }: Props) {
                     </ExpertiseRow>
                 ))}
             </Section>
-
-            <Section>
+        ),
+        (
+            <Section key="orbs">
                 <h3>Orbs of Essence</h3>
                 {form.orbs?.map((orb, idx) => (
                     <OrbContainer key={idx}>
@@ -257,8 +263,9 @@ export default function KageSheetForm({ sheet, onChange }: Props) {
                     <ButtonAddOrb type="button" onClick={addOrb}>Add Orb</ButtonAddOrb>
                 )}
             </Section>
-
-            <Section>
+        ),
+        (
+            <Section key="passives">
                 <h3>Passive Skills</h3>
                 {form.passiveSkills.map((skill, idx) => (
                     <SkillContainer key={idx}>
@@ -277,6 +284,29 @@ export default function KageSheetForm({ sheet, onChange }: Props) {
                 ))}
                 <ButtonAddSkill type="button" onClick={addPassiveSkill}>Add Passive Skill</ButtonAddSkill>
             </Section>
+        )
+    ];
+
+    return (
+        <SheetContainer>
+            {sections[currentStep]}
+
+            <hr/>
+            <Navigation>
+                <button
+                    onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 0))}
+                    disabled={currentStep === 0}
+                >
+                    <ChevronLeft/>
+                </button>
+                <span>{currentStep + 1} de {totalSteps}</span>
+                <button
+                    onClick={() => setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1))}
+                    disabled={currentStep === totalSteps - 1}
+                >
+                    <ChevronRight/>
+                </button>
+            </Navigation>
         </SheetContainer>
     );
 }
@@ -318,6 +348,32 @@ const Row = styled.div`
         padding: 0.5rem;
         border: 1px solid #444;
         border-radius: 4px;
+    }
+`;
+
+const Navigation = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+
+    button {
+        padding: 0.5rem 1rem;
+        background-color: #7e57c2;
+        border: none;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+
+        &:disabled {
+            background-color: #444;
+            cursor: not-allowed;
+        }
+    }
+
+    span {
+        font-size: 0.9rem;
+        color: #ccc;
     }
 `;
 
@@ -555,5 +611,3 @@ const ButtonAddSkill = styled.button`
         background-color:rgb(85, 56, 134);
     }
 `;
-
-

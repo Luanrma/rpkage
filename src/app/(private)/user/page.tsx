@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useRouter } from 'next/navigation';
 import { useSession } from '../../contexts/SessionContext';
+import { LoadingScreen } from '@/app/components/LoadingScreen';
 
 const UsersContainer = styled.div`
   width: 100vw;
@@ -162,6 +163,8 @@ interface CampaignUserRecord {
 
 export default function CampaignUserManagementPage() {
 	const { campaignUser } = useSession();
+
+	const [loading, setLoading] = useState(true);
 	const [searchResultUsers, setSearchResultUsers] = useState<User[]>([]);
 	const [searchEmail, setSearchEmail] = useState('');
 	const [campaignExistingUserIds, setCampaignExistingUserIds] = useState<string[]>([]);
@@ -206,6 +209,8 @@ export default function CampaignUserManagementPage() {
 		} catch (error) {
 			console.error('Erro ao buscar campaign users:', error);
 		}
+
+		setLoading(false);
 	};
 
 	const handleSearch = async (event: React.FormEvent) => {
@@ -237,8 +242,8 @@ export default function CampaignUserManagementPage() {
 		}
 	};
 
-	if (!campaignUser) {
-		return <p>Carregando...</p>;
+	if (loading) {
+		return <LoadingScreen />
 	}
 
 	return (

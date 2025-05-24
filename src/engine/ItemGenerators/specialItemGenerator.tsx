@@ -6,6 +6,6 @@ export const specialItemGenerator = (): InterfaceItemGenerator => {
         type: "Item Especial",
         rarity: "uncommon",
         slot: "Item Especial",
-         attributes: [{ description: "", status: "", diceBonus: "" }]
+        attributes: []
     };
 }

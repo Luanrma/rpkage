@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import ReactDOM from 'react-dom';
 import InventoryModalItemDetails from "../InventoryModalItemDetails";
@@ -6,6 +6,7 @@ import BagItemIcon from "../BagItemIcon";
 import { Wallet } from "@prisma/client";
 import { useSession } from "@/app/contexts/SessionContext";
 import ModalTransactionSelectCharacter from "../ModalTransactionSelectCharacter";
+import dragAndDrop from "@/app/utils/dragAndDrop";
 
 const Overlay = styled.div`
   position: fixed;
@@ -13,17 +14,19 @@ const Overlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 2000;
+  touch-action: none;
 `;
 
 const ModalBox = styled.div`
-  position: relative;
+  position: absolute;
   background: #2a2a2a;
-  padding: 1rem;
+  padding: .8rem;
   border-radius: 10px;
   max-width: 500px;
   width: 90%;
@@ -56,19 +59,20 @@ const GridContainer = styled.div`
   border-radius: 8px;
 `;
 
-const GridItem = styled.div`
-  background-color: rgb(36, 35, 35); /* Fundo para as células */
-  border: 1px dashed rgb(124, 124, 124); /* Borda das células do grid */
+const GridItem = styled.div<{ selected: boolean }>`
+  background-color: ${({ selected }) => selected ? '#333' : 'rgb(36, 35, 35)'};
+  border: 1px dashed rgb(124, 124, 124);
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
   border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 
   &:hover {
     border: 1px solid rgb(53, 53, 53);
-    background-color: #555;
+    background-color: ${({ selected }) => selected ? '#444' : '#555'};
   }
 `;
 
@@ -89,48 +93,53 @@ const CurrencyContainer = styled.div`
 `
 
 export type ItemAttributes = {
-    dice: string;
-    status: string;
-    description: string;
+	dice: string;
+	status: string;
+	description: string;
 };
 
 type ItemDefinition = {
-    type: string;
+	type: string;
 };
 
 type ItemDetail = {
-    id: string;
-    campaingId: string;
-    type: string;
-    rarity: string;
-    name: string;
-    slot: string;
-    attributes: {
-        opt_1: ItemAttributes | null;
-        opt_2: ItemAttributes | null;
-        opt_3: ItemAttributes | null;
-        opt_4: ItemAttributes | null;
-        definition: ItemDefinition;
-    };
+	id: string;
+	campaingId: string;
+	type: string;
+	rarity: string;
+	name: string;
+	slot: string;
+	attributes: {
+		opt_1: ItemAttributes | null;
+		opt_2: ItemAttributes | null;
+		opt_3: ItemAttributes | null;
+		opt_4: ItemAttributes | null;
+		definition: ItemDefinition;
+	};
 };
 
 export type InventoryItem = {
-    id: bigint;
-    inventoryId: bigint;
-    itemsId: bigint;
-    createdAt: Date;
-    updatedAt: Date;
-    item: ItemDetail;
+	id: bigint;
+	inventoryId: bigint;
+	itemsId: bigint;
+	createdAt: Date;
+	updatedAt: Date;
+	item: ItemDetail;
 };
 
 export default function InventoryModal({ characterId, onClose }: { characterId: string; onClose: () => void }) {
 	const { campaignUser } = useSession()
 
+	const asideRef = useRef<HTMLDivElement>(null)
 	const [items, setItems] = useState<InventoryItem[]>([]);
 	const [wallet, setWallet] = useState<Wallet | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [selectedItem, setSelectedItem] = useState<any | null>(null);
 	const [showDropdownCurrency, setShowDropdownCurrency] = useState(false);
+
+	const TOTAL_SLOTS = 36; // 6x6 grid
+	const filledItems = items.slice(0, TOTAL_SLOTS);
+	const emptySlots = TOTAL_SLOTS - filledItems.length;
 
 	useEffect(() => {
 		if (!campaignUser) {
@@ -198,21 +207,31 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 	}
 
 	return ReactDOM.createPortal(
-		<Overlay onClick={onClose}>
-			<ModalBox onClick={(e) => e.stopPropagation()}>
+		<Overlay>
+			<ModalBox 
+				ref={asideRef}
+				onMouseDown={(e) => dragAndDrop(asideRef, e)}
+				onTouchStart={(e) => dragAndDrop(asideRef, e)}
+				
+				onClick={(e) => e.stopPropagation()}>
 				<CloseButton onClick={onClose}>X</CloseButton>
 				{loading ? (
-					<p style={{position:"absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)"}}>Carregando itens...</p>
+					<p style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}>Carregando itens...</p>
 				) : items.length > 0 ? (
 					<GridContainer>
-						{items.map((inv) => (
+						{filledItems.map((inv) => (
 							<GridItem
 								key={inv.id.toString()}
-								onClick={() => setSelectedItem(inv)}
+								selected={selectedItem?.id === inv.id}
+								onClick={() => setSelectedItem((prev: { id: bigint }) => prev?.id === inv.id ? null : inv)}
 								title={inv.item?.name || 'Item desconhecido'}
 							>
 								<ItemIcon><BagItemIcon iconName={inv.item.slot} /></ItemIcon>
 							</GridItem>
+						))}
+
+						{Array.from({ length: emptySlots }).map((_, index) => (
+							<GridItem selected={false} key={`empty-${index}`} />
 						))}
 					</GridContainer>
 				) : (
@@ -221,11 +240,11 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 					</GridContainer>
 				)}
 
-				<CurrencyContainer 
+				<CurrencyContainer
 					title={campaignUser?.campaign.currencyName || "currency"}
 					onClick={() => handleCurrencyDropDown()}
 				>
-					<div style={{ display: "flex", textAlign: 'center', alignItems: "center", gap: "0.4rem", cursor: "pointer"}}>
+					<div style={{ display: "flex", textAlign: 'center', alignItems: "center", gap: "0.4rem", cursor: "pointer" }}>
 						<ItemIcon>
 							<BagItemIcon iconName="brics" />
 						</ItemIcon>
@@ -235,16 +254,16 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 
 				{/* Verifica se há um item selecionado e exibe os detalhes no modal */}
 				{selectedItem && (
-					<InventoryModalItemDetails 
+					<InventoryModalItemDetails
 						inventoryItem={selectedItem}
 						onInventoryChange={handleUpdateInventory}
 					/>
 				)}
 
 				{wallet && showDropdownCurrency && (
-					<ModalTransactionSelectCharacter 
+					<ModalTransactionSelectCharacter
 						walletData={handleWalletData()}
-						onWalletTransactionComplete={handleUpdateWallet} 
+						onWalletTransactionComplete={handleUpdateWallet}
 					/>
 				)}
 			</ModalBox>
