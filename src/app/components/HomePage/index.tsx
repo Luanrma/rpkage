@@ -173,7 +173,7 @@ export default function HomePage() {
 		loadCharacters()
 	}, [!campaignUser])
 
-	if (!campaignUser) {
+	if (!campaignUser || !characters) {
 		return <LoadingScreen />
 	}
 

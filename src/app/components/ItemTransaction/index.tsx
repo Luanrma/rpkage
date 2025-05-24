@@ -72,7 +72,9 @@ const ModalContent = styled.div`
   }
 `
 
-const TransactionButton = styled.button<{ isProcessing?: boolean }>`
+const TransactionButton = styled.button.withConfig({
+	shouldForwardProp: (prop) => prop !== 'isProcessing'
+})<{ isProcessing?: boolean }>`
 	padding: 8px 16px;
 	border-radius: 8px;
 	font-weight: bold;

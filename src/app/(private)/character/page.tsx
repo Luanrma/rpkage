@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useRouter } from 'next/navigation';
 import { useSession } from '@/app/contexts/SessionContext';
 import KageSheetForm from '@/app/components/KageSheetForm';
 import { SheetModelKageForCharacter } from './sheetModel';
@@ -65,7 +64,6 @@ const ErrorMessage = styled.p`
 
 export default function CreateCharacterPage() {
     const [sheet, setSheet] = useState<SheetModelKageForCharacter | undefined>(undefined);
-    const router = useRouter();
     const { campaignUser } = useSession();
     const [characterId, setCharacterId] = useState<string | null>(null);
     const [name, setName] = useState('');

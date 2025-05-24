@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight, Backpack, User, House, LogOut, Handshake, SmilePlus } from "lucide-react";
+import { Activity, Swords, SquareArrowOutDownLeft, SquareArrowOutUpRight, Backpack, User, House, LogOut, Handshake, SmilePlus, FileSpreadsheet } from "lucide-react";
 import LogoutButton from '../LogoutButton';
 import { useSession } from '@/app/contexts/SessionContext';
 import { usePathname } from 'next/navigation'
@@ -19,10 +19,15 @@ const AsideContainer = styled.div<{ $collapsed: boolean }>`
   padding: 1rem;
   width: ${({ $collapsed }) => ($collapsed ? "5rem" : "15rem")};
   height: auto;
-  border-radius: 10px;
+  border-radius: 0 20px 20px 0;
   transition: width 0.3s ease;
   color: white;
-  z-index: 9999;
+  z-index: 1000;
+
+  @media (max-width: 800px) {
+    width: ${({ $collapsed }) => ($collapsed ? "3.3rem" : "10rem")};
+    padding: 0.3rem;
+  }
 `;
 
 const MenuList = styled.ul`
@@ -30,39 +35,40 @@ const MenuList = styled.ul`
   padding: 0;
 `;
 
-const MenuItem = styled.li <{ $active?: boolean }>
-	`
-  padding: 1rem 0;
-  color: ${({ $active }) => ($active ? 'rgb(255, 255, 255)' : 'rgb(117, 117, 117)')} ;
-  transition: all 0.2s ease;
-	backgroundColor: ${({ $active }) => ($active ? 'white' : 'transparent')}
-	borderradius: 4x;
+const MenuItem = styled.li<{ $active?: boolean }>`
+  	padding: .8rem 0;
+  	color: ${({ $active }) => ($active ? 'rgb(255, 255, 255)' : 'rgb(117, 117, 117)')} ;
+  	transition: all 0.2s ease;
 
-  &:hover {
-    color: rgb(255, 255, 255);
-    transform: translateX(0.2rem);
-  }
-		
-
-  a {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    color: inherit;
-    text-decoration: none;
+	&:hover {
+		color: rgb(255, 255, 255);
+		transform: translateX(0.2rem);
+	}
+			
+  	a {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		color: inherit;
+		text-decoration: none;
 		padding: 0.5rem;
-  }
+  	}
 
 	svg {
-    color: ${({ $active }) => ($active ? '#6e3fae' : 'currentColor')};
-  }
+    	color: ${({ $active }) => ($active ? '#6e3fae' : 'currentColor')};
+  	}
+
+	@media (max-width: 800px) {
+		padding: .7rem 0;
+		font-size: .8rem;
+  	}
 `;
 
 const ToggleButton = styled.button<{ $collapsed: boolean }>`
   align-self: ${({ $collapsed }) => ($collapsed ? "center" : "flex-end")};
-  margin-bottom: 1rem;
+  margin: ${({ $collapsed }) => ($collapsed ? ".5rem 0 .5rem 0" : ".5rem .5rem .5rem 0")};
   transition: transform .5s ease;
-	background: none;
+  background: none;
   border: none;
   color: white;
   cursor: pointer;
@@ -75,12 +81,8 @@ const ToggleButton = styled.button<{ $collapsed: boolean }>`
 export default function Aside() {
 	const [collapsed, setCollapsed] = useState(true);
 	const { campaignUser } = useSession();
-	const [activeItem, setActiveItem] = useState('/home')
-	const pathname = usePathname(); // Get current route path
+	const pathname = usePathname();
 	const [isClient, setIsClient] = useState(false);
-
-
-
 
 	// Após montar no client, ativa a renderização real
 	useEffect(() => {
@@ -88,7 +90,6 @@ export default function Aside() {
 	}, []);
 
 	if (!isClient) {
-		// Retorna nulo no server e no primeiro render client, evitando mismatch
 		return null;
 	}
 
@@ -109,26 +110,24 @@ export default function Aside() {
 					<Link href="/home"><House />{!collapsed && "Home"}</Link>
 				</MenuItem>
 				<MenuItem $active={isActive('/character')}>
-					<Link href="/character"><SmilePlus />{!collapsed && "Character"}</Link>
+					<Link href="/character"><FileSpreadsheet />{!collapsed && "Character"}</Link>
+				</MenuItem>
+				<MenuItem $active={isActive('/damage-calculator')}>
+					<Link href="/damage-calculator"><Activity />{!collapsed && "Damage Calculator"}</Link>
+				</MenuItem>
+				<MenuItem $active={isActive('/item-generator')}>
+					<Link href="/item-generator"><Swords />{!collapsed && "Item Generator"}</Link>
+				</MenuItem>
+				<MenuItem $active={isActive('/inventory')}>
+					<Link href="/inventory"><Backpack />{!collapsed && "Inventory"}</Link>
 				</MenuItem>
 				{isMaster && (
 					<MenuItem $active={isActive('/user')}>
-						<Link href="/user"><User />{!collapsed && "User"}</Link>
+						<Link href="/user"><SmilePlus />{!collapsed && "User"}</Link>
 					</MenuItem>
 				)}
 				<MenuItem $active={isActive('/')}>
 					<Link href="/"><Handshake />{!collapsed && "Campaing"}</Link>
-				</MenuItem>
-
-				<MenuItem $active={isActive('/item-generator')}>
-					<Link href="/item-generator"><Swords />{!collapsed && "Item Generator"}</Link>
-				</MenuItem>
-
-				<MenuItem $active={isActive('/damage-calculator')}>
-					<Link href="/damage-calculator"><Activity />{!collapsed && "Damage Calculator"}</Link>
-				</MenuItem>
-				<MenuItem $active={isActive('/inventory')}>
-					<Link href="/inventory"><Backpack />{!collapsed && "Inventory"}</Link>
 				</MenuItem>
 				<MenuItem >
 					<LogoutButton><LogOut />{!collapsed && "Logout"}</LogoutButton>
