@@ -269,7 +269,7 @@ export default function CampaignEntry() {
 			</LogoutWrapper>
 
 			<ContainerTitle>
-				<Title>Bem-vindo ao Gerenciador de Campanhas</Title>
+				<Title>Bem-vindo ao Gerenciador de Campanhas luan gay</Title>
 			</ContainerTitle>
 
 			{view === 'initial' && (
@@ -284,11 +284,13 @@ export default function CampaignEntry() {
 					<SubTitle>Criar Nova Campanha</SubTitle>
 					{errorMessage && <p style={{ color: 'red', marginBottom: '1rem' }}>{errorMessage}</p>}
 					<Input
+						//validar nome da
 						placeholder="Nome da campanha"
 						value={createCampaign.name}
 						onChange={e => setCreateCampaign({ ...createCampaign, name: e.target.value })}
 					/>
 					<Input
+						//validar nome da moeda
 						placeholder="Nome da moeda da campanha"
 						value={createCampaign.currencyName}
 						onChange={e => setCreateCampaign({ ...createCampaign, currencyName: e.target.value })}
