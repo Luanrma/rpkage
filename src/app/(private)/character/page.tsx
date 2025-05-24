@@ -80,8 +80,8 @@ export default function CreateCharacterPage() {
                 if (res.ok) {
                     const data = await res.json();
                     setCharacterId(data.id);
-                    setName(data.name);
                     setSheet(data.sheet);
+                    setName(data.sheet.name);
                 } else {
                     setCharacterId(null);
                     setName('');
@@ -169,14 +169,6 @@ export default function CreateCharacterPage() {
                     />
                 )}
             </TitleRow>
-
-            <Label htmlFor="name">Nome</Label>
-            <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Digite o nome do personagem"
-            />
 
             <KageSheetForm sheet={sheet} onChange={setSheet} />
             <Button onClick={handleSubmit}>Salvar Ficha</Button>
