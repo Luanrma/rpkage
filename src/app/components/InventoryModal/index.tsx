@@ -14,11 +14,13 @@ const Overlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 2000;
+  touch-action: none;
 `;
 
 const ModalBox = styled.div`

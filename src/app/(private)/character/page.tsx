@@ -173,8 +173,9 @@ export default function CreateCharacterPage() {
 
             <KageSheetForm sheet={sheet} onChange={setSheet} />
             <Button onClick={handleSubmit}>Salvar Ficha</Button>
+            
             {showInventory && characterId && (
-            <InventoryModal characterId={characterId} onClose={() => setShowInventory(false)} />
+                <InventoryModal characterId={characterId} onClose={() => setShowInventory(false)} />
             )}
         </Container>
     );

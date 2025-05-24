@@ -3,6 +3,7 @@
 import { AttributeBlock, ExpertiseBlock, OrbOfEssence, PassiveSkill, SheetModelKageForCharacter } from '@/app/(private)/character/sheetModel';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 type Props = {
     sheet?: SheetModelKageForCharacter;
@@ -288,24 +289,22 @@ export default function KageSheetForm({ sheet, onChange }: Props) {
 
     return (
         <SheetContainer>
-
             {sections[currentStep]}
 
+            <hr/>
             <Navigation>
                 <button
                     onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 0))}
                     disabled={currentStep === 0}
                 >
-                    Anterior
+                    <ChevronLeft/>
                 </button>
-
-                <span>Etapa {currentStep + 1} de {totalSteps}</span>
-
+                <span>{currentStep + 1} de {totalSteps}</span>
                 <button
                     onClick={() => setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1))}
                     disabled={currentStep === totalSteps - 1}
                 >
-                    Próximo
+                    <ChevronRight/>
                 </button>
             </Navigation>
         </SheetContainer>
