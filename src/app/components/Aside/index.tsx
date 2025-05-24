@@ -33,7 +33,7 @@ const MenuList = styled.ul`
 const MenuItem = styled.li <{ $active?: boolean }>
 	`
   padding: 1rem 0;
-  color: ${({ $active }) => ($active ? 'rgb(255, 255, 255)' : 'rgb(117, 117, 117)')} ;
+  color: white ;
   transition: all 0.2s ease;
 	backgroundColor: ${({ $active }) => ($active ? 'white' : 'transparent')}
 	borderradius: 4x;
@@ -116,10 +116,6 @@ export default function Aside() {
 						<Link href="/user"><User />{!collapsed && "User"}</Link>
 					</MenuItem>
 				)}
-				<MenuItem $active={isActive('/')}>
-					<Link href="/"><Handshake />{!collapsed && "Campaing"}</Link>
-				</MenuItem>
-
 				<MenuItem $active={isActive('/item-generator')}>
 					<Link href="/item-generator"><Swords />{!collapsed && "Item Generator"}</Link>
 				</MenuItem>
@@ -129,6 +125,9 @@ export default function Aside() {
 				</MenuItem>
 				<MenuItem $active={isActive('/inventory')}>
 					<Link href="/inventory"><Backpack />{!collapsed && "Inventory"}</Link>
+				</MenuItem>
+				<MenuItem $active={isActive('/')}>
+					<Link href="/"><Handshake />{!collapsed && "Campaing"}</Link>
 				</MenuItem>
 				<MenuItem >
 					<LogoutButton><LogOut />{!collapsed && "Logout"}</LogoutButton>

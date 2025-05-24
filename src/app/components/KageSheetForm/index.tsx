@@ -147,7 +147,7 @@ export default function KageSheetForm({ sheet, onChange }: Props) {
                         <input type="number" min="0" value={form.energy} onChange={(e) => handleChange('energy', e.target.value)} />
                     </div>
                 </GroupedRow>
-                 <GroupedRow>
+                <GroupedRow>
                     <div>
                         <label>Level</label>
                         <input type="number" min="0" value={form.level} onChange={(e) => handleChange('level', e.target.value)} />
