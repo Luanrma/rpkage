@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import ReactDOM from 'react-dom';
 import InventoryModalItemDetails from "../InventoryModalItemDetails";
@@ -6,6 +6,7 @@ import BagItemIcon from "../BagItemIcon";
 import { Wallet } from "@prisma/client";
 import { useSession } from "@/app/contexts/SessionContext";
 import ModalTransactionSelectCharacter from "../ModalTransactionSelectCharacter";
+import dragAndDrop from "@/app/utils/dragAndDrop";
 
 const Overlay = styled.div`
   position: fixed;
@@ -21,7 +22,7 @@ const Overlay = styled.div`
 `;
 
 const ModalBox = styled.div`
-  position: relative;
+  position: absolute;
   background: #2a2a2a;
   padding: .8rem;
   border-radius: 10px;
@@ -127,11 +128,16 @@ export type InventoryItem = {
 export default function InventoryModal({ characterId, onClose }: { characterId: string; onClose: () => void }) {
 	const { campaignUser } = useSession()
 
+	const asideRef = useRef<HTMLDivElement>(null)
 	const [items, setItems] = useState<InventoryItem[]>([]);
 	const [wallet, setWallet] = useState<Wallet | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [selectedItem, setSelectedItem] = useState<any | null>(null);
 	const [showDropdownCurrency, setShowDropdownCurrency] = useState(false);
+
+	const TOTAL_SLOTS = 36; // 6x6 grid
+	const filledItems = items.slice(0, TOTAL_SLOTS);
+	const emptySlots = TOTAL_SLOTS - filledItems.length;
 
 	useEffect(() => {
 		if (!campaignUser) {
@@ -198,13 +204,14 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 		return
 	}
 
-	const TOTAL_SLOTS = 36; // 6x6 grid
-	const filledItems = items.slice(0, TOTAL_SLOTS);
-	const emptySlots = TOTAL_SLOTS - filledItems.length;
-
 	return ReactDOM.createPortal(
-		<Overlay onClick={onClose}>
-			<ModalBox onClick={(e) => e.stopPropagation()}>
+		<Overlay>
+			<ModalBox 
+				ref={asideRef}
+				onMouseDown={(e) => dragAndDrop(asideRef, e)}
+				onTouchStart={(e) => dragAndDrop(asideRef, e)}
+				
+				onClick={(e) => e.stopPropagation()}>
 				<CloseButton onClick={onClose}>X</CloseButton>
 				{loading ? (
 					<p style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}>Carregando itens...</p>
