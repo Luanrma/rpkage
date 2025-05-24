@@ -129,7 +129,7 @@ type ItemDataProps = {
 
 type WalletDataProps = {
 	amountOrigin: string
-    amount: string
+	amount: string
 }
 
 export default function ItemTransaction({
@@ -206,7 +206,7 @@ export default function ItemTransaction({
 			}
 			return await sendWalletTransaction(payload)
 		}
-		
+
 		return false
 	}
 
@@ -273,14 +273,14 @@ export default function ItemTransaction({
 						{error && <ErrorMessage>{error}</ErrorMessage>}
 						<h3>Tipo de Transação</h3>
 						<div className="modal-content-send-items">
-							<TransactionButton 
+							<TransactionButton
 								isProcessing={isProcessing}
 								onClick={() => handleTransactionConfirm("TRADE")}
 								disabled={isProcessing}
 							>Trade
 							</TransactionButton>
 							{campaignUser?.role === "MASTER" && (
-								<TransactionButton 
+								<TransactionButton
 									isProcessing={isProcessing}
 									onClick={() => handleTransactionConfirm("DROP")}
 									disabled={isProcessing}
@@ -297,7 +297,7 @@ export default function ItemTransaction({
 									name="item-value"
 									type="number"
 									min="0"
-									value={ itemValue }
+									value={itemValue}
 									readOnly={isFromGenerator}
 									onChange={(e) => setItemValue(e.target.value)}
 								/>
