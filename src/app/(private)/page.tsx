@@ -11,9 +11,9 @@ import DiceTwentyFaces from '../components/DiceTwentyFaces'
 
 // === Styled Components ===
 const LogoutWrapper = styled.div`
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
 `
 
 const Container = styled.div`
@@ -24,11 +24,12 @@ const Container = styled.div`
   flex-direction: column;
 
   min-height: 100vh;
-  min-width: 320px; 
-  padding: 2rem;
-  font-family: sans-serif;
+  min-width: 320px;
+  margin: 0 auto;
+  font-family: 'Inter', sans-serif;
   color: #f0f0f0;
-  background-color:rgb(26, 26, 26);
+  background-color: rgb(26, 26, 26);
+  padding-top: 6rem;
 `
 
 const ContainerTitle = styled.div`
@@ -37,20 +38,8 @@ const ContainerTitle = styled.div`
   padding: 1rem;
 `
 
-const spin = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`
-
-const SpinningDice = styled(DiceTwentyFaces)`
-  font-size: 3rem;
-  color:rgb(168, 103, 212);
-  animation: ${spin} 4s linear infinite;
-  margin-bottom: 1.5rem;
-  margin-right: 1rem;
-`
-
 const Title = styled.h1`
+  font-size: 1.5rem;
   margin-bottom: 2rem;
   color: #ffffff;
 `
@@ -119,13 +108,40 @@ const Card = styled.div`
   text-align: left;
 `
 
-const CampaignBox = styled.div`
-  background: #1f1f1f;
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 1rem;
-  margin: 0.5rem 0;
+export const CampaignBox = styled.div`
+  width: 100%;
+  max-width: 520px;
+  margin: 1rem auto;
+  padding: 1.25rem;
+  border: 1px solid #333;
+  border-radius: 12px;
+  background-color: #1e1e1e;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`
 
+const CampaignTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #fff;
+  margin: 0;
+`
+
+const CampaignCreator = styled.span`
+  font-size: 0.9rem;
+  color: #aaa;
+`
+
+const CampaignDescription = styled.p`
+   background-color: rgba(255, 255, 255, 0.03);
+  padding: 1rem;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #d0d0d0;
+  line-height: 1.6;
+  box-shadow: inset 0 0 0 1px #333;
 `
 
 // === Tipagens ===
@@ -172,7 +188,7 @@ export default function CampaignEntry() {
 			if (res.ok) {
 				const data = await res.json()
 				setUserData(data)
-				setCreateCampaign(prev => ({ ...prev, userId: Number(data.id) }))
+
 			}
 		}
 		loadUser()
@@ -181,10 +197,10 @@ export default function CampaignEntry() {
 	// === Lista campanhas para o usuário se juntar ===
 	useEffect(() => {
 		if (!userData || view !== 'join') return
-
 		fetch(`/api/campaign-user/by-user/${userData.id}`)
 			.then(res => res.json())
 			.then(setCampaignList)
+			.then(() => setCreateCampaign(prev => ({ ...prev, userId: Number(userData.id) })))
 	}, [view, userData])
 
 	// === Criação da campanha ===
@@ -222,12 +238,12 @@ export default function CampaignEntry() {
 				const fullData = await fetch(`/api/campaign-user/by-id/${campaignUser.id}`).then(r => r.json())
 
 				setCampaignUser(fullData)
+				router.push('/home')
 			}
 		} catch {
 			setErrorMessage('Erro ao criar campanha.')
 		} finally {
 			setLoadingCreate(false)
-			router.push('/home')
 		}
 	}
 
@@ -262,13 +278,10 @@ export default function CampaignEntry() {
 	// === Render ===
 	return (
 		<Container>
-			<LogoutWrapper>
-				<Logout>
-					<LogOut /> Logout
-				</Logout>
-			</LogoutWrapper>
-
 			<ContainerTitle>
+				<LogoutWrapper>
+					<Logout><LogOut /> Logout</Logout>
+				</LogoutWrapper>
 				<Title>Bem-vindo ao Gerenciador de Campanhas</Title>
 			</ContainerTitle>
 
@@ -312,17 +325,31 @@ export default function CampaignEntry() {
 			{view === 'join' && (
 				<Card>
 					<SubTitle>Escolha uma campanha existente</SubTitle>
-					{campaignList.map(campaignSelected => (
-						<CampaignBox key={campaignSelected.id}>
-							<strong>Criado por: {campaignSelected.user.name}</strong>
-							<strong>{campaignSelected.campaign.name}</strong>
-							<p>{campaignSelected.campaign.description}</p>
-							<Button onClick={() => handleJoin(campaignSelected.id)} disabled={loadingJoinId === campaignSelected.id}>
-								{loadingJoinId === campaignSelected.id ? 'Entrando...' : 'Entrar'}
-							</Button>
-						</CampaignBox>
-					))}
-					<Button style={{ marginTop: '1rem' }} onClick={() => setView('initial')}>Voltar</Button>
+
+					{campaignList.length > 0 ? (
+						campaignList.map(({ id, user, campaign }) => (
+							<CampaignBox key={id}>
+								<CampaignTitle>{campaign.name}</CampaignTitle>
+								<CampaignCreator>Criado por: {user.name}</CampaignCreator>
+								{campaign.description && (
+									<CampaignDescription>{campaign.description}</CampaignDescription>
+								)}
+
+								<Button
+									onClick={() => handleJoin(id)}
+									disabled={loadingJoinId === id}
+								>
+									{loadingJoinId === id ? 'Entrando...' : 'Entrar'}
+								</Button>
+							</CampaignBox>
+						))
+					) : (
+						<CampaignDescription>Nenhuma campanha disponível no momento.</CampaignDescription>
+					)}
+
+					<Button style={{ marginTop: '1rem' }} onClick={() => setView('initial')}>
+						Voltar
+					</Button>
 				</Card>
 			)}
 		</Container>
