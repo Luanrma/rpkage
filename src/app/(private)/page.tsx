@@ -108,7 +108,7 @@ const Card = styled.div`
   text-align: left;
 `
 
-export const CampaignBox = styled.div`
+const CampaignBox = styled.div`
   width: 100%;
   max-width: 520px;
   margin: 1rem auto;
