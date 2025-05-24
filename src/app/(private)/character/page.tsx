@@ -100,14 +100,13 @@ export default function CreateCharacterPage() {
 
     const handleSubmit = async () => {
         if (!campaignUser) return;
-
-        if (!name) {
+        
+        if (!sheet?.name) {
             setError('O nome do personagem é obrigatório.');
             return;
         }
 
         const payload = {
-            name,
             userId: campaignUser.userId,
             campaignId: campaignUser.campaignId,
             role: campaignUser.role,

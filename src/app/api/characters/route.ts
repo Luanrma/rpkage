@@ -20,9 +20,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
 	const body = await req.json();
-	const { name, userId, campaignId, sheet, role } = body;
+	const {userId, campaignId, sheet, role } = body;
 
-	if (!name || !userId || !campaignId || !role) {
+	if (!sheet.name || !userId || !campaignId || !role) {
 		return NextResponse.json({ error: 'Nome, userId, campaignId e role são obrigatórios.' }, { status: 400 });
 	}
 
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 	const created = await prisma.$transaction(async (tx) => {
 		const newCharacter = await tx.character.create({
 			data: {
-				name,
+				name: sheet.name,
 				userId: userIdBigInt,
 				campaignId: campaignIdBigInt,
 				sheet,
