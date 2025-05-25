@@ -1,64 +1,63 @@
-import { useCallback, useState } from 'react';
-import { NextResponse } from 'next/server';
+import { useState, useCallback } from 'react';
 
-
-type RequestParams = {
-  url: string,
-  method: string,
-  body?: any,
-  onSuccess?: (response: any) => void
-}
-
-type RequestResponse<T> = {
-  data: T | null;
-  error: string | null;
-  loading: boolean;
+type RequestOptions<T> = {
+  url: string;
+  method?: 'get' | 'post' | 'put' | 'delete';
+  body?: any;
+  onSuccess?: (data: T) => void;
+  cache?: boolean;
 };
 
-const useRequest = (params: RequestParams) => {
+type RequestState<T> = {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+};
 
-  const { url, method, body = {}, onSuccess } = params;
-
-  const [response, setResponse] = useState<RequestResponse<any>>({
+function useRequest<T = any>() {
+  const [state, setState] = useState<RequestState<T>>({
     data: null,
-    error: null,
     loading: false,
+    error: null,
   });
 
-  console.log('inside use request, URL ' + url)
+  const doRequest = useCallback(
+    async ({
+      url,
+      method = 'get',
+      body,
+      onSuccess,
+      cache = false,
+    }: RequestOptions<T>) => {
+      setState({ data: null, loading: true, error: null });
 
-  const doRequest = useCallback(async (cache?: boolean) => {
-    setResponse({ data: null, error: null, loading: true });
+      try {
+        const res = await fetch(url, {
+          method: method.toUpperCase(),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          cache: cache ? 'force-cache' : 'no-cache',
+          body: method !== 'get' ? JSON.stringify(body) : undefined,
+        });
 
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        cache: cache ? 'force-cache' : 'no-cache'
-      });
+        if (!res.ok) throw new Error('Request failed');
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+        const data = await res.json();
+        setState({ data, loading: false, error: null });
+
+        if (onSuccess) onSuccess(data);
+
+        return data;
+      } catch (err: any) {
+        setState({ data: null, loading: false, error: err.message || 'Unknown error' });
+        return null;
       }
+    },
+    []
+  );
 
-      const data = await response.json();
-      console.log('inside use request, data ')
-      console.log(data)
-
-
-      setResponse({ data, error: null, loading: false });
-
-      if (onSuccess) {
-        onSuccess(data)
-
-      }
-
-    } catch (err: any) {
-    }
-  }, [url, method, body, onSuccess]);
-  return { ...response, doRequest };
-};
+  return { ...state, doRequest };
+}
 
 export default useRequest;
