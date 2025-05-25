@@ -21,6 +21,7 @@ export async function GET(
                 id: true,
                 name: true,
                 userId: true,
+                sheet: true,
                 inventory: {
                     select: {
                         id: true,
@@ -47,8 +48,10 @@ export async function GET(
             inventoryId: char.inventory?.id ?? null,
             name: char.name,
             role: char.user.campaignUsers[0]?.role ?? null,
-           
+            sheet: char?.sheet ?? null
+
         }));
+        console.log(parsed)
         return NextResponse.json(fixBigInt(parsed));
     } catch (error) {
         return NextResponse.json({ message: 'Invalid campaignId format' }, { status: 400 });
