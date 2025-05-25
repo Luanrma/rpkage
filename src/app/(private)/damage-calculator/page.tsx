@@ -7,6 +7,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
 import { Cinzel } from 'next/font/google';
+import { LoadingScreen } from '@/app/components/LoadingScreen';
 
 const cinzel = Cinzel({
 	subsets: ['latin'],
@@ -22,10 +23,11 @@ const Container = styled.div`
   justify-content: center;
   flex-direction: column;
   flex-wrap: nowrap;
-  padding: 2rem;
-  background: #111;
-  color: white;
-`
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
+`;
 
 const PlayerRollContainer = styled.div`
   background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
@@ -49,6 +51,15 @@ const PlayerRollContainer = styled.div`
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.9), inset 0 0 12px rgba(74, 47, 20, 0.4);
+  }
+
+   @media (max-width: 480px) {
+    padding: 1rem;
+    max-width: 90%;
+    flex-direction: column;
+    align-items: flex-start;
+    font-size: 1rem;
+    gap: 0.5rem;
   }
 
   span {
@@ -91,6 +102,11 @@ const CharacterCard = styled.div.withConfig({
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.9),
                 inset 0 0 12px ${({ isActive }) => (isActive ? '#d4af37' : 'rgba(74, 47, 20, 0.4)')};
+  }
+
+  @media (max-width: 480px) {
+    width: 90%;
+    margin: 0.5rem 0;
   }
 
   span {
@@ -172,13 +188,18 @@ const BattleLog = styled.div`
   border: 2px solid #4a2f14;
   border-radius: 16px;
   padding: 1rem;
-  margin: 1rem;
+  margin: 1rem 0 0 0;
   color: #e6e6e6;
   font-family: 'Cormorant Garamond', serif;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7),
               inset 0 0 10px rgba(74, 47, 20, 0.3);
   max-height: 300px;
   overflow-y: auto;
+
+  @media (max-width: 480px) {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
 
   h2 {
     font-family: 'Cinzel', serif;
@@ -207,7 +228,6 @@ const BattleLog = styled.div`
   }
 `;
 
-
 const Controls = styled.div`
   background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
   border: 2px solid #4a2f14;
@@ -227,11 +247,21 @@ const Controls = styled.div`
   user-select: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
 
+  @media (max-width: 480px) {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
   span {
     font-weight: 400;
     color: #c0a98e;
     font-family: 'Cormorant Garamond', serif;
 	font-size: 2rem;
+
+	@media (max-width: 480px) {
+      font-size: 1.5rem;
+	}
 
     strong {
       color: #d4af37;
@@ -464,7 +494,8 @@ export default function BattleSystem() {
 		setBattleLog([])
 		setCurrentTurnIndex(0)
 		setHpInputs({})
-		
+
+		setIsFetchingPlayers(true)
 		if (campaignUser) {
 			fetchPlayers()
 		}
@@ -472,6 +503,10 @@ export default function BattleSystem() {
 
 	const sortedCharacters = [...characters].sort((a, b) => b.initiative - a.initiative)
 
+	if (isFetchingPlayers) {
+		return <LoadingScreen />
+	}
+	
 	return (
 		<>
 			<Container className={`${cinzel.className}`}>
@@ -514,7 +549,6 @@ export default function BattleSystem() {
 						<button
 							onClick={() => removeCharacter(char.id)}
 							className="absolute top-2 left-2 text-red-500 text-[10px] font-semibold px-1 py-[2px] rounded hover:bg-red-700 hover:text-white transition"
-							title="Remover personagem"
 						>
 							✕
 						</button>
@@ -560,7 +594,7 @@ export default function BattleSystem() {
 
 			<Controls>
 				<Button onClick={nextTurn} disabled={characters.length === 0}>
-					{!hasStarted ? 'Iniciar Batalha' : 'Próximo Turno'}
+					{!hasStarted ? 'Iniciar Batalha' : 'Próximo Personagem'}
 				</Button>
 				<Button onClick={resetBattle} disabled={!hasStarted}>
 					Finalizar Batalha
