@@ -4,8 +4,6 @@ import styled from "styled-components";
 import ItemTransaction from "../ItemTransaction";
 import { RefreshCcw } from 'lucide-react';
 import useRequest from "@/app/hooks/use-request";
-import { NextResponse } from "next/server";
-import { object } from "zod";
 
 const Dropdown = styled.ul`
   position: absolute;
@@ -119,7 +117,6 @@ export default function ModalTransactionSelectCharacter({ itemData, walletData, 
 
     const handleRefresh = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('inside handleRefresh')
         doRequest();
 
     }

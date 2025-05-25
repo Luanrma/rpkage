@@ -5,41 +5,15 @@ import {
   createItemTransaction,
   SaveItemPayload,
 } from '@/app/services/itemService/itemService';
-import { z } from 'zod';
 
 export async function GET() {
   const items = await prisma.items.findMany();
   return NextResponse.json(fixBigInt(items));
 }
 
-const TradeValidator = z.object({
-  itemId: z.union([z.string(), z.number()]).transform(Number),
-  inventoryItemId: z.union([z.string(), z.number()]).transform(Number),
-  characterId: z.union([z.string(), z.number()]).transform(Number),
-  campaignId: z.union([z.string(), z.number()]).transform(Number),
-  toInventoryId: z.union([z.string(), z.number()]).transform(Number),
-  fromInventoryId: z.union([z.string(), z.number()]).transform(Number),
-  name: z.string(),
-  slot: z.string(),
-  type: z.string(),
-  rarity: z.string(),
-  attributes: z.array(z.any()),
-  transactionType: z.string(),
-  itemValue: z.union([z.string(), z.number()]),
-});
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-
-    const parsed = TradeValidator.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: parsed.error },
-        { status: 400 }
-      );
-    }
 
     const {
       itemId,
@@ -53,22 +27,44 @@ export async function POST(request: Request) {
       type,
       rarity,
       attributes,
+      transactionType,
       itemValue,
-    } = parsed.data;
+      campaignCurrencyId,
+      campaignCurrencyName,
+    } = body;
+
+    if (
+      !characterId ||
+      !campaignId ||
+      !toInventoryId ||
+      !type ||
+      !rarity ||
+      !rarity ||
+      !slot ||
+      !attributes
+    ) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
 
     const payload = {
       itemId,
       inventoryItemId,
-      characterId,
-      campaignId,
-      toInventoryId,
-      fromInventoryId,
+      characterId: Number(characterId),
+      campaignId: Number(campaignId),
+      toInventoryId: Number(toInventoryId),
+      fromInventoryId: fromInventoryId ? Number(fromInventoryId) : null,
       type,
       rarity,
       name,
       slot,
       attributes,
+      transactionType,
       itemValue,
+      campaignCurrencyId,
+      campaignCurrencyName,
     } as SaveItemPayload;
 
     const newItem = await createItemTransaction(payload);
