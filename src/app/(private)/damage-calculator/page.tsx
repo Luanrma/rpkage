@@ -167,7 +167,7 @@ const HPBar = styled.div<{ hp: number }>`
   }
 `
 
-export const BattleLog = styled.div`
+const BattleLog = styled.div`
   background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
   border: 2px solid #4a2f14;
   border-radius: 16px;
