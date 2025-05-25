@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 	const created = await prisma.$transaction(async (tx) => {
 		const newCharacter = await tx.character.create({
 			data: {
-				name: sheet.name,
+				name: sheet.name.trim().split(' ')[0],
 				userId: userIdBigInt,
 				campaignId: campaignIdBigInt,
 				sheet,

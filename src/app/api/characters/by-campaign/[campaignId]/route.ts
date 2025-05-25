@@ -48,7 +48,7 @@ export async function GET(
             inventoryId: char.inventory?.id ?? null,
             name: char.name,
             role: char.user.campaignUsers[0]?.role ?? null,
-            sheet: char?.sheet ?? null
+            sheet: char.sheet
 
         }));
         console.log(parsed)

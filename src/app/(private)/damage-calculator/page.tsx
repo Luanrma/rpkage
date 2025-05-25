@@ -1,24 +1,17 @@
 'use client'
 
+import { Activity } from 'lucide-react';
 import { SpinningDice } from '@/app/components/SpinningDice'
 import { useSession } from '@/app/contexts/SessionContext'
 import React, { useEffect, useState, useRef } from 'react'
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
-
 import { Cinzel } from 'next/font/google';
-import { Cormorant_Garamond } from 'next/font/google';
 
 const cinzel = Cinzel({
 	subsets: ['latin'],
 	weight: ['600'], // ou ['400', '600', '700'] se quiser mais opções
 });
-
-const cormorant = Cormorant_Garamond({
-	subsets: ['latin'],
-	weight: ['400'],
-});
-
 
 const Container = styled.div`
   display: flex;
@@ -75,20 +68,97 @@ const PlayerRollContainer = styled.div`
 const CharacterCard = styled.div.withConfig({
 	shouldForwardProp: (prop) => prop !== 'isActive',
 }) <{ isActive: boolean }>`
-  background: ${({ isActive }) => (isActive ? '#333' : '#222')};
-  border: ${({ isActive }) => (isActive ? '2px solid #0f0' : '1px solid #444')};
-  border-radius: 8px;
-  padding: 1rem;
-  margin: 0.5rem;
-  width: 220px;
-`
+  background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
+  border: ${({ isActive }) => (isActive ? '2px solid #d4af37' : '2px solid #4a2f14')};
+  border-radius: 16px;
+  padding: 1rem 1rem .5rem 1rem;
+  margin: 1rem 0.5rem;
+  width: 240px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  color: #e6e6e6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7),
+              inset 0 0 10px ${({ isActive }) => (isActive ? '#d4af37' : 'rgba(74, 47, 20, 0.3)')};
+  user-select: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
+  font-family: 'Cinzel', serif;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.9),
+                inset 0 0 12px ${({ isActive }) => (isActive ? '#d4af37' : 'rgba(74, 47, 20, 0.4)')};
+  }
+
+  span {
+    font-weight: 400;
+    color: #c0a98e;
+    font-family: 'Cormorant Garamond', serif;
+    text-align: center;
+  }
+
+  strong {
+    color: #d4af37;
+    font-size: 1.35rem;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px #000;
+    text-align: center;
+  }
+`;
+
+const EditSection = styled.div`
+  margin-top: 0.75rem;
+  width: 100%;
+  background: linear-gradient(145deg, #131313, #1f1f1f);
+  border: 1px solid #4a2f14;
+  border-radius: 12px;
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  color: #c0a98e;
+  font-family: 'Cormorant Garamond', serif;
+  box-shadow: inset 0 0 6px rgba(74, 47, 20, 0.2);
+
+  p {
+    margin-bottom: 0.25rem;
+    font-weight: bold;
+    color: #d4af37;
+    text-shadow: 1px 1px 1px #000;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    background-color: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    color: #fff;
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+
+    &::placeholder {
+      color: #888;
+      font-style: italic;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #d4af37;
+      box-shadow: 0 0 4px #d4af37;
+    }
+  }
+`;
 
 const HPBar = styled.div<{ hp: number }>`
   background: #444;
   border-radius: 4px;
   overflow: hidden;
   margin: 0.5rem 0;
-
+  align-self: stretch;
+  
   .fill {
     background: ${({ hp }) => (hp > 0 ? '#0f0' : '#900')};
     height: 12px;
@@ -97,39 +167,104 @@ const HPBar = styled.div<{ hp: number }>`
   }
 `
 
-const BattleLog = styled.div`
-  background: #1a1a1a;
-  color: #ccc;
+export const BattleLog = styled.div`
+  background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
+  border: 2px solid #4a2f14;
+  border-radius: 16px;
   padding: 1rem;
-  margin-top: 2rem;
-  max-height: 200px;
+  margin: 1rem;
+  color: #e6e6e6;
+  font-family: 'Cormorant Garamond', serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7),
+              inset 0 0 10px rgba(74, 47, 20, 0.3);
+  max-height: 300px;
   overflow-y: auto;
-  border: 1px solid #333;
-  border-radius: 8px;
-`
+
+  h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: #d4af37;
+    text-shadow: 1px 1px 2px #000;
+  }
+
+  ul {
+    list-style-type: disc;
+    padding-left: 1rem;
+  }
+
+  li {
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
+    color: #c0a98e;
+    text-shadow: 1px 1px 1px #000;
+  }
+
+  p {
+    font-style: italic;
+    color: #aaa;
+  }
+`;
+
 
 const Controls = styled.div`
-  margin-top: 1.5rem;
+  background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
+  border: 2px solid #4a2f14;
+  border-radius: 16px;
+  padding: 1rem 2rem;
+  margin-top: 2rem;
   display: flex;
-  gap: 1rem;
   align-items: center;
-`
+  justify-content: center;
+  gap: 1.5rem;
+  color: #e6e6e6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7),
+              inset 0 0 10px rgba(74, 47, 20, 0.3);
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  user-select: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
 
-const Button = styled.button<{ disabled?: boolean }>`
-  background-color: ${({ disabled }) => (disabled ? '#555' : '#007acc')};
-  color: white;
-  padding: 0.5rem 1.5rem;
-  border-radius: 6px;
-  border: none;
-  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  span {
+    font-weight: 400;
+    color: #c0a98e;
+    font-family: 'Cormorant Garamond', serif;
+	font-size: 2rem;
+
+    strong {
+      color: #d4af37;
+      font-weight: 700;
+      text-shadow: 1px 1px 2px #000;
+      font-size: 2rem;
+    }
+  }
+`;
+
+const Button = styled.button`
+  background: #4a2f14;
+  color: #e6e6e6;
+  padding: 0.5rem 1rem;
+  border: 2px solid #d4af37;
+  border-radius: 12px;
+  font-family: 'Cinzel', serif;
   font-weight: 600;
   font-size: 1rem;
-  transition: background-color 0.2s;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
 
-  &:hover {
-    background-color: ${({ disabled }) => (disabled ? '#555' : '#005fa3')};
+  &:hover:not(:disabled) {
+    background: #d4af37;
+    color: #1a1a1a;
+    transform: translateY(-2px);
   }
-`
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
 
 type Character = {
 	id: string
@@ -145,6 +280,7 @@ export default function BattleSystem() {
 	const { campaignUser } = useSession()
 	const [characters, setCharacters] = useState<Character[]>([])
 	const [currentTurnIndex, setCurrentTurnIndex] = useState(0)
+	const [isFetchingPlayers, setIsFetchingPlayers] = useState(true)
 	const [players, setPlayers] = useState<any[]>([])
 	const [hasStarted, setHasStarted] = useState(false)
 	const [turnCounter, setTurnCounter] = useState(1)
@@ -156,18 +292,32 @@ export default function BattleSystem() {
 	const updatingRef = useRef(false)
 
 	useEffect(() => {
-		if (!campaignUser) return
-		fetchPlayers()
+		setIsFetchingPlayers(true)
+		if (!campaignUser) {
+			return
+		}
+		try {
+			fetchPlayers()
+		} catch (error) {
+			console.error('Erro ao buscar jogadores:', error)
+		}
+		
 	}, [campaignUser])
 
 	const fetchPlayers = async () => {
 		const response = await fetch(`/api/characters/by-campaign/${campaignUser!.campaignId}`)
 		const responseData = await response.json()
+		if (!response.ok) {
+			return
+		}
 		setPlayers(responseData)
+		setIsFetchingPlayers(false)
 	}
 
 	const handleDiceRoll = (value: number) => {
-		if (hasStarted) return
+		if (hasStarted || isFetchingPlayers) {
+			return
+		}
 
 		if (players.length > 0) {
 			const nextPlayer = players[0]
@@ -176,8 +326,8 @@ export default function BattleSystem() {
 			const newChar: Character = {
 				id: uuidv4(),
 				name: nextPlayer.name,
-				hp: nextPlayer?.sheet?.life ? nextPlayer.sheet.life : 0,
-				maxHp: nextPlayer?.sheet?.life ? nextPlayer.sheet.life : 0,
+				hp: nextPlayer?.sheet?.life ? Number(nextPlayer.sheet.life) : 0,
+				maxHp: nextPlayer?.sheet?.life ? Number(nextPlayer.sheet.life) : 0,
 				isPlayer: true,
 				isAlive: true,
 				initiative: value,
@@ -206,6 +356,7 @@ export default function BattleSystem() {
 
 		setCharacters(prev =>
 			prev.map(char => {
+				console.info(char)
 				if (char.id !== id) return char
 
 				let oldHp = char.hp
@@ -241,8 +392,10 @@ export default function BattleSystem() {
 	}
 
 	const removeCharacter = (id: string) => {
-		setCharacters(prev => prev.filter(char => char.id !== id))
-		setCurrentTurnIndex(0)
+		if (confirm("Deseja realmente remover o personagem ?")) {
+			setCharacters(prev => prev.filter(char => char.id !== id))
+			setCurrentTurnIndex(0)
+		}
 	}
 
 	const editCharacter = (id: string, field: keyof Character, value: string) => {
@@ -311,8 +464,10 @@ export default function BattleSystem() {
 		setBattleLog([])
 		setCurrentTurnIndex(0)
 		setHpInputs({})
-		// Refetch players after reset
-		if (campaignUser) fetchPlayers()
+		
+		if (campaignUser) {
+			fetchPlayers()
+		}
 	}
 
 	const sortedCharacters = [...characters].sort((a, b) => b.initiative - a.initiative)
@@ -320,15 +475,18 @@ export default function BattleSystem() {
 	return (
 		<>
 			<Container className={`${cinzel.className}`}>
-				<SpinningDice sides={20} onRoll={handleDiceRoll} />
+				<SpinningDice 
+					sides={20}
+					onRoll={handleDiceRoll}
+				/>
 				{players.length > 0 ? (
 					<PlayerRollContainer>
-						<span>Rolando iniciativa para:</span>
+						<span>Iniciativa:</span>
 						<strong>{players[0].name}</strong>
 					</PlayerRollContainer>
 				) : (
 					<PlayerRollContainer>
-						<span>Rolando iniciativa para monstros</span>
+						<span>Iniciativa:</span>
 						<div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginLeft: '1rem' }}>
 							<input
 								type="text"
@@ -349,10 +507,17 @@ export default function BattleSystem() {
 				)}
 			</Container>
 
-			<h1 className="text-2xl font-bold mb-4">Sistema de Batalha</h1>
+
 			<div className="flex flex-wrap gap-4">
 				{sortedCharacters.map((char, index) => (
 					<CharacterCard key={char.id} isActive={index === currentTurnIndex && char.isAlive}>
+						<button
+							onClick={() => removeCharacter(char.id)}
+							className="absolute top-2 left-2 text-red-500 text-[10px] font-semibold px-1 py-[2px] rounded hover:bg-red-700 hover:text-white transition"
+							title="Remover personagem"
+						>
+							✕
+						</button>
 						<strong>{char.name}</strong> <br />
 						<small>{char.isPlayer ? 'Jogador' : 'Monstro'}</small>
 						<HPBar hp={(char.hp / char.maxHp) * 100}>
@@ -373,32 +538,22 @@ export default function BattleSystem() {
 								className="bg-green-600 px-2 rounded text-white"
 								title="Aplicar mudança de HP"
 							>
-								🎲
+								<Activity />
 							</button>
 						</div>
-						<button
-							onClick={() => removeCharacter(char.id)}
-							className="mt-1 text-red-500 text-xs"
-						>
-							Remover
-						</button>
-						<div className="mt-2 text-xs text-gray-400">
+						<EditSection>
 							<p>Editar:</p>
 							<input
 								type="text"
-								className="mb-1 w-full px-1 py-0.5 rounded bg-zinc-800 text-white"
 								placeholder="Nome"
 								onBlur={e => editCharacter(char.id, 'name', e.target.value)}
-								defaultValue={char.name}
 							/>
 							<input
 								type="number"
-								className="mb-1 w-full px-1 py-0.5 rounded bg-zinc-800 text-white"
 								placeholder="HP máximo"
 								onBlur={e => editCharacter(char.id, 'maxHp', e.target.value)}
-								defaultValue={char.maxHp}
 							/>
-						</div>
+						</EditSection>
 					</CharacterCard>
 				))}
 			</div>
@@ -416,11 +571,11 @@ export default function BattleSystem() {
 			</Controls>
 
 			<BattleLog>
-				<h2 className="text-lg font-semibold mb-2">Log da Batalha</h2>
+				<h2>Log da Batalha</h2>
 				{battleLog.length === 0 ? (
 					<p>Nenhum evento ainda</p>
 				) : (
-					<ul className="list-disc list-inside">
+					<ul>
 						{battleLog.map((log, i) => (
 							<li key={i}>{log}</li>
 						))}
