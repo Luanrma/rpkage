@@ -9,6 +9,12 @@ import { InterfaceItemGenerator } from "@/engine/ItemGenerators/Interfaces/ItemG
 import ItemCard from "@/app/components/ItemCard";
 import itemGeneratorFactory, { ItemType } from "@/engine/ItemGenerators/itemGeneratorFactory";
 import { itemGeneratorRandom } from "@/engine/ItemGenerators/itemGeneratorRandom";
+import { Cinzel } from 'next/font/google';
+
+const cinzel = Cinzel({
+	subsets: ['latin'],
+	weight: ['600'], // ou ['400', '600', '700'] se quiser mais opções
+});
 
 const ItemGeneratorContainerStyle = styled.div`
 	display: flex;
@@ -16,11 +22,25 @@ const ItemGeneratorContainerStyle = styled.div`
 	flex-direction: column;
 	align-items: center;
 	width: 100%;
+	font-family: 'Cinzel', serif;
+
+	@media (max-width: 600px) {
+		align-items: stretch;
+	}
 
 	.buttons-style {
-		margin: 1rem 1rem 1rem 1rem;
-		display:flex;
+		margin: 1rem;
+		display: flex;
 		z-index: 10;
+		gap: 1rem;
+		justify-content: center;
+		align-items: center;
+
+		@media (max-width: 600px) {
+			flex-direction: column;
+			align-items: stretch;
+			width: 100%;
+		}
 	}
 
 	.items-drop {

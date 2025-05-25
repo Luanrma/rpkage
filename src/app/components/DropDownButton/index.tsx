@@ -6,23 +6,34 @@ import { ItemType } from "@/engine/ItemGenerators/itemGeneratorFactory"
 const DropDownContainer = styled.div`
 	position: relative;
 	display: inline-block;
+
+	@media (max-width: 600px) {
+		width: 100%; /* largura total em telas pequenas */
+	}
 `
 
 const DropDownMenu = styled.div<{ $isOpen: boolean }>`
 	position: absolute;
-	background-color: #353535;
+	background-color: rgba(53, 53, 53, 0.5);
 	border-radius: 8px;
-	width: 100%;
-	box-shadow: 0 4px 12px #2563eb;
+	box-shadow: 0 4px 12px #8b3ae0;
 	display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
+	width: 100%;
+	z-index: 1000;
+
+	@media (max-width: 600px) {
+		position: static; /* fica abaixo do botão, sem overflow */
+		box-shadow: none;
+		background-color: transparent;
+	}
 `
 
 const buttons: { label: string, type: ItemType }[] = [
-	{ label: "Weapon",       type: "weapon" },
-	{ label: "Armor",        type: "armor" },
-	{ label: "Potion",       type: "potion" },
-	{ label: "Orb",          type: "orb" },
-	{ label: "Brics",        type: "brics" },
+	{ label: "Weapon", type: "weapon" },
+	{ label: "Armor", type: "armor" },
+	{ label: "Potion", type: "potion" },
+	{ label: "Orb", type: "orb" },
+	{ label: "Brics", type: "brics" },
 	{ label: "Special Item", type: "special_item" },
 ]
 
@@ -37,8 +48,9 @@ export default function DropDownButton({ onSelectItemType }: DropDownButtonProps
 		<DropDownContainer>
 			<Button
 				onClick={() => setIsOpen(!isOpen)}
-				$backgroundColor="#3b82f6"
+				$backgroundColor="#8b3ae0"
 				$textColor="#fff"
+				style={{width: "90%"}}
 			>
 				Selecionar
 			</Button>
@@ -48,8 +60,9 @@ export default function DropDownButton({ onSelectItemType }: DropDownButtonProps
 					<Button
 						key={index}
 						onMouseDown={() => { onSelectItemType(button.type) }}
-						$backgroundColor="#3b82f6"
+						$backgroundColor="#8b3ae0"
 						$textColor="#fff"
+						style={{width: "90%"}}
 					>
 						{button.label}
 					</Button>

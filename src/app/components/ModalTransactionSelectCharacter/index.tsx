@@ -90,30 +90,37 @@ type ModalTransactionSelectCharacterProps = {
 
 export default function ModalTransactionSelectCharacter({ itemData, walletData, onTransactionComplete, onWalletTransactionComplete }: ModalTransactionSelectCharacterProps) {
     const { campaignUser } = useSession();
+
     const [showTransactionModal, setShowTransactionModal] = useState(false);
     const [showCharacterSelectorModal, setShowCharacterSelectorModal] = useState(true)
     const [currentCharacter, setCurrentCharacter] = useState<Character | null>(null);
     const [otherCharacters, setOtherCharacters] = useState<Character[]>([]);
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
 
-    const { doRequest } = useRequest({
-        url: `/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`,
-        method: 'get',
-        onSuccess: (fetchedData) => {
-            setOtherCharacters(fetchedData.othersPlayer);
-            setCurrentCharacter(fetchedData.currentPlayer);
-        }
-    })
-
     useEffect(() => {
         if (!campaignUser) {
             return
         }
+        const fetchCharacters = async () => {
+            try {
+                const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`, {
+                    cache: 'force-cache',
+                });
+                const data = await res.json();
+                setOtherCharacters(data.othersPlayer);
+                setCurrentCharacter(data.currentPlayer);
+            } catch (err) {
+                console.error('Erro ao buscar personagens:', err);
+            }
+        };
+        fetchCharacters()
+    }, [campaignUser]);
+
+    useEffect(() => {
         if (showTransactionModal) {
             setShowCharacterSelectorModal(false);
         }
-        doRequest(true);
-    }, [campaignUser, showTransactionModal]);
+    }, [showTransactionModal]);
 
     const handleRefresh = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -129,7 +136,7 @@ export default function ModalTransactionSelectCharacter({ itemData, walletData, 
         <>
             {showCharacterSelectorModal && (
                 <Dropdown>
-                    <ButtonForceUpdate onClick={handleRefresh}><RefreshCcw /></ButtonForceUpdate>
+                    <ButtonForceUpdate onClick={forceUpdate}><RefreshCcw /></ButtonForceUpdate>
                     {otherCharacters.map((char) => (
                         <DropdownItem key={char.id} onClick={() => {
                             setSelectedCharacter(char);
