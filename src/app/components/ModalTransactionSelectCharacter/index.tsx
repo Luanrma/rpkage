@@ -96,35 +96,36 @@ export default function ModalTransactionSelectCharacter({ itemData, walletData, 
     const [currentCharacter, setCurrentCharacter] = useState<Character | null>(null);
     const [otherCharacters, setOtherCharacters] = useState<Character[]>([]);
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+    const { doRequest } = useRequest();
 
     useEffect(() => {
         if (!campaignUser) {
             return
         }
-        const fetchCharacters = async () => {
-            try {
-                const res = await fetch(`/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`, {
-                    cache: 'force-cache',
-                });
-                const data = await res.json();
-                setOtherCharacters(data.othersPlayer);
-                setCurrentCharacter(data.currentPlayer);
-            } catch (err) {
-                console.error('Erro ao buscar personagens:', err);
-            }
-        };
-        fetchCharacters()
-    }, [campaignUser]);
-
-    useEffect(() => {
+        const fetchData = async () => {
+            const res = await doRequest({
+                url: `/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`,
+                method: 'get',
+                cache: true
+            });
+            setOtherCharacters(res.othersPlayer);
+            setCurrentCharacter(res.currentPlayer);
+        }
         if (showTransactionModal) {
             setShowCharacterSelectorModal(false);
         }
-    }, [showTransactionModal]);
+        fetchData();
+
+    }, [campaignUser, showTransactionModal]);
 
     const handleRefresh = async (e: React.FormEvent) => {
         e.preventDefault();
-        doRequest();
+        const res = await doRequest({
+            url: `/api/characters/by-campaign-and-not-user/${campaignUser!.campaignId}/${campaignUser!.userId}`,
+            method: 'get',
+        });
+        setOtherCharacters(res.othersPlayer);
+        setCurrentCharacter(res.currentPlayer);
 
     }
 
@@ -136,7 +137,7 @@ export default function ModalTransactionSelectCharacter({ itemData, walletData, 
         <>
             {showCharacterSelectorModal && (
                 <Dropdown>
-                    <ButtonForceUpdate onClick={forceUpdate}><RefreshCcw /></ButtonForceUpdate>
+                    <ButtonForceUpdate onClick={handleRefresh}><RefreshCcw /></ButtonForceUpdate>
                     {otherCharacters.map((char) => (
                         <DropdownItem key={char.id} onClick={() => {
                             setSelectedCharacter(char);
