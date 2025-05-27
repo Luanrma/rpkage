@@ -289,6 +289,23 @@ export default function KageSheetForm({ sheet, onChange }: Props) {
 
     return (
         <SheetContainer>
+            <Navigation>
+                <button
+                    onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 0))}
+                    disabled={currentStep === 0}
+                >
+                    <ChevronLeft/>
+                </button>
+                <span>{currentStep + 1} de {totalSteps}</span>
+                <button
+                    onClick={() => setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1))}
+                    disabled={currentStep === totalSteps - 1}
+                >
+                    <ChevronRight/>
+                </button>
+            </Navigation>
+            <hr style={{marginBottom: "1.5rem"}}/>
+
             {sections[currentStep]}
 
             <hr/>
@@ -312,20 +329,28 @@ export default function KageSheetForm({ sheet, onChange }: Props) {
 }
 
 const SheetContainer = styled.div`
-    margin-top: 2rem;
+    margin-top: 1rem;
     background-color: #1e1e1e;
     color: #f0f0f0;
-    padding: 2rem;
-    font-family: 'Courier New', Courier, monospace;
+    padding: 1rem;
     border: 2px solid #7e57c2;
     border-radius: 12px;
+    
+    hr {
+        color: #7e57c2
+    }
+
+    @media (max-width: 480px) {
+        margin-top: .8rem;
+        padding: .3rem;
+    }
 `;
 
 const Section = styled.section`
     margin-bottom: 2rem;
 
     h3 {
-        border-bottom: 2px solid #4caf50;
+        border-bottom: 2px solid #d4af37;
         padding-bottom: 0.5rem;
         margin-bottom: 1rem;
         font-size: 1.2rem;
@@ -355,10 +380,10 @@ const Navigation = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 2rem;
+    margin: 1rem 1rem;
 
     button {
-        padding: 0.5rem 1rem;
+        padding: .5rem .5rem;
         background-color: #7e57c2;
         border: none;
         color: white;

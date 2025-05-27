@@ -7,13 +7,16 @@ import { useSession } from '../../contexts/SessionContext';
 import { LoadingScreen } from '@/app/components/LoadingScreen';
 
 const UsersContainer = styled.div`
-  width: 100vw;
   background-color: #111;
   color: #eee;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  padding: 1rem;
+
+  @media (max-width: 480px) {
+    padding: 0;
+  }
 `;
 
 const UsersTitle = styled.h1`
@@ -24,16 +27,20 @@ const UsersTitle = styled.h1`
 const SearchForm = styled.form`
   display: flex;
   gap: 1rem;
-  margin-bottom: 2rem;
 `;
 
 const SearchInput = styled.input`
   padding: 0.5rem 1rem;
   font-size: 1rem;
   border-radius: 6px;
-  border: 1px solid #444;
+  border: 1px solid #6b21a8;
   background-color: #222;
   color: #fff;
+  
+  &:hover {
+    border: 1px solid rgb(157, 51, 243);
+	background-color: #222;
+  }
 `;
 
 const SearchButton = styled.button`
@@ -299,7 +306,7 @@ export default function CampaignUserManagementPage() {
 									<UserDetails>
 										<UserName>{user.name}</UserName>
 										<UserEmail>{user.email}</UserEmail>
-										<UserRole>Função: {user.role}</UserRole>
+										<UserRole>{user.role}</UserRole>
 									</UserDetails>
 								</UserInfo>
 							</UserItem>

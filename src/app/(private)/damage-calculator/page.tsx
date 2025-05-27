@@ -6,13 +6,7 @@ import { useSession } from '@/app/contexts/SessionContext'
 import React, { useEffect, useState, useRef } from 'react'
 import styled from 'styled-components'
 import { v4 as uuidv4 } from 'uuid'
-import { Cinzel } from 'next/font/google';
 import { LoadingScreen } from '@/app/components/LoadingScreen';
-
-const cinzel = Cinzel({
-	subsets: ['latin'],
-	weight: ['600'], // ou ['400', '600', '700'] se quiser mais opções
-});
 
 const Container = styled.div`
   display: flex;
@@ -41,12 +35,12 @@ const PlayerRollContainer = styled.div`
   font-weight: 600;
   display: flex;
   align-items: center;
+
   gap: 1.2rem;
   color: #e6e6e6;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), inset 0 0 10px rgba(74, 47, 20, 0.3);
   user-select: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  font-family: 'Cinzel', serif;
 
   &:hover {
     transform: translateY(-2px);
@@ -65,7 +59,6 @@ const PlayerRollContainer = styled.div`
   span {
     font-weight: 400;
     color: #c0a98e;
-    font-family: 'Cormorant Garamond', serif;
   }
 
   strong {
@@ -79,40 +72,37 @@ const PlayerRollContainer = styled.div`
 const CharacterCard = styled.div.withConfig({
 	shouldForwardProp: (prop) => prop !== 'isActive',
 }) <{ isActive: boolean }>`
-  background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
-  border: ${({ isActive }) => (isActive ? '2px solid #d4af37' : '2px solid #4a2f14')};
-  border-radius: 16px;
-  padding: 1rem 1rem .5rem 1rem;
-  margin: 1rem 0.5rem;
-  width: 240px;
-  font-size: 1.15rem;
-  font-weight: 600;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  padding: 1rem 1rem .5rem 1rem;
+  margin: 1rem 0.5rem;
+  width: 12rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
+  border: ${({ isActive }) => (isActive ? '2px solid #d4af37' : '2px solid #4a2f14')};
+  border-radius: 16px;
   gap: 0.1rem;
   color: #e6e6e6;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7),
-              inset 0 0 10px ${({ isActive }) => (isActive ? '#d4af37' : 'rgba(74, 47, 20, 0.3)')};
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), inset 0 0 10px ${({ isActive }) => (isActive ? '#d4af37' : 'rgba(74, 47, 20, 0.3)')};
   user-select: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
-  font-family: 'Cinzel', serif;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.9),
-                inset 0 0 12px ${({ isActive }) => (isActive ? '#d4af37' : 'rgba(74, 47, 20, 0.4)')};
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.9), inset 0 0 12px ${({ isActive }) => (isActive ? '#d4af37' : 'rgba(74, 47, 20, 0.4)')};
   }
 
   @media (max-width: 480px) {
-    width: 90%;
+    width: 80%;
     margin: 0.5rem 0;
   }
 
   span {
     font-weight: 400;
     color: #c0a98e;
-    font-family: 'Cormorant Garamond', serif;
     text-align: center;
   }
 
@@ -127,14 +117,13 @@ const CharacterCard = styled.div.withConfig({
 
 const EditSection = styled.div`
   margin-top: 0.75rem;
-  width: 100%;
+ 
   background: linear-gradient(145deg, #131313, #1f1f1f);
   border: 1px solid #4a2f14;
   border-radius: 12px;
   padding: 0.75rem;
   font-size: 0.8rem;
   color: #c0a98e;
-  font-family: 'Cormorant Garamond', serif;
   box-shadow: inset 0 0 6px rgba(74, 47, 20, 0.2);
 
   p {
@@ -152,7 +141,6 @@ const EditSection = styled.div`
     background-color: #2a2a2a;
     border: 1px solid #3a3a3a;
     color: #fff;
-    font-family: 'Cinzel', serif;
     font-size: 0.9rem;
 
     &::placeholder {
@@ -183,16 +171,78 @@ const HPBar = styled.div<{ hp: number }>`
   }
 `
 
+const Controls = styled.div`
+  background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
+  border: 2px solid #4a2f14;
+  border-radius: 16px;
+  padding: .5rem 0;
+  margin: .5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: #e6e6e6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), inset 0 0 10px rgba(74, 47, 20, 0.3);
+  font-size: 1rem;
+  font-weight: 600;
+  user-select: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  span {
+    font-weight: 400;
+    color: #c0a98e;
+	font-size: 1.5rem;
+
+	@media (max-width: 480px) {
+      font-size: 1rem;
+	}
+
+    strong {
+      color: #d4af37;
+      font-weight: 700;
+      text-shadow: 1px 1px 2px #000;
+      font-size: 1.5rem;
+    }
+  }
+`;
+
+const Button = styled.button`
+  background: #4a2f14;
+  color: #e6e6e6;
+  padding: 0.5rem 1rem;
+  border: 2px solid #d4af37;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #d4af37;
+    color: #1a1a1a;
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 const BattleLog = styled.div`
   background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
   border: 2px solid #4a2f14;
   border-radius: 16px;
   padding: 1rem;
-  margin: 1rem 0 0 0;
+  margin: 0 .5rem .5rem .5rem;
   color: #e6e6e6;
-  font-family: 'Cormorant Garamond', serif;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7),
-              inset 0 0 10px rgba(74, 47, 20, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), inset 0 0 10px rgba(74, 47, 20, 0.3);
   max-height: 300px;
   overflow-y: auto;
 
@@ -202,7 +252,6 @@ const BattleLog = styled.div`
   }
 
   h2 {
-    font-family: 'Cinzel', serif;
     font-size: 1.25rem;
     font-weight: 700;
     margin-bottom: 0.75rem;
@@ -225,74 +274,6 @@ const BattleLog = styled.div`
   p {
     font-style: italic;
     color: #aaa;
-  }
-`;
-
-const Controls = styled.div`
-  background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
-  border: 2px solid #4a2f14;
-  border-radius: 16px;
-  padding: 1rem 2rem;
-  margin-top: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  color: #e6e6e6;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7),
-              inset 0 0 10px rgba(74, 47, 20, 0.3);
-  font-family: 'Cinzel', serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  user-select: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
-
-  @media (max-width: 480px) {
-    flex-direction: column;
-    padding: 1rem;
-    gap: 1rem;
-  }
-
-  span {
-    font-weight: 400;
-    color: #c0a98e;
-    font-family: 'Cormorant Garamond', serif;
-	font-size: 2rem;
-
-	@media (max-width: 480px) {
-      font-size: 1.5rem;
-	}
-
-    strong {
-      color: #d4af37;
-      font-weight: 700;
-      text-shadow: 1px 1px 2px #000;
-      font-size: 2rem;
-    }
-  }
-`;
-
-const Button = styled.button`
-  background: #4a2f14;
-  color: #e6e6e6;
-  padding: 0.5rem 1rem;
-  border: 2px solid #d4af37;
-  border-radius: 12px;
-  font-family: 'Cinzel', serif;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background: #d4af37;
-    color: #1a1a1a;
-    transform: translateY(-2px);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
   }
 `;
 
@@ -509,11 +490,8 @@ export default function BattleSystem() {
 	
 	return (
 		<>
-			<Container className={`${cinzel.className}`}>
-				<SpinningDice 
-					sides={20}
-					onRoll={handleDiceRoll}
-				/>
+			<Container>
+				<SpinningDice sides={20} onRoll={handleDiceRoll} />
 				{players.length > 0 ? (
 					<PlayerRollContainer>
 						<span>Iniciativa:</span>
@@ -542,8 +520,7 @@ export default function BattleSystem() {
 				)}
 			</Container>
 
-
-			<div className="flex flex-wrap gap-4">
+			<div className="flex flex-wrap justify-center">
 				{sortedCharacters.map((char, index) => (
 					<CharacterCard key={char.id} isActive={index === currentTurnIndex && char.isAlive}>
 						<button
@@ -577,11 +554,13 @@ export default function BattleSystem() {
 						</div>
 						<EditSection>
 							<p>Editar:</p>
-							<input
-								type="text"
-								placeholder="Nome"
-								onBlur={e => editCharacter(char.id, 'name', e.target.value)}
-							/>
+							{!char.isPlayer && (
+								<input
+									type="text"
+									placeholder="Nome"
+									onBlur={e => editCharacter(char.id, 'name', e.target.value)}
+								/>
+							)}
 							<input
 								type="number"
 								placeholder="HP máximo"

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { SaveItemPayload, SaveWalletPayload } from '@/app/services/itemService/itemService';
-import { LoadingScreen } from '../LoadingScreen';
 
 const ModalOverlay = styled.div`
   position: fixed;
