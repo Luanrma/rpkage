@@ -7,6 +7,7 @@ import styled from 'styled-components'
 import { User } from '@prisma/client'
 import Logout from '../components/LogoutButton'
 import { LogOut } from 'lucide-react'
+import useRequest from '../hooks/use-request'
 
 // === Styled Components ===
 const LogoutWrapper = styled.div`
@@ -177,26 +178,43 @@ export default function CampaignEntry() {
 		userId: null,
 	})
 	const [userData, setUserData] = useState<User | null>(null)
+	const { doRequest } = useRequest();
+
+
 
 	// === Carrega o usuário ===
 	useEffect(() => {
 		async function loadUser() {
-			const res = await fetch('/api/me')
-			if (res.ok) {
-				const data = await res.json()
-				setUserData(data)
-			}
+			const res = await doRequest({
+				url: '/api/me',
+				method: 'get'
+			})
+			setUserData(res)
+
 		}
 		loadUser()
 	}, [])
 
+	useEffect(() => {
+		if (userData) {
+			setCreateCampaign(prev => ({ ...prev, userId: Number(userData.id) }));
+		}
+	}, [userData]);
+
 	// === Lista campanhas para o usuário se juntar ===
 	useEffect(() => {
 		if (!userData || view !== 'join') return
-		fetch(`/api/campaign-user/by-user/${userData.id}`)
-			.then(res => res.json())
-			.then(setCampaignList)
-			.then(() => setCreateCampaign(prev => ({ ...prev, userId: Number(userData.id) })))
+
+		async function fetchCampaigns() {
+			const res = await doRequest({
+				url: `/api/campaign-user/by-user/${userData!.id}`,
+				method: 'get',
+			})
+			setCampaignList(res)
+
+		}
+
+		fetchCampaigns()
 	}, [view, userData])
 
 	// === Criação da campanha ===
@@ -210,15 +228,13 @@ export default function CampaignEntry() {
 		setErrorMessage('')
 
 		try {
-			const res = await fetch('/api/campaigns', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(createCampaign),
+			const campaign = await doRequest({
+				url: '/api/campaigns',
+				body: createCampaign,
+				method: 'post'
 			})
+			if (!campaign) throw new Error()
 
-			if (!res.ok) throw new Error()
-
-			const campaign = await res.json()
 			const resUser = await fetch('/api/campaign-user', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
