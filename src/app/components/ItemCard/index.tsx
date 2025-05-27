@@ -8,7 +8,6 @@ import ModalTransactionSelectCharacter from '../ModalTransactionSelectCharacter'
 
 const Card = styled.div`
   position: relative;
-  font-family: 'Roboto', sans-serif;
   font-size: 1rem;
   background: #1e1e1e;
   border: 1px solid rgb(97, 97, 97);

@@ -17,7 +17,6 @@ const PlayerInfoStyle = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), inset 0 0 10px rgba(74, 47, 20, 0.3);
   user-select: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  font-family: 'Cinzel', serif;
 
   &:hover {
     transform: translateY(-2px);
@@ -27,7 +26,6 @@ const PlayerInfoStyle = styled.div`
   label {
     font-weight: 600;
     color: #c0a98e;
-    font-family: 'Cormorant Garamond', serif;
     font-size: 1rem;
   }
 
@@ -41,7 +39,6 @@ const PlayerInfoStyle = styled.div`
     box-sizing: border-box;
     background-color: #1a1a1a;
     color: #d4af37;
-    font-family: 'Cinzel', serif;
     transition: border-color 0.3s, box-shadow 0.3s;
   }
 

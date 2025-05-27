@@ -3,11 +3,10 @@
 import { useSession } from '../contexts/SessionContext'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import styled, { keyframes } from 'styled-components'
+import styled from 'styled-components'
 import { User } from '@prisma/client'
 import Logout from '../components/LogoutButton'
 import { LogOut } from 'lucide-react'
-import DiceTwentyFaces from '../components/DiceTwentyFaces'
 
 // === Styled Components ===
 const LogoutWrapper = styled.div`
@@ -26,7 +25,6 @@ const Container = styled.div`
   min-height: 100vh;
   min-width: 320px;
   margin: 0 auto;
-  font-family: 'Inter', sans-serif;
   color: #f0f0f0;
   background-color: rgb(26, 26, 26);
   padding-top: 6rem;
@@ -134,10 +132,9 @@ const CampaignCreator = styled.span`
 `
 
 const CampaignDescription = styled.p`
-   background-color: rgba(255, 255, 255, 0.03);
+  background-color: rgba(255, 255, 255, 0.03);
   padding: 1rem;
   border-radius: 8px;
-  font-family: 'Courier New', monospace;
   font-size: 0.9rem;
   color: #d0d0d0;
   line-height: 1.6;
@@ -188,7 +185,6 @@ export default function CampaignEntry() {
 			if (res.ok) {
 				const data = await res.json()
 				setUserData(data)
-
 			}
 		}
 		loadUser()
