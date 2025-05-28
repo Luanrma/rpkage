@@ -21,11 +21,12 @@ export default function PrivateLayout({ children }: { children: React.ReactNode 
     const pathname = usePathname()
     const hideAside = pathname === '/'
 
+    //teste
     return (
-         <SessionProvider>
+        <SessionProvider>
             <GlobalLayoutMain >
                 {!hideAside && <Aside />}
-                <main style={{flex: 1}}>
+                <main style={{ flex: 1 }}>
                     {children}
                 </main>
             </GlobalLayoutMain>
