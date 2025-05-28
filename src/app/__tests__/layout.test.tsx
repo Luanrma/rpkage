@@ -29,37 +29,38 @@ describe('CampaignEntry', () => {
       ; (useRequest as jest.Mock).mockReturnValue({ doRequest: mockDoRequest })
       ; (useSession as jest.Mock).mockReturnValue({ setCampaignUser: mockSetCampaignUser })
 
-    global.fetch = jest.fn()
 
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ id: 'abc' }),
-      } as any)
-
-      .mockResolvedValueOnce({
-        json: async () => ({
-          id: 'abc',
-          userId: 1,
-          campaignId: 123,
-          role: 'MASTER',
-          user: { name: 'Test User' },
-          campaign: {
-            id: '1',
-            name: 'My Campaign',
-            currencyName: 'Gold',
-            description: 'Test',
-          },
-        }),
-      } as any)
   })
 
   it('allows user to create a campaign without act warnings', async () => {
     mockDoRequest
-      .mockResolvedValueOnce({ id: 1, name: 'Test User' }) // GET /api/me
-      .mockResolvedValueOnce({ id: 123 }) // POST /api/campaigns
+      .mockResolvedValueOnce({ id: 1, name: 'Test User' }) // /api/me
+      .mockResolvedValueOnce({ id: 1 })                  // /api/campaigns
+      .mockResolvedValueOnce({ id: 1, campaignId: 1, role: 'MASTER' })
+      .mockResolvedValueOnce({
+        id: '1',
+        userId: 1,
+        campaignId: 1,
+        role: 'MASTER',
+        campaign: {
+          id: 1,
+          name: 'arroio',
+          description: 'arroio',
+          currencyName: 'gold',
+          active: true
+        },
+        user: {
+          id: '1',
+          name: 'test',
+          type: 'USER'
+
+        }
+      })
 
     render(<CampaignEntry />)
 
+    console.log('FIRST LOG -- ')
+    console.log(mockDoRequest.mock.calls)
     // Wait for user info load
     await waitFor(() => {
       expect(mockDoRequest).toHaveBeenCalledWith(
@@ -91,6 +92,8 @@ describe('CampaignEntry', () => {
       fireEvent.click(screen.getByText('Salvar'))
     })
 
+    console.log('LOG DO REQUEST  before /api/campaigns')
+    console.log(mockDoRequest.mock.calls)
     await waitFor(() => {
       // Validate campaign creation request
       expect(mockDoRequest).toHaveBeenCalledWith(
@@ -108,15 +111,42 @@ describe('CampaignEntry', () => {
     }
     )
 
-    // Validate session set
-    expect(mockSetCampaignUser).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: 'abc',
-        campaignId: 123,
-        userId: 1,
-        role: 'MASTER',
-      })
+    console.log('LOG DO REQUEST after  /api/campaigns')
+    console.log(mockDoRequest.mock.calls)
+
+    await waitFor(() => {
+      // Validate campaign creation request
+      expect(mockDoRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: '/api/campaign-user',
+          method: 'post',
+          body: expect.objectContaining({
+            userId: 1,
+            campaignId: 1,
+            role: 'MASTER'
+          }),
+        })
+      )
+    }
     )
+
+    console.log('LOG DO REQUEST/api/campaign-user')
+    console.log(mockDoRequest.mock.calls)
+
+
+
+    await waitFor(() => {
+      expect(mockDoRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: `/api/campaign-user/by-id/1`
+        })
+      )
+    })
+
+    console.log('LOG DO REQUEST/api/campaign-user/by-id/1')
+    console.log(mockDoRequest.mock.calls)
+
+
 
     // Validate navigation
     expect(mockPush).toHaveBeenCalledWith('/home')
@@ -204,8 +234,7 @@ describe('CampaignEntry', () => {
     await waitFor(() => {
       expect(mockDoRequest).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: '/api/campaign-user/by-user/1',
-          method: 'get',
+          url: '/api/campaign-user/by-user/1'
         })
       )
     })

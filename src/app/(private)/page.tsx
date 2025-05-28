@@ -180,8 +180,6 @@ export default function CampaignEntry() {
 	const [userData, setUserData] = useState<User | null>(null)
 	const { doRequest } = useRequest();
 
-
-
 	// === Carrega o usuário ===
 	useEffect(() => {
 		async function loadUser() {
@@ -193,7 +191,7 @@ export default function CampaignEntry() {
 
 		}
 		loadUser()
-	}, [])
+	}, []);
 
 	useEffect(() => {
 		if (userData) {
@@ -233,27 +231,44 @@ export default function CampaignEntry() {
 				body: createCampaign,
 				method: 'post'
 			})
-			if (!campaign) throw new Error()
 
-			const resUser = await fetch('/api/campaign-user', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
+			if (!campaign || !campaign.id) {
+				throw new Error('Não foi possível criar a campanha.');
+			}
+
+			const resUser = await doRequest({
+				url: '/api/campaign-user',
+				method: 'post',
+				body: {
 					userId: createCampaign.userId,
 					campaignId: campaign.id,
 					role: 'MASTER',
-				}),
+				}
 			})
 
-			if (resUser.ok) {
-				const campaignUser = await resUser.json()
-				const fullData = await fetch(`/api/campaign-user/by-id/${campaignUser.id}`).then(r => r.json())
-
-				setCampaignUser(fullData)
-				router.push('/home')
+			if (!resUser || !resUser.id) {
+				throw new Error('Não foi possível vincular o usuário à campanha.');
 			}
-		} catch {
-			setErrorMessage('Erro ao criar campanha.')
+
+			const fullData = await doRequest({
+				url: `/api/campaign-user/by-id/${resUser.id}`
+			})
+
+			if (!fullData) {
+				throw new Error('Erro ao buscar dados completos da campanha.');
+			}
+
+			setCampaignUser(fullData)
+			router.push('/home')
+
+		} catch (error) {
+			console.error('Erro na criação da campanha:', error);
+			setErrorMessage(
+				error instanceof Error
+					? error.message
+					: 'Erro inesperado na criação da campanha.'
+			);
+
 		} finally {
 			setLoadingCreate(false)
 		}
@@ -276,6 +291,7 @@ export default function CampaignEntry() {
 			setLoadingJoinId(null)
 		}
 	}
+
 	// === Atualiza o token e redireciona ===
 	const handleRefreshToken = async (campaignUserId: string) => {
 		await fetch('/api/token/refresh', {
