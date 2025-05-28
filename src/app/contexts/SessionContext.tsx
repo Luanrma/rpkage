@@ -31,7 +31,7 @@ const defaultSession: SessionContextType = {
 	isLoading: true,
 }
 
-const SessionContext = createContext<SessionContextType>(defaultSession)
+export const SessionContext = createContext<SessionContextType>(defaultSession)
 
 export function SessionProvider({ children }: { children: ReactNode }) {
 	const [campaignUser, setCampaignUser] = useState<CampaignUser | null>(null)
