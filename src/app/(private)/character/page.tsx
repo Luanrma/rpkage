@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, RefObject } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useSession } from '@/app/contexts/SessionContext';
 import KageSheetForm from '@/app/components/KageSheetForm';
@@ -8,7 +8,6 @@ import { SheetModelKageForCharacter } from './sheetModel';
 import { Backpack } from 'lucide-react';
 import InventoryModal from '@/app/components/InventoryModal';
 import { LoadingScreen } from '@/app/components/LoadingScreen';
-import dragAndDrop from "@/app/utils/dragAndDrop";
 
 const Container = styled.div`
   max-width: 800px;
