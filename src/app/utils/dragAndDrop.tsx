@@ -4,7 +4,9 @@ export default function (
     asideRef: RefObject<HTMLDivElement | null>,
     e: React.MouseEvent | React.TouchEvent
 ) {
-    e.preventDefault();
+    if ((e.target as HTMLElement).tagName !== 'INPUT') {
+        e.preventDefault();
+    }
 
     const aside = asideRef.current;
     if (!aside) return;

@@ -9,7 +9,6 @@ export async function GET(
     req: NextRequest,
     { params } : { params: Promise<{ characterId: string }> }
 ) {
-    console.log("Wallet Update Chamado")
     try {
         const { characterId } = await params;
         if (!characterId) {
@@ -21,8 +20,6 @@ export async function GET(
         const wallet = await prisma.wallet.findUnique({
             where: { characterId: characterIdBigInt}
         });
-
-        console.log(wallet)
 
         return NextResponse.json(wallet ? [fixBigInt(wallet)] : []);
     } catch (error) {

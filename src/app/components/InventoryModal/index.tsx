@@ -160,7 +160,7 @@ export default function InventoryModal({ characterId, onClose }: { characterId: 
 			const inventoryAndWallet = await res.json()
 
 			setItems(inventoryAndWallet?.inventoryItems || [])
-			setWallet(inventoryAndWallet?.character.Wallet[0] || [])
+			setWallet(inventoryAndWallet?.character.Wallet || [])
 			setLoading(false);
 		} catch (error) {
 			console.error('Erro ao buscar inventário:', error);
