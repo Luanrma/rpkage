@@ -3,11 +3,11 @@
 import { useSession } from '../contexts/SessionContext'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import styled, { keyframes } from 'styled-components'
+import styled from 'styled-components'
 import { User } from '@prisma/client'
 import Logout from '../components/LogoutButton'
 import { LogOut } from 'lucide-react'
-import DiceTwentyFaces from '../components/DiceTwentyFaces'
+import useRequest from '../hooks/use-request'
 
 // === Styled Components ===
 const LogoutWrapper = styled.div`
@@ -26,7 +26,6 @@ const Container = styled.div`
   min-height: 100vh;
   min-width: 320px;
   margin: 0 auto;
-  font-family: 'Inter', sans-serif;
   color: #f0f0f0;
   background-color: rgb(26, 26, 26);
   padding-top: 6rem;
@@ -134,10 +133,9 @@ const CampaignCreator = styled.span`
 `
 
 const CampaignDescription = styled.p`
-   background-color: rgba(255, 255, 255, 0.03);
+  background-color: rgba(255, 255, 255, 0.03);
   padding: 1rem;
   border-radius: 8px;
-  font-family: 'Courier New', monospace;
   font-size: 0.9rem;
   color: #d0d0d0;
   line-height: 1.6;
@@ -180,27 +178,41 @@ export default function CampaignEntry() {
 		userId: null,
 	})
 	const [userData, setUserData] = useState<User | null>(null)
+	const { doRequest } = useRequest();
 
 	// === Carrega o usuário ===
 	useEffect(() => {
 		async function loadUser() {
-			const res = await fetch('/api/me')
-			if (res.ok) {
-				const data = await res.json()
-				setUserData(data)
+			const res = await doRequest({
+				url: '/api/me',
+				method: 'get'
+			})
+			setUserData(res)
 
-			}
 		}
 		loadUser()
-	}, [])
+	}, []);
+
+	useEffect(() => {
+		if (userData) {
+			setCreateCampaign(prev => ({ ...prev, userId: Number(userData.id) }));
+		}
+	}, [userData]);
 
 	// === Lista campanhas para o usuário se juntar ===
 	useEffect(() => {
 		if (!userData || view !== 'join') return
-		fetch(`/api/campaign-user/by-user/${userData.id}`)
-			.then(res => res.json())
-			.then(setCampaignList)
-			.then(() => setCreateCampaign(prev => ({ ...prev, userId: Number(userData.id) })))
+
+		async function fetchCampaigns() {
+			const res = await doRequest({
+				url: `/api/campaign-user/by-user/${userData!.id}`,
+				method: 'get',
+			})
+			setCampaignList(res)
+
+		}
+
+		fetchCampaigns()
 	}, [view, userData])
 
 	// === Criação da campanha ===
@@ -214,34 +226,49 @@ export default function CampaignEntry() {
 		setErrorMessage('')
 
 		try {
-			const res = await fetch('/api/campaigns', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(createCampaign),
+			const campaign = await doRequest({
+				url: '/api/campaigns',
+				body: createCampaign,
+				method: 'post'
 			})
 
-			if (!res.ok) throw new Error()
+			if (!campaign || !campaign.id) {
+				throw new Error('Não foi possível criar a campanha.');
+			}
 
-			const campaign = await res.json()
-			const resUser = await fetch('/api/campaign-user', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
+			const resUser = await doRequest({
+				url: '/api/campaign-user',
+				method: 'post',
+				body: {
 					userId: createCampaign.userId,
 					campaignId: campaign.id,
 					role: 'MASTER',
-				}),
+				}
 			})
 
-			if (resUser.ok) {
-				const campaignUser = await resUser.json()
-				const fullData = await fetch(`/api/campaign-user/by-id/${campaignUser.id}`).then(r => r.json())
-
-				setCampaignUser(fullData)
-				router.push('/home')
+			if (!resUser || !resUser.id) {
+				throw new Error('Não foi possível vincular o usuário à campanha.');
 			}
-		} catch {
-			setErrorMessage('Erro ao criar campanha.')
+
+			const fullData = await doRequest({
+				url: `/api/campaign-user/by-id/${resUser.id}`
+			})
+
+			if (!fullData) {
+				throw new Error('Erro ao buscar dados completos da campanha.');
+			}
+
+			setCampaignUser(fullData)
+			router.push('/home')
+
+		} catch (error) {
+			console.error('Erro na criação da campanha:', error);
+			setErrorMessage(
+				error instanceof Error
+					? error.message
+					: 'Erro inesperado na criação da campanha.'
+			);
+
 		} finally {
 			setLoadingCreate(false)
 		}
@@ -264,6 +291,7 @@ export default function CampaignEntry() {
 			setLoadingJoinId(null)
 		}
 	}
+
 	// === Atualiza o token e redireciona ===
 	const handleRefreshToken = async (campaignUserId: string) => {
 		await fetch('/api/token/refresh', {

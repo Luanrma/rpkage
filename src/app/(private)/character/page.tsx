@@ -8,15 +8,18 @@ import { SheetModelKageForCharacter } from './sheetModel';
 import { Backpack } from 'lucide-react';
 import InventoryModal from '@/app/components/InventoryModal';
 import { LoadingScreen } from '@/app/components/LoadingScreen';
-import dragAndDrop from "@/app/utils/dragAndDrop";
 
 const Container = styled.div`
   max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
+  margin: .5rem auto;
+  padding: 1rem;
   background-color: #1a1a1a;
   border-radius: 10px;
   color: #e0e0e0;
+
+  @media (max-width: 480px) {
+    padding: .2rem;
+  }
 `;
 
 const TitleRow = styled.div`
@@ -26,30 +29,14 @@ const TitleRow = styled.div`
 `;
 
 const Title = styled.h2`
-  margin-bottom: 1rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-top: 1rem;
-  font-weight: bold;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.5rem;
-  margin-top: 0.5rem;
-  background-color: #2a2a2a;
-  border: 1px solid #444;
-  color: #f1f1f1;
+  margin-bottom: 0;
 `;
 
 const Button = styled.button`
-  margin-top: 2rem;
+  margin-top: 1rem;
   padding: 0.75rem 1.5rem;
   background-color: #6f42c1;
   color: white;
-  border: none;
   border-radius: 5px;
   cursor: pointer;
 
@@ -148,7 +135,7 @@ export default function CreateCharacterPage() {
 
             alert('Ficha salva com sucesso!');
         } catch (err) {
-            setError('Erro inesperado ao salvar personagem.');
+            setError('Erro inesperado ao salvar ficha.');
         }
     };
 
@@ -160,11 +147,11 @@ export default function CreateCharacterPage() {
         <Container>
             {error && <ErrorMessage>{error}</ErrorMessage>}
             <TitleRow>
-                <Title>{sheet ? 'Editar Personagem' : 'Criar Personagem'}</Title>
+                <Title>{sheet ? 'Editar Ficha' : 'Criar Ficha'}</Title>
                 {characterId && (
                     <Backpack
-                        size={28}
-                        style={{ cursor: 'pointer' }}
+                        size={35}
+                        style={{ cursor: 'pointer'}}
                         onClick={() => setShowInventory(true)}
                     />
                 )}

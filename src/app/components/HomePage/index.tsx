@@ -18,7 +18,6 @@ const Container = styled.div`
   justify-content: center;
   padding: 4rem 2rem;
   color: #f4f4f4;
-  font-family: 'Cinzel', serif;
 `
 
 const InnerWrapper = styled.div`
