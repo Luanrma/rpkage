@@ -25,7 +25,7 @@ export default function PrivateLayout({ children }: { children: React.ReactNode 
          <SessionProvider>
             <GlobalLayoutMain >
                 {!hideAside && <Aside />}
-                <main style={{flex: 1}}>
+                <main style={{flex: "1 1 0%"}}>
                     {children}
                 </main>
             </GlobalLayoutMain>
