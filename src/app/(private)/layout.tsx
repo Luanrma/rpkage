@@ -18,7 +18,7 @@ export default function PrivateLayout({ children }: { children: React.ReactNode 
          <SessionProvider>
             <div style={{display: 'flex', minHeight: '100vh', fontFamily: "Cinzel, serif"}}>
                 {!hideAside && <Aside />}
-                <main style={{flex: "1 1 0%"}}>
+                <main style={{flex: 1}}>
                     {children}
                 </main>
             </div>
