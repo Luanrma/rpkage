@@ -41,7 +41,7 @@ export async function getOtherCharactersInTheCampaign(campaignId: string, userId
 			id: char.id,
 			userId: char.userId,
 			inventoryId: char.inventory?.id ?? null,
-			walletId: char.Wallet[0]?.id ?? null,
+			walletId: char.Wallet?.id ?? null,
 			name: char.name,
 			role: char.user.campaignUsers[0]?.role ?? null,
 		}))[0];
@@ -52,7 +52,7 @@ export async function getOtherCharactersInTheCampaign(campaignId: string, userId
 			id: char.id,
 			userId: char.userId,
 			inventoryId: char.inventory?.id ?? null,
-			walletId: char.Wallet[0].id ?? null,
+			walletId: char.Wallet?.id ?? null,
 			name: char.name,
 			role: char.user.campaignUsers[0]?.role ?? null,
 		}));
