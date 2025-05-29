@@ -205,7 +205,7 @@ export default function CampaignEntry() {
 
 	// === Criação da campanha ===
 	const handleCreate = async () => {
-		if (!createCampaign.name || !createCampaign.description || !createCampaign.userId) {
+		if (!createCampaign.name || !createCampaign.description || !createCampaign.currencyName) {
 			setErrorMessage('Preencha todos os campos obrigatórios.')
 			return
 		}
